@@ -4,21 +4,17 @@
     "type": "split",
     "children": [
       {
-        "id": "5840f88165d3370e",
+        "id": "466f414ddda751eb",
         "type": "tabs",
         "children": [
           {
-            "id": "0bc7415f2dc299e6",
+            "id": "0000ed88ab125131",
             "type": "leaf",
             "state": {
-              "type": "markdown",
-              "state": {
-                "file": "Software Delevopment.md",
-                "mode": "source",
-                "source": false
-              },
+              "type": "empty",
+              "state": {},
               "icon": "lucide-file",
-              "title": "Software Delevopment"
+              "title": "New tab"
             }
           }
         ]
@@ -163,13 +159,23 @@
               "icon": "lucide-list",
               "title": "Outline of Blue Prince"
             }
+          },
+          {
+            "id": "29a2fd5ec608aab0",
+            "type": "leaf",
+            "state": {
+              "type": "git-history-view",
+              "state": {},
+              "icon": "history",
+              "title": "History"
+            }
           }
-        ]
+        ],
+        "currentTab": 4
       }
     ],
     "direction": "horizontal",
-    "width": 300,
-    "collapsed": true
+    "width": 300
   },
   "left-ribbon": {
     "hiddenItems": {
@@ -184,16 +190,17 @@
       "templater-obsidian:Templater": false
     }
   },
-  "active": "0bc7415f2dc299e6",
+  "active": "0000ed88ab125131",
   "lastOpenFiles": [
+    "attachments/Pasted image 20260307005942.png",
+    "attachments/Pasted image 20260803162438.png",
+    "attachments/Pasted image 20260803162438 1.png",
+    "Software Delevopment.md",
     "Obsidian Learning.md",
     "Personal Learning.md",
     "Learning Track.md",
     "Game Development.md",
     "Library of Alexandria.md",
-    "Software Delevopment.md",
-    "attachments/Pasted image 20260803162438 1.png",
-    "attachments/Pasted image 20260803162438.png",
     "books/Project Hail Mary.md",
     "Book View.base",
     "books/Coraline.md",
