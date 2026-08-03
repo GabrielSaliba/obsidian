@@ -8,7 +8,6 @@ My [Obsidian](https://obsidian.md) vault, backed up and synced through GitHub.
 - `attachments/` — images, PDFs, and other files embedded in notes
 - `books/` — notes and tracking related to books I'm reading
 - `templates/` — note templates used inside Obsidian
-- `thumbnails/external/` — cached thumbnails for external links/media
 - Top-level `.md` files — individual notes (games, learning tracks, projects, etc.)
 - `.canvas` files — Obsidian Canvas boards
 - `.base` files — Obsidian Bases views
