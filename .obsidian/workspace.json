@@ -4,17 +4,21 @@
     "type": "split",
     "children": [
       {
-        "id": "466f414ddda751eb",
+        "id": "273bc97827d609c4",
         "type": "tabs",
         "children": [
           {
-            "id": "0000ed88ab125131",
+            "id": "8576a363ea1f790b",
             "type": "leaf",
             "state": {
-              "type": "empty",
-              "state": {},
+              "type": "markdown",
+              "state": {
+                "file": "README.md",
+                "mode": "preview",
+                "source": false
+              },
               "icon": "lucide-file",
-              "title": "New tab"
+              "title": "README"
             }
           }
         ]
@@ -122,12 +126,12 @@
             "state": {
               "type": "outgoing-link",
               "state": {
-                "file": "Blue Prince.md",
+                "file": "README.md",
                 "linksCollapsed": false,
                 "unlinkedCollapsed": true
               },
               "icon": "links-going-out",
-              "title": "Outgoing links from Blue Prince"
+              "title": "Outgoing links"
             }
           },
           {
@@ -151,13 +155,13 @@
             "state": {
               "type": "outline",
               "state": {
-                "file": "Blue Prince.md",
+                "file": "README.md",
                 "followCursor": false,
                 "showSearch": false,
                 "searchQuery": ""
               },
               "icon": "lucide-list",
-              "title": "Outline of Blue Prince"
+              "title": "Outline"
             }
           },
           {
@@ -175,7 +179,8 @@
       }
     ],
     "direction": "horizontal",
-    "width": 300
+    "width": 300,
+    "collapsed": true
   },
   "left-ribbon": {
     "hiddenItems": {
@@ -190,8 +195,11 @@
       "templater-obsidian:Templater": false
     }
   },
-  "active": "0000ed88ab125131",
+  "active": "8576a363ea1f790b",
   "lastOpenFiles": [
+    "README.md",
+    "readme.md",
+    "read.me",
     "attachments/Pasted image 20260307005942.png",
     "attachments/Pasted image 20260803162438.png",
     "attachments/Pasted image 20260803162438 1.png",
@@ -219,7 +227,6 @@
     "Blue Prince.canvas",
     "thumbnails/youtube/zVWYW0K3ikg.webp",
     "thumbnails/youtube/Du13KuHhlHs.webp",
-    "thumbnails/resized/82f4d257d1dafb354aef31721cddfe41_86cf658e.webp",
     "Incremental Galaxy Survival.md",
     "Game Projects.md",
     "templates/youtube.md",
@@ -230,7 +237,6 @@
     "Dune Frank Herbert - Frank Herbert.md",
     "books/Duna - Frank Herbert.md",
     "books",
-    "2026-03-05.md",
     "snippets",
     "templates",
     "thumbnails/external",
@@ -238,7 +244,6 @@
     "Nova pasta",
     "attachments",
     "Blue Prince/Blue Prince Canvas.canvas",
-    "thumbnails/resized",
-    "thumbnails/youtube"
+    "thumbnails/resized"
   ]
 }
