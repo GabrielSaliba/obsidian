@@ -4,17 +4,21 @@
     "type": "split",
     "children": [
       {
-        "id": "664529c5281956bc",
+        "id": "5840f88165d3370e",
         "type": "tabs",
         "children": [
           {
-            "id": "daee464b6eaf9422",
+            "id": "0bc7415f2dc299e6",
             "type": "leaf",
             "state": {
-              "type": "empty",
-              "state": {},
+              "type": "markdown",
+              "state": {
+                "file": "Software Delevopment.md",
+                "mode": "source",
+                "source": false
+              },
               "icon": "lucide-file",
-              "title": "New tab"
+              "title": "Software Delevopment"
             }
           }
         ]
@@ -37,7 +41,9 @@
               "type": "file-explorer",
               "state": {
                 "sortOrder": "alphabetical",
-                "autoReveal": false
+                "autoReveal": false,
+                "showSearch": false,
+                "searchQuery": ""
               },
               "icon": "lucide-folder-closed",
               "title": "Files"
@@ -178,18 +184,21 @@
       "templater-obsidian:Templater": false
     }
   },
-  "active": "0f37fa753bb0571d",
+  "active": "0bc7415f2dc299e6",
   "lastOpenFiles": [
+    "Obsidian Learning.md",
+    "Personal Learning.md",
+    "Learning Track.md",
+    "Game Development.md",
+    "Library of Alexandria.md",
+    "Software Delevopment.md",
+    "attachments/Pasted image 20260803162438 1.png",
+    "attachments/Pasted image 20260803162438.png",
     "books/Project Hail Mary.md",
     "Book View.base",
     "books/Coraline.md",
     "books/A guerra da papoula vol.1.md",
     "books/Duna.md",
-    "Library of Alexandria.md",
-    "Game Development.md",
-    "Obsidian Learning.md",
-    "Personal Learning.md",
-    "Learning Track.md",
     "Bakery Barista Game.md",
     "Unity Essentials.md",
     "Evergarden.md",
@@ -200,13 +209,10 @@
     "thumbnails/resized/78f38f0714fe18fbccd246791c08a40e_86cf658e.webp",
     "Personal Watchlist.md",
     "books/Messias de Duna.md",
-    "Software Delevopment.md",
     "Blue Prince.canvas",
     "thumbnails/youtube/zVWYW0K3ikg.webp",
     "thumbnails/youtube/Du13KuHhlHs.webp",
     "thumbnails/resized/82f4d257d1dafb354aef31721cddfe41_86cf658e.webp",
-    "thumbnails/resized/4c87795353c8fa06b94d6c5c8ac76555_86cf658e.webp",
-    "thumbnails/external/f0a66f1f345e27a26d74d0bc70984e8b.failed.png",
     "Incremental Galaxy Survival.md",
     "Game Projects.md",
     "templates/youtube.md",
