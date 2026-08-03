@@ -1,0 +1,231 @@
+{
+  "main": {
+    "id": "a83d3e8d69210d04",
+    "type": "split",
+    "children": [
+      {
+        "id": "664529c5281956bc",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "daee464b6eaf9422",
+            "type": "leaf",
+            "state": {
+              "type": "empty",
+              "state": {},
+              "icon": "lucide-file",
+              "title": "New tab"
+            }
+          }
+        ]
+      }
+    ],
+    "direction": "vertical"
+  },
+  "left": {
+    "id": "467056bd5a20de1e",
+    "type": "split",
+    "children": [
+      {
+        "id": "2be5877a65c95cd4",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "9d6c9fbacc2251d5",
+            "type": "leaf",
+            "state": {
+              "type": "file-explorer",
+              "state": {
+                "sortOrder": "alphabetical",
+                "autoReveal": false
+              },
+              "icon": "lucide-folder-closed",
+              "title": "Files"
+            }
+          },
+          {
+            "id": "67ddf1f59edf218b",
+            "type": "leaf",
+            "state": {
+              "type": "search",
+              "state": {
+                "query": "",
+                "matchingCase": false,
+                "explainSearch": false,
+                "collapseAll": false,
+                "extraContext": false,
+                "sortOrder": "alphabetical"
+              },
+              "icon": "lucide-search",
+              "title": "Search"
+            }
+          },
+          {
+            "id": "c98c0e62b2d31825",
+            "type": "leaf",
+            "state": {
+              "type": "bookmarks",
+              "state": {},
+              "icon": "lucide-bookmark",
+              "title": "Bookmarks"
+            }
+          },
+          {
+            "id": "0f37fa753bb0571d",
+            "type": "leaf",
+            "state": {
+              "type": "notebook-navigator",
+              "state": {},
+              "icon": "notebook-navigator",
+              "title": "Notebook Navigator"
+            }
+          }
+        ],
+        "currentTab": 3
+      }
+    ],
+    "direction": "horizontal",
+    "width": 596.5
+  },
+  "right": {
+    "id": "6ab58a66128cc516",
+    "type": "split",
+    "children": [
+      {
+        "id": "10734e1a00030581",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "8239645e0e8eb9c9",
+            "type": "leaf",
+            "state": {
+              "type": "backlink",
+              "state": {
+                "file": "Personal Learning.md",
+                "collapseAll": false,
+                "extraContext": false,
+                "sortOrder": "alphabetical",
+                "showSearch": false,
+                "searchQuery": "",
+                "backlinkCollapsed": false,
+                "unlinkedCollapsed": true
+              },
+              "icon": "links-coming-in",
+              "title": "Backlinks for Personal Learning"
+            }
+          },
+          {
+            "id": "8c2a82570d1736c5",
+            "type": "leaf",
+            "state": {
+              "type": "outgoing-link",
+              "state": {
+                "file": "Blue Prince.md",
+                "linksCollapsed": false,
+                "unlinkedCollapsed": true
+              },
+              "icon": "links-going-out",
+              "title": "Outgoing links from Blue Prince"
+            }
+          },
+          {
+            "id": "f206a029b51661ee",
+            "type": "leaf",
+            "state": {
+              "type": "tag",
+              "state": {
+                "sortOrder": "frequency",
+                "useHierarchy": true,
+                "showSearch": false,
+                "searchQuery": ""
+              },
+              "icon": "lucide-tags",
+              "title": "Tags"
+            }
+          },
+          {
+            "id": "bea9a980719e8e51",
+            "type": "leaf",
+            "state": {
+              "type": "outline",
+              "state": {
+                "file": "Blue Prince.md",
+                "followCursor": false,
+                "showSearch": false,
+                "searchQuery": ""
+              },
+              "icon": "lucide-list",
+              "title": "Outline of Blue Prince"
+            }
+          }
+        ]
+      }
+    ],
+    "direction": "horizontal",
+    "width": 300,
+    "collapsed": true
+  },
+  "left-ribbon": {
+    "hiddenItems": {
+      "obsidian-git:Open Git source control": false,
+      "notebook-navigator:Notebook Navigator": false,
+      "graph:Open graph view": false,
+      "switcher:Open quick switcher": false,
+      "daily-notes:Open today's daily note": false,
+      "canvas:Create new canvas": false,
+      "command-palette:Open command palette": false,
+      "bases:Create new base": false,
+      "templater-obsidian:Templater": false
+    }
+  },
+  "active": "0f37fa753bb0571d",
+  "lastOpenFiles": [
+    "books/Project Hail Mary.md",
+    "Book View.base",
+    "books/Coraline.md",
+    "books/A guerra da papoula vol.1.md",
+    "books/Duna.md",
+    "Library of Alexandria.md",
+    "Game Development.md",
+    "Obsidian Learning.md",
+    "Personal Learning.md",
+    "Learning Track.md",
+    "Bakery Barista Game.md",
+    "Unity Essentials.md",
+    "Evergarden.md",
+    "thumbnails/resized/6ec26ef3607966d7f51a033e3e26b47f_86cf658e.webp",
+    "thumbnails/resized/b83e67262f0cf4ba8a21384b61feb0b4_86cf658e.webp",
+    "thumbnails/resized/6f7f2480e782c6e46508a79291caedab_86cf658e.webp",
+    "thumbnails/resized/41523656da9f8c3e9aa4ec1007ffad8a_86cf658e.webp",
+    "thumbnails/resized/78f38f0714fe18fbccd246791c08a40e_86cf658e.webp",
+    "Personal Watchlist.md",
+    "books/Messias de Duna.md",
+    "Software Delevopment.md",
+    "Blue Prince.canvas",
+    "thumbnails/youtube/zVWYW0K3ikg.webp",
+    "thumbnails/youtube/Du13KuHhlHs.webp",
+    "thumbnails/resized/82f4d257d1dafb354aef31721cddfe41_86cf658e.webp",
+    "thumbnails/resized/4c87795353c8fa06b94d6c5c8ac76555_86cf658e.webp",
+    "thumbnails/external/f0a66f1f345e27a26d74d0bc70984e8b.failed.png",
+    "Incremental Galaxy Survival.md",
+    "Game Projects.md",
+    "templates/youtube.md",
+    "books/Pedra no Céu - Isaac Asimov.md",
+    "templates/channel.md",
+    "books/Messias de Duna - Frank Herbert.md",
+    "Dune - Frank Herbert.md",
+    "Dune Frank Herbert - Frank Herbert.md",
+    "books/Duna - Frank Herbert.md",
+    "books",
+    "2026-03-05.md",
+    "snippets",
+    "templates",
+    "thumbnails/external",
+    "Blue Prince",
+    "Nova pasta",
+    "attachments",
+    "Blue Prince/Blue Prince Canvas.canvas",
+    "thumbnails/resized",
+    "thumbnails/youtube"
+  ]
+}

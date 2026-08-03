@@ -1,0 +1,9 @@
+views:
+  - type: cards
+    name: Book View
+    filters:
+      and:
+        - file.folder == "books"
+    image: note.coverUrl
+    imageFit: contain
+    imageAspectRatio: 1.45
