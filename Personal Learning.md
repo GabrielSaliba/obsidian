@@ -40,9 +40,12 @@
 
 ![](https://www.youtube.com/watch?v=zVWYW0K3ikg)
 
+> ## I installed Linux (so should you)
+> **Channel:** PewDiePie  
+> **Duration:** 22m 53s  
+> **Published:** April 26, 2025  
+> **Views:** 8.1M  
+> **Link:** [YouTube Video](https://www.youtube.com/watch?v=pVI_smLgTY0)
 
-
-
-[[Library of Alexandria]]
-
+![](https://www.youtube.com/watch?v=pVI_smLgTY0)
 

@@ -64,5 +64,3 @@ if(!videoId){
   }
 }
 %>
-
-[[Library of Alexandria]]
