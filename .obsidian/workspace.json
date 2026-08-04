@@ -4,21 +4,21 @@
     "type": "split",
     "children": [
       {
-        "id": "ce666d77f95b21df",
+        "id": "76d27b58ed4c31bd",
         "type": "tabs",
         "children": [
           {
-            "id": "1103d762826ca4bf",
+            "id": "e5e02b9b275456d1",
             "type": "leaf",
             "state": {
-              "type": "split-diff-view",
+              "type": "markdown",
               "state": {
-                "aFile": ".obsidian/plugins/obsidian-git/data.json",
-                "bFile": ".obsidian/plugins/obsidian-git/data.json",
-                "aRef": ""
+                "file": "Software Delevopment.md",
+                "mode": "source",
+                "source": false
               },
-              "icon": "diff",
-              "title": "Diff: data.json  (Working Tree)"
+              "icon": "lucide-file",
+              "title": "Software Delevopment"
             }
           }
         ]
@@ -201,7 +201,7 @@
       "obsidian-git:Open Git source control": false
     }
   },
-  "active": "29a2fd5ec608aab0",
+  "active": "e5e02b9b275456d1",
   "lastOpenFiles": [
     "Personal Learning.md",
     "templates/youtube.md",
