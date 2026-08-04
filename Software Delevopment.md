@@ -8,4 +8,4 @@
 - install chocolatey
 - install node and pnpm
 - install WSL
-- install OpenCode
+- install OpenCode (desktop and CLI)
