@@ -9,3 +9,5 @@
 - install node and pnpm
 - install WSL
 - install OpenCode (desktop and CLI)
+  
+[[Studio Repertório]]
