@@ -1,10 +1,10 @@
 
 > [!abstract] Definition
 
-> An opaque token is a random secret with no business information inside it. The application cannot obtain meaning by decoding it. It is only a secret lookup credential.
+> An opaque token is a random secret with *no business information inside it*. The application cannot obtain meaning by decoding it. It is only a secret lookup credential.
 
 
-## Token Requirements
+## <span style="color:rgb(112, 48, 160)">Token Requirements</span>
 
 Example:
 
@@ -24,7 +24,7 @@ The token must not be:
 
 The token must contain at least **256 bits of cryptographic randomness**.
 
-## Creation Flow
+## <span style="color:rgb(0, 176, 80)">Creation Flow</span>
 
 When the atomic `create_order` command creates a guest order:
 
@@ -75,7 +75,7 @@ create table public.guest_order_access (
 ```
 
   
-## Email Access Flow
+## <span style="color:rgb(0, 176, 240)">Email Access Flow</span>
 
 Example link:
 ```text
@@ -101,7 +101,7 @@ https://shop.example.com/pedidos/REP-12345
 
 ```
 
-The clean URL must not contain the secret token.
+<mark style="background: #ADCCFFA6;">The clean URL must not contain the secret token.</mark>
 
 > [!important] Token Exposure
 
@@ -116,7 +116,7 @@ This exchange reduces token exposure through:
 - Analytics tools
 - Application logs
 
-## Immediate Checkout Access
+## <span style="color:rgb(255, 192, 0)">Immediate Checkout Access</span>
 
   
 The guest should not need to open the email after creating an order.
@@ -125,9 +125,9 @@ After successful order creation:
 1. The Server Action creates the guest order session cookie immediately.
 2. The browser opens the clean order status page.
 3. The email token remains available as a recovery mechanism for another browser or device.
-## Capability Scope
+## <span style="color:rgb(0, 176, 240)">Capability Scope</span>
 
-The guest capability must be narrow.
+<mark style="background: #BBFABBA6;">The guest capability must be narrow, temporary, read-only access</mark>
 
 ### Permitted Actions
 
@@ -146,7 +146,7 @@ The guest capability must be narrow.
 - Read customer profiles
 - Read payment-provider payloads
 
-## Why Store Only the Hash?
+## <span style="color:rgb(255, 0, 0)">Why Store Only the Hash?</span>
 
 If the database is exposed, an attacker who obtains the stored hash cannot directly use it as the guest credential.
 
@@ -160,7 +160,7 @@ This follows the same principle as password storage:
 
 A fast SHA-256 hash is acceptable because the token has high random entropy. It is not a human-selected password and is not vulnerable to dictionary attacks.
 
-## Relationship With RLS
+## <span style="color:rgb(112, 48, 160)">Relationship With RLS</span>
 
 Guest users do not have a Supabase `auth.uid()`. Ordinary ownership policies cannot identify them.
 
@@ -197,7 +197,7 @@ auth.uid() = orders.user_id
 
 The guest and authenticated access models must remain separate.
 
-## Token Lifecycle
+## <span style="color:rgb(0, 176, 80)">Token Lifecycle</span>
 
 Recommended lifecycle:
 
@@ -212,7 +212,7 @@ Recommended lifecycle:
 
 The guest can still receive order updates by email after browser access expires.
 
-## Observability
+## <span style="color:rgb(0, 176, 240)">Observability</span>
 
 Wide events may include:
 
@@ -245,3 +245,31 @@ Wide events must not include:
 > [!danger] Logging Rule
 
 > Never log the raw token, token hash, customer email, or URL query string.
+
+
+## <span style="color:rgb(255, 192, 0)">Security Behavior</span>
+
+Anyone who has the complete secret URL can access the permitted order details. The raw token is a bearer credential: possession proves access.
+
+This is normal behavior for:
+- Password-reset links.
+- Email verification links.
+- Magic login links.
+- Guest order-status links.
+- Private document-sharing links.
+- It is secure only when the link is treated as a secret.
+
+What the Database Hash Does
+The stored hash protects against database exposure. It does not protect against theft of the raw URL.
+
+Database leak
+→ attacker gets only token hash
+→ cannot use it as the access token
+
+Email or URL leak
+→ attacker gets raw token
+→ can use it while valid
+
+
+<mark style="background: #FF5582A6;">The key rule is:</mark>
+**Anyone with the secret link can act as that guest, so the link must grant only narrow, temporary, read-only access.**

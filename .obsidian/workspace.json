@@ -8,35 +8,20 @@
         "type": "tabs",
         "children": [
           {
-            "id": "e5e02b9b275456d1",
+            "id": "15c985c5ab26bda2",
             "type": "leaf",
             "state": {
               "type": "markdown",
               "state": {
-                "file": "Software Delevopment.md",
+                "file": "2026-08-05.md",
                 "mode": "source",
                 "source": false
               },
               "icon": "lucide-file",
-              "title": "Software Delevopment"
-            }
-          },
-          {
-            "id": "60f41658375c17ef",
-            "type": "leaf",
-            "state": {
-              "type": "markdown",
-              "state": {
-                "file": "Opaque Guest Access Token.md",
-                "mode": "preview",
-                "source": false
-              },
-              "icon": "lucide-file",
-              "title": "Opaque Guest Access Token"
+              "title": "2026-08-05"
             }
           }
-        ],
-        "currentTab": 1
+        ]
       }
     ],
     "direction": "vertical"
@@ -216,10 +201,11 @@
       "obsidian-git:Open Git source control": false
     }
   },
-  "active": "60f41658375c17ef",
+  "active": "29a2fd5ec608aab0",
   "lastOpenFiles": [
-    "Opaque Guest Access Token.md",
     "Software Delevopment.md",
+    "2026-08-05.md",
+    "Opaque Guest Access Token.md",
     "Library of Alexandria.md",
     "Studio Repertório.md",
     "SR - Opaque Token.md",
@@ -256,7 +242,6 @@
     "Incremental Galaxy Survival.md",
     "Game Projects.md",
     "books/Pedra no Céu - Isaac Asimov.md",
-    "templates/channel.md",
     "books",
     "snippets",
     "templates",

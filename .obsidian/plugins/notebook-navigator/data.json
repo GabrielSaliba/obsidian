@@ -404,6 +404,11 @@
       "folder": true,
       "tag": false,
       "property": false
+    },
+    "Software Delevopment.md": {
+      "folder": true,
+      "tag": false,
+      "property": false
     }
   },
   "fileIcons": {
@@ -413,7 +418,8 @@
     "Game Development.md": "emoji:🕹️",
     "Blue Prince.canvas": "crown",
     "Obsidian Learning.md": "diamond",
-    "Bakery Barista Game.md": "shopping-basket"
+    "Bakery Barista Game.md": "shopping-basket",
+    "Software Delevopment.md": "emoji:🖥️"
   },
   "fileColors": {
     "Library of Alexandria.md": "#f59e0b",
