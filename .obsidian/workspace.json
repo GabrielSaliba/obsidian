@@ -13,43 +13,30 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "Studio Repertório.md",
+                "file": "Software Delevopment.md",
                 "mode": "source",
                 "source": false
               },
               "icon": "lucide-file",
-              "title": "Studio Repertório"
+              "title": "Software Delevopment"
             }
           },
           {
-            "id": "54afefe004dbb087",
+            "id": "60f41658375c17ef",
             "type": "leaf",
             "state": {
               "type": "markdown",
               "state": {
-                "file": "Studio Repertório.md",
-                "mode": "source",
+                "file": "Opaque Guest Access Token.md",
+                "mode": "preview",
                 "source": false
               },
               "icon": "lucide-file",
-              "title": "Studio Repertório"
-            }
-          },
-          {
-            "id": "7162729563761566",
-            "type": "leaf",
-            "state": {
-              "type": "markdown",
-              "state": {
-                "file": "Studio Repertório.md",
-                "mode": "source",
-                "source": false
-              },
-              "icon": "lucide-file",
-              "title": "Studio Repertório"
+              "title": "Opaque Guest Access Token"
             }
           }
-        ]
+        ],
+        "currentTab": 1
       }
     ],
     "direction": "vertical"
@@ -229,19 +216,21 @@
       "obsidian-git:Open Git source control": false
     }
   },
-  "active": "e5e02b9b275456d1",
+  "active": "60f41658375c17ef",
   "lastOpenFiles": [
+    "Opaque Guest Access Token.md",
     "Software Delevopment.md",
-    "README.md",
+    "Library of Alexandria.md",
     "Studio Repertório.md",
     "SR - Opaque Token.md",
+    "Game Development.md",
+    "Learning Track.md",
+    "Obsidian Learning.md",
     "Personal Learning.md",
+    "README.md",
     "templates/youtube.md",
     "Untitled.md",
-    "Obsidian Learning.md",
     "Unity Essentials.md",
-    "Library of Alexandria.md",
-    "Learning Track.md",
     "thumbnails/external/f0a66f1f345e27a26d74d0bc70984e8b.failed.png",
     "thumbnails/external/d255b3b66800e6ae8be11feff4edd16e.failed.png",
     "readme.md",
@@ -249,7 +238,6 @@
     "attachments/Pasted image 20260307005942.png",
     "attachments/Pasted image 20260803162438.png",
     "attachments/Pasted image 20260803162438 1.png",
-    "Game Development.md",
     "books/Project Hail Mary.md",
     "Book View.base",
     "books/Coraline.md",
@@ -269,7 +257,6 @@
     "Game Projects.md",
     "books/Pedra no Céu - Isaac Asimov.md",
     "templates/channel.md",
-    "books/Messias de Duna - Frank Herbert.md",
     "books",
     "snippets",
     "templates",
