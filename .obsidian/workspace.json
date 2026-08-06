@@ -13,12 +13,12 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "2026-08-05.md",
+                "file": "Personal Learning.md",
                 "mode": "source",
                 "source": false
               },
               "icon": "lucide-file",
-              "title": "2026-08-05"
+              "title": "Personal Learning"
             }
           }
         ]
@@ -201,8 +201,9 @@
       "obsidian-git:Open Git source control": false
     }
   },
-  "active": "29a2fd5ec608aab0",
+  "active": "15c985c5ab26bda2",
   "lastOpenFiles": [
+    "Obsidian Learning.md",
     "Software Delevopment.md",
     "2026-08-05.md",
     "Opaque Guest Access Token.md",
@@ -211,7 +212,6 @@
     "SR - Opaque Token.md",
     "Game Development.md",
     "Learning Track.md",
-    "Obsidian Learning.md",
     "Personal Learning.md",
     "README.md",
     "templates/youtube.md",
