@@ -13,12 +13,12 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "Personal Learning.md",
+                "file": "2026-08-07.md",
                 "mode": "source",
                 "source": false
               },
               "icon": "lucide-file",
-              "title": "Personal Learning"
+              "title": "2026-08-07"
             }
           }
         ]
@@ -203,16 +203,17 @@
   },
   "active": "15c985c5ab26bda2",
   "lastOpenFiles": [
+    "2026-08-05.md",
+    "2026-08-07.md",
+    "Personal Learning.md",
     "Obsidian Learning.md",
     "Software Delevopment.md",
-    "2026-08-05.md",
     "Opaque Guest Access Token.md",
     "Library of Alexandria.md",
     "Studio Repertório.md",
     "SR - Opaque Token.md",
     "Game Development.md",
     "Learning Track.md",
-    "Personal Learning.md",
     "README.md",
     "templates/youtube.md",
     "Untitled.md",
@@ -241,7 +242,6 @@
     "Blue Prince.canvas",
     "Incremental Galaxy Survival.md",
     "Game Projects.md",
-    "books/Pedra no Céu - Isaac Asimov.md",
     "books",
     "snippets",
     "templates",
