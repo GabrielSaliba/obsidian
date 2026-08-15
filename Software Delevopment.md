@@ -11,4 +11,3 @@
 - install OpenCode (desktop and CLI)
   
 [[Studio Repertório]]
-[[Opaque Guest Access Token]]
