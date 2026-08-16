@@ -44,11 +44,11 @@ One claim can reserve no more than one provider call.
 
 An email job can have these limits:
 
-| Ceiling | Limit | Meaning |
-|---|:---:|---|
-| Automatic | 5 | Normal provider calls under the retry policy |
-| Replay | 1 | One administrator-approved extra call |
-| Lifetime | 6 | Maximum provider calls for the full job lifetime |
+| Ceiling   | Limit | Meaning                                          |
+| --------- | :---: | ------------------------------------------------ |
+| Automatic |   5   | Normal provider calls under the retry policy     |
+| Replay    |   1   | One administrator-approved extra call            |
+| Lifetime  |   6   | Maximum provider calls for the full job lifetime |
 
 > [!note] Replay Rule
 > Replay does not reset the first five calls. It permits one additional call within the lifetime ceiling.
