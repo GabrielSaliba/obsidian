@@ -1,6 +1,7 @@
 [[RPRT - Tracklist]]
 
 [[RPRT-43 - Provider Call Counting and Lease Contract]]
+[[RPRT-41 - Payment Recovery Gate Contract]]
 [[Opaque Guest Access Token]]
 
 ### <mark style="background: #FFB8EBA6;">Color Palette</mark> 
