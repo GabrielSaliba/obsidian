@@ -4,11 +4,11 @@
     "type": "split",
     "children": [
       {
-        "id": "76d27b58ed4c31bd",
+        "id": "bb327f3b2d995b7e",
         "type": "tabs",
         "children": [
           {
-            "id": "baaeabf8aa1a40e4",
+            "id": "3b11e6c28818188a",
             "type": "leaf",
             "state": {
               "type": "markdown",
@@ -20,79 +20,8 @@
               "icon": "lucide-file",
               "title": "Studio Repertório"
             }
-          },
-          {
-            "id": "6e81e8b9d0efd66e",
-            "type": "leaf",
-            "state": {
-              "type": "markdown",
-              "state": {
-                "file": "RPRT/RPRT - Tracklist.md",
-                "mode": "source",
-                "source": false
-              },
-              "icon": "lucide-file",
-              "title": "RPRT - Tracklist"
-            }
-          },
-          {
-            "id": "8c2024f20f1556b9",
-            "type": "leaf",
-            "state": {
-              "type": "markdown",
-              "state": {
-                "file": "RPRT/2026-08-17.md",
-                "mode": "source",
-                "source": false
-              },
-              "icon": "lucide-file",
-              "title": "2026-08-17"
-            }
-          },
-          {
-            "id": "0c0cb6feb8d25b7e",
-            "type": "leaf",
-            "state": {
-              "type": "markdown",
-              "state": {
-                "file": "RPRT/RPRT-41 - Payment Recovery Gate Contract.md",
-                "mode": "source",
-                "source": false
-              },
-              "icon": "lucide-file",
-              "title": "RPRT-41 - Payment Recovery Gate Contract"
-            }
-          },
-          {
-            "id": "8f483fb242107937",
-            "type": "leaf",
-            "state": {
-              "type": "markdown",
-              "state": {
-                "file": "RPRT/2026-08-15.md",
-                "mode": "source",
-                "source": false
-              },
-              "icon": "lucide-file",
-              "title": "2026-08-15"
-            }
-          },
-          {
-            "id": "c7ac8634ee101aa3",
-            "type": "leaf",
-            "state": {
-              "type": "markdown",
-              "state": {
-                "file": "RPRT/RPRT-41 - Payment Recovery Gate Contract.md",
-                "mode": "source",
-                "source": false
-              },
-              "icon": "lucide-file",
-              "title": "RPRT-41 - Payment Recovery Gate Contract"
-            }
           }
-        ],
-        "currentTab": 2
+        ]
       }
     ],
     "direction": "vertical"
@@ -157,7 +86,8 @@
               "title": "Notebook Navigator"
             }
           }
-        ]
+        ],
+        "currentTab": 3
       }
     ],
     "direction": "horizontal",
@@ -272,15 +202,16 @@
       "obsidian-git:Open Git source control": false
     }
   },
-  "active": "8c2024f20f1556b9",
+  "active": "3b11e6c28818188a",
   "lastOpenFiles": [
-    "RPRT/2026-08-16.md",
+    "Software Delevopment.md",
+    "RPRT/RPRT-42 - Cancellation Intent and Paid-Stock Recovery Contract.md",
     "RPRT/2026-08-17.md",
-    "RPRT/RPRT - Tracklist.md",
     "RPRT/Studio Repertório.md",
+    "RPRT/RPRT - Tracklist.md",
     "RPRT/RPRT-41 - Payment Recovery Gate Contract.md",
     "RPRT/2026-08-15.md",
-    "Software Delevopment.md",
+    "RPRT/2026-08-16.md",
     "RPRT/RPRT-43 - Provider Call Counting and Lease Contract.md",
     "2026-08-10.md",
     "Blue Prince.canvas",
@@ -301,7 +232,6 @@
     "SR - Opaque Token.md",
     "Game Development.md",
     "Learning Track.md",
-    "README.md",
     "thumbnails/external/f0a66f1f345e27a26d74d0bc70984e8b.failed.png",
     "thumbnails/external/d255b3b66800e6ae8be11feff4edd16e.failed.png",
     "read.me",
