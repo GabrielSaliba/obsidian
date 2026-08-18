@@ -1,5 +1,6 @@
 [[RPRT - Tracklist]]
 
+[[RPRT-52 - Reliability and Audit Foundation Plan]]
 [[RPRT-43 - Provider Call Counting and Lease Contract]]
 [[RPRT-41 - Payment Recovery Gate Contract]]
 [[RPRT-42 - Cancellation Intent and Paid-Stock Recovery Contract]]
