@@ -41,12 +41,12 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "RPRT/2026-08-16.md",
+                "file": "RPRT/2026-08-17.md",
                 "mode": "source",
                 "source": false
               },
               "icon": "lucide-file",
-              "title": "2026-08-16"
+              "title": "2026-08-17"
             }
           },
           {
@@ -274,10 +274,11 @@
   },
   "active": "8c2024f20f1556b9",
   "lastOpenFiles": [
+    "RPRT/2026-08-16.md",
+    "RPRT/2026-08-17.md",
     "RPRT/RPRT - Tracklist.md",
     "RPRT/Studio Repertório.md",
     "RPRT/RPRT-41 - Payment Recovery Gate Contract.md",
-    "RPRT/2026-08-16.md",
     "RPRT/2026-08-15.md",
     "Software Delevopment.md",
     "RPRT/RPRT-43 - Provider Call Counting and Lease Contract.md",
@@ -301,7 +302,6 @@
     "Game Development.md",
     "Learning Track.md",
     "README.md",
-    "templates/youtube.md",
     "thumbnails/external/f0a66f1f345e27a26d74d0bc70984e8b.failed.png",
     "thumbnails/external/d255b3b66800e6ae8be11feff4edd16e.failed.png",
     "read.me",
