@@ -11,3 +11,4 @@
 - install OpenCode (desktop and CLI)
   
 [[Studio Repertório]]
+[[Resend]]
