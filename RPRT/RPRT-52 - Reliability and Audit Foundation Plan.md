@@ -1,7 +1,7 @@
 # RPRT-52 Reliability and Audit Foundation Plan
 
-> [!summary] Planning Status
-> Draft implementation plan prepared on August 18, 2026. The plan requires one administrator-membership prerequisite before [RPRT-52](https://linear.app/guisaliba/issue/RPRT-52/implement-reliability-and-audit-schema-security) can start safely.
+> [!summary] Implementation Status
+> RPRT-66 was approved and merged through PR #12. RPRT-52 is now in progress on `feat/rprt-52-reliability-audit-schema`, created from updated `dev`. The final PR will remain draft until the user requests review readiness.
 
 ## Goal
 
@@ -151,3 +151,73 @@ For each PR:
 7. Keep commits atomic and use Conventional Commits with Linear references.
 8. Open each PR into `dev`, record non-secret evidence, and wait for required human review before merge.
 9. Do not promote migrations to shared staging or change production resources without a separate explicit request.
+
+## Final Branch and Evidence Workflow
+
+- PR #12 merged into `dev` as `77a68a8` before RPRT-52 implementation began.
+- RPRT-52 uses one feature branch created directly from updated `dev`.
+- Each green vertical slice receives one atomic Conventional Commit with `Refs: RPRT-52`.
+- The RPRT-52 PR targets `dev` and remains draft after implementation.
+- If `dev` changes, merge `origin/dev` with a normal merge commit. Do not rebase or force-push published work.
+- After each slice, record the behavior, focused command, expected red result, minimal migration, green result, test count, and commit SHA below and in a Linear comment.
+- Evidence must not contain raw logs, database URLs, keys, tokens, passwords, fixture emails, or personal data.
+
+## Implementation Evidence
+
+Evidence will be appended here after each completed red-green slice.
+
+### Slice 1 Evidence: Immutable Reliability Evidence
+
+- **Behavior:** durable provider-event deduplication, immutable domain audit, and independent operational-alert evidence with default-deny access.
+- **Focused command:** `pnpm test:db -- supabase/tests/reliability_evidence.test.sql`.
+- **Red:** 3 of 3 assertions failed because `webhook_events`, `domain_transitions`, and `operational_alerts` did not exist.
+- **Minimal change:** `20260818215648_add_immutable_reliability_evidence.sql` added the three append-only tables, indexes, RLS, privilege revocation, immutable guards, and the service-role webhook evidence command.
+- **Green:** 36 focused assertions passed; 69 total pgTAP assertions passed; database lint reported no schema warnings.
+- **Commit:** `25c7146 feat(database): add immutable reliability evidence`.
+
+### Slice 2 Evidence: Policy-Based Outbox Enqueue
+
+- **Behavior:** approved job types enter one durable pending job with exact immutable RPRT-43 policy and stable-ID payload contracts.
+- **Focused command:** `pnpm test:db -- supabase/tests/outbox_enqueue.test.sql`.
+- **Red:** 2 of 2 assertions failed because `outbox_jobs` and `enqueue_outbox_job` did not exist.
+- **Minimal change:** `20260818220114_add_policy_based_outbox_enqueue.sql` added the outbox, versioned policy resolver, payload validation, immutable policy guard, queue index, default-deny access, service-role enqueue RPC, idempotent business-key handling, and one creation transition per job.
+- **Green:** 34 focused assertions passed; 103 total pgTAP assertions passed; database lint reported no schema warnings.
+- **Commit:** `9b86373 feat(database): add policy-based outbox enqueue`.
+
+### Slice 3 Evidence: Outbox Claim and Provider-Call Reservation
+
+- **Behavior:** workers claim eligible pending jobs with immutable execution policy, and a lease owner reserves exactly one automatic provider call before dispatch without exceeding automatic, lifetime, fingerprint, or provider-window limits.
+- **Focused command:** `pnpm test:db -- supabase/tests/outbox_worker_commands.test.sql supabase/tests/outbox_concurrency.test.sql`.
+- **Red:** the initial 4 of 4 assertions failed because provider-call evidence tables and worker RPCs did not exist. Later focused checks also proved the missing automatic-budget and provider-idempotency-window guards before their minimal fixes.
+- **Minimal change:** `20260818220811_add_outbox_claim_and_call_reservation.sql` added append-only call and result evidence, bounded `FOR UPDATE SKIP LOCKED` claims, database-generated leases, atomic automatic call reservation, stored execution-policy output, stale-lease denial, request-fingerprint stability, and automatic, lifetime, and idempotency-window enforcement. A local-only `dblink` test proves lock-skipping claims and concurrent one-call-per-lease enforcement.
+- **Green:** 49 focused assertions passed; 152 total pgTAP assertions passed from a clean database; database lint reported no schema warnings.
+- **Commit:** `07ec42f feat(database): add outbox claim and call reservation`.
+
+### Slice 4 Evidence: Completion, Retry, Dead-Letter, and Lease Recovery
+
+- **Behavior:** successful calls complete exactly once; retry-safe failures store bounded equal jitter; unsafe, permanent, exhausted, or provider-window-expired work dead-letters with immutable result, transition, and independent alert evidence; expired leases recover only when repetition is proven safe.
+- **Focused command:** `pnpm test:db -- supabase/tests/outbox_completion.test.sql supabase/tests/outbox_failure_commands.test.sql supabase/tests/outbox_lease_recovery.test.sql`.
+- **Red:** completion first failed because its RPC did not exist; safe reschedule and direct dead-letter each failed because their RPCs did not exist; lease recovery failed because its RPC did not exist. Later focused checks exposed and proved the provider-window terminality boundary before the minimal fix.
+- **Minimal change:** `20260818223049_add_outbox_completion_and_dead_letter_controls.sql` added service-role-only complete, reschedule, dead-letter, and expired-lease recovery RPCs; terminal completion enforcement; append-only classified results; equal-jitter scheduling; safe repetition rules; and atomic dead-letter audit plus alert evidence.
+- **Green:** 41 focused assertions passed; 193 total pgTAP assertions passed from a clean database; database lint reported no schema warnings; review found no remaining high- or medium-severity issue.
+- **Commit:** `1878314 feat(database): add outbox completion and dead-letter controls`.
+
+### Slice 5 Evidence: Administrator-Protected Outbox Replay
+
+- **Behavior:** an authenticated administrator creates one immutable safety proof for a replayable dead-letter job; one proof returns the same job to pending and permits one replay call without resetting automatic or lifetime counts. Replay failure returns to dead letter, and concurrent administrators cannot consume one proof twice.
+- **Focused command:** `pnpm test:db -- supabase/tests/outbox_replay.test.sql supabase/tests/outbox_replay_concurrency.test.sql`.
+- **Red:** authorization first failed because replay evidence tables and `authorize_outbox_replay` did not exist; proof consumption failed because `replay_outbox_job` did not exist; replay reservation initially followed the automatic idempotency path; focused recovery checks exposed reported-failure and pre-dispatch replay lease gaps before their minimal fixes.
+- **Minimal change:** `20260818224616_add_protected_outbox_replay.sql` added append-only authorization and consumption evidence, authenticated administrator RPCs, composite proof/job/ordinal constraints, one active replay slot, replay-aware call reservation, immediate replay-failure dead-letter behavior, pre-dispatch replay lease recovery, and permanent `payment-session-create` terminal enforcement. A local-only `dblink` test proves single proof consumption under contention.
+- **Green:** 39 focused assertions passed; 232 total pgTAP assertions passed from a clean database; database lint reported no schema warnings; final review found no remaining high- or medium-severity Slice 5 issue.
+- **Commit:** `b461036 feat(database): add protected outbox replay`.
+
+### Draft PR Delivery Evidence
+
+- **Draft PR:** [#13 feat(database): implement reliability and audit schema security](https://github.com/guisaliba/repertorio/pull/13), targeting `dev` from `feat/rprt-52-reliability-audit-schema`.
+- **Slice commits:** `25c7146`, `9b86373`, `07ec42f`, `1878314`, and `b461036`.
+- **Commit #5 scope:** `b461036` includes the generated local Supabase and agent artifact ESLint exclusions; there is no separate delivery-fix commit.
+- **Database verification:** seven ordered migrations applied from empty, database lint reported no warnings, and 232 pgTAP assertions passed.
+- **Repository verification:** formatting passed, lint passed, 36 unit tests passed, TypeScript passed, and the production build passed.
+- **Branch sync:** `origin/dev` remained at `77a68a8`; no merge was required. The feature branch is pushed and tracks its remote.
+- **Status:** RPRT-52 remains In Progress while draft PR #13 waits for required human review. No migration was promoted to staging and no deployment or production resource changed.
+- **External check:** `Vercel Preview Comments` passed. The Vercel deployment check failed before deployment because Git author `GabrielSaliba` does not have access to the Studio Repertório Vercel project. The local production build passed; no Vercel membership or permission was changed.

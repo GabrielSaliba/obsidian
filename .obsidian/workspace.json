@@ -13,15 +13,30 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "RPRT/Studio Repertório.md",
+                "file": "RPRT/RPRT-52 - Reliability and Audit Foundation Plan.md",
                 "mode": "source",
                 "source": false
               },
               "icon": "lucide-file",
-              "title": "Studio Repertório"
+              "title": "RPRT-52 - Reliability and Audit Foundation Plan"
+            }
+          },
+          {
+            "id": "e7d3bb14162654bc",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "PR13 Quick Guide.md",
+                "mode": "source",
+                "source": false
+              },
+              "icon": "lucide-file",
+              "title": "PR13 Quick Guide"
             }
           }
-        ]
+        ],
+        "currentTab": 1
       }
     ],
     "direction": "vertical"
@@ -202,13 +217,15 @@
       "obsidian-git:Open Git source control": false
     }
   },
-  "active": "3b11e6c28818188a",
+  "active": "e7d3bb14162654bc",
   "lastOpenFiles": [
-    "Software Delevopment.md",
-    "RPRT/Studio Repertório.md",
-    "RPRT/2026-08-18.md",
     "RPRT/RPRT-52 - Reliability and Audit Foundation Plan.md",
+    "PR13 Quick Guide.md",
+    "RPRT/Studio Repertório.md",
     "RPRT/RPRT-42 - Cancellation Intent and Paid-Stock Recovery Contract.md",
+    "RPRT/2026-08-10.md",
+    "RPRT/2026-08-18.md",
+    "Software Delevopment.md",
     "RPRT/2026-08-17.md",
     "RPRT/RPRT - Tracklist.md",
     "RPRT/RPRT-41 - Payment Recovery Gate Contract.md",
@@ -224,14 +241,12 @@
     "2026-08-12.md",
     "RPRT/2026-08-11.md",
     "RPRT - Tracklist.md",
-    "RPRT/2026-08-10.md",
     "RPRT",
     "RPRT-10-08-26.md",
     "2026-08-07.md",
     "Personal Learning.md",
     "Obsidian Learning.md",
     "Library of Alexandria.md",
-    "SR - Opaque Token.md",
     "thumbnails/external/f0a66f1f345e27a26d74d0bc70984e8b.failed.png",
     "thumbnails/external/d255b3b66800e6ae8be11feff4edd16e.failed.png",
     "read.me",
