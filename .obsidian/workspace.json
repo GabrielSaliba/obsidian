@@ -4,67 +4,24 @@
     "type": "split",
     "children": [
       {
-        "id": "bb327f3b2d995b7e",
+        "id": "431ce6709896630e",
         "type": "tabs",
         "children": [
           {
-            "id": "3b11e6c28818188a",
+            "id": "6ca8bf8e9a0d9f60",
             "type": "leaf",
             "state": {
               "type": "markdown",
               "state": {
-                "file": "RPRT/RPRT-52 - Reliability and Audit Foundation Plan.md",
+                "file": "Software Delevopment.md",
                 "mode": "source",
                 "source": false
               },
               "icon": "lucide-file",
-              "title": "RPRT-52 - Reliability and Audit Foundation Plan"
-            }
-          },
-          {
-            "id": "e7d3bb14162654bc",
-            "type": "leaf",
-            "state": {
-              "type": "markdown",
-              "state": {
-                "file": "Resend.md",
-                "mode": "preview",
-                "source": false
-              },
-              "icon": "lucide-file",
-              "title": "Resend"
-            }
-          },
-          {
-            "id": "6c352cc0780ce95a",
-            "type": "leaf",
-            "state": {
-              "type": "markdown",
-              "state": {
-                "file": "RPRT/RPRT - Tracklist.md",
-                "mode": "source",
-                "source": false
-              },
-              "icon": "lucide-file",
-              "title": "RPRT - Tracklist"
-            }
-          },
-          {
-            "id": "b2f225be1e3ede14",
-            "type": "leaf",
-            "state": {
-              "type": "markdown",
-              "state": {
-                "file": "RPRT/2026-08-18.md",
-                "mode": "source",
-                "source": false
-              },
-              "icon": "lucide-file",
-              "title": "2026-08-18"
+              "title": "Software Delevopment"
             }
           }
-        ],
-        "currentTab": 1
+        ]
       }
     ],
     "direction": "vertical"
@@ -245,14 +202,15 @@
       "obsidian-git:Open Git source control": false
     }
   },
-  "active": "e7d3bb14162654bc",
+  "active": "6ca8bf8e9a0d9f60",
   "lastOpenFiles": [
-    "RPRT/RPRT - Tracklist.md",
-    "RPRT/2026-08-18.md",
     "Resend.md",
-    "Software Delevopment.md",
-    "RPRT/2026-08-19.md",
+    "RPRT/RPRT-43 - Provider Call Counting and Lease Contract.md",
+    "RPRT/2026-08-18.md",
     "RPRT/Studio Repertório.md",
+    "Software Delevopment.md",
+    "RPRT/RPRT - Tracklist.md",
+    "RPRT/2026-08-19.md",
     "RPRT/PR13 Quick Guide.md",
     "RPRT/RPRT-52 - Reliability and Audit Foundation Plan.md",
     "RPRT/RPRT-42 - Cancellation Intent and Paid-Stock Recovery Contract.md",
@@ -261,7 +219,6 @@
     "RPRT/RPRT-41 - Payment Recovery Gate Contract.md",
     "RPRT/2026-08-15.md",
     "RPRT/2026-08-16.md",
-    "RPRT/RPRT-43 - Provider Call Counting and Lease Contract.md",
     "2026-08-10.md",
     "Blue Prince.canvas",
     "RPRT/Opaque Guest Access Token.md",

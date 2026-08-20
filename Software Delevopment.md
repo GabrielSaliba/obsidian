@@ -12,3 +12,8 @@
   
 [[Studio Repertório]]
 [[Resend]]
+
+
+`Teach me how PR #123 works. Explain each important change from basic concepts to implementation details.`
+
+`Teach me how this PR works. Explain each important change from basic concepts to implementation details. Explain changes with code snnipets and from which file is related. Use plannotator visual explainer if you think its necessary`
