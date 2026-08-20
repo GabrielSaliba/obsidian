@@ -1,12 +1,13 @@
 [[RPRT - Tracklist]]
 [[Resend]]
+[[Auth Users and Profiles]]
 
 [[RPRT-52 - Reliability and Audit Foundation Plan]]
 [[RPRT-43 - Provider Call Counting and Lease Contract]]
 [[RPRT-41 - Payment Recovery Gate Contract]]
 [[RPRT-42 - Cancellation Intent and Paid-Stock Recovery Contract]]
+[[RPRT-50 - Catalog Authority and Product Status]]
 [[Opaque Guest Access Token]]
-[[PR13 Quick Guide]]
 ### <mark style="background: #FFB8EBA6;">Color Palette</mark> 
 
 <span style="color:rgb(255, 192, 0)">Primary Color</span>

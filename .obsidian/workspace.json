@@ -13,15 +13,72 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "Software Delevopment.md",
+                "file": "2026-08-20.md",
                 "mode": "source",
                 "source": false
               },
               "icon": "lucide-file",
-              "title": "Software Delevopment"
+              "title": "2026-08-20"
+            }
+          },
+          {
+            "id": "bceb8a06488101a7",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "RPRT/Studio Repertório.md",
+                "mode": "source",
+                "source": false
+              },
+              "icon": "lucide-file",
+              "title": "Studio Repertório"
+            }
+          },
+          {
+            "id": "184e46e9aff1dbb0",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "RPRT/RPRT-50 - Catalog Authority and Product Status.md",
+                "mode": "source",
+                "source": false
+              },
+              "icon": "lucide-file",
+              "title": "RPRT-50 - Catalog Authority and Product Status"
+            }
+          },
+          {
+            "id": "2ffc8f43474e0a1e",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "RPRT/RPRT - Tracklist.md",
+                "mode": "source",
+                "source": false
+              },
+              "icon": "lucide-file",
+              "title": "RPRT - Tracklist"
+            }
+          },
+          {
+            "id": "f3aa464b4936d99c",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "RPRT/2026-08-19.md",
+                "mode": "source",
+                "source": false
+              },
+              "icon": "lucide-file",
+              "title": "2026-08-19"
             }
           }
-        ]
+        ],
+        "currentTab": 1
       }
     ],
     "direction": "vertical"
@@ -202,16 +259,20 @@
       "obsidian-git:Open Git source control": false
     }
   },
-  "active": "6ca8bf8e9a0d9f60",
+  "active": "bceb8a06488101a7",
   "lastOpenFiles": [
+    "RPRT/RPRT-50 - Catalog Authority and Product Status.md",
+    "RPRT/Studio Repertório.md",
+    "RPRT/RPRT - Tracklist.md",
+    "RPRT/2026-08-20.md",
+    "RPRT/PR13 Quick Guide.md",
+    "RPRT/2026-08-19.md",
+    "2026-08-20.md",
+    "RPRT/Auth Users and Profiles.md",
+    "Software Delevopment.md",
     "Resend.md",
     "RPRT/RPRT-43 - Provider Call Counting and Lease Contract.md",
     "RPRT/2026-08-18.md",
-    "RPRT/Studio Repertório.md",
-    "Software Delevopment.md",
-    "RPRT/RPRT - Tracklist.md",
-    "RPRT/2026-08-19.md",
-    "RPRT/PR13 Quick Guide.md",
     "RPRT/RPRT-52 - Reliability and Audit Foundation Plan.md",
     "RPRT/RPRT-42 - Cancellation Intent and Paid-Stock Recovery Contract.md",
     "RPRT/2026-08-10.md",
@@ -227,11 +288,7 @@
     "RPRT/2026-08-13.md",
     "2026-08-12.md",
     "RPRT/2026-08-11.md",
-    "RPRT - Tracklist.md",
     "RPRT",
-    "RPRT-10-08-26.md",
-    "2026-08-07.md",
-    "Personal Learning.md",
     "thumbnails/external/f0a66f1f345e27a26d74d0bc70984e8b.failed.png",
     "thumbnails/external/d255b3b66800e6ae8be11feff4edd16e.failed.png",
     "read.me",
