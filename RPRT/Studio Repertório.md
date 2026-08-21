@@ -2,6 +2,7 @@
 [[Resend]]
 [[Auth Users and Profiles]]
 [[Catalog Products Categories and Archival]]
+[[Product Media Storage]]
 
 [[RPRT-52 - Reliability and Audit Foundation Plan]]
 [[RPRT-43 - Provider Call Counting and Lease Contract]]
