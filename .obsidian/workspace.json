@@ -14,7 +14,7 @@
               "type": "markdown",
               "state": {
                 "file": "2026-08-20.md",
-                "mode": "preview",
+                "mode": "source",
                 "source": false
               },
               "icon": "lucide-file",
@@ -49,8 +49,7 @@
               "title": "RPRT-50 - Catalog Authority and Product Status"
             }
           }
-        ],
-        "currentTab": 1
+        ]
       }
     ],
     "direction": "vertical"
@@ -231,11 +230,11 @@
       "obsidian-git:Open Git source control": false
     }
   },
-  "active": "0f37fa753bb0571d",
+  "active": "6ca8bf8e9a0d9f60",
   "lastOpenFiles": [
+    "RPRT/Studio Repertório.md",
     "RPRT/Catalog Products Categories and Archival.md",
     "RPRT/RPRT-50 - Catalog Authority and Product Status.md",
-    "RPRT/Studio Repertório.md",
     "2026-08-20.md",
     "RPRT/RPRT - Tracklist.md",
     "RPRT/2026-08-19.md",
