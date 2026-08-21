@@ -1,6 +1,7 @@
 [[RPRT - Tracklist]]
 [[Resend]]
 [[Auth Users and Profiles]]
+[[Catalog Products Categories and Archival]]
 
 [[RPRT-52 - Reliability and Audit Foundation Plan]]
 [[RPRT-43 - Provider Call Counting and Lease Contract]]

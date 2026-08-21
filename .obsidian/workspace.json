@@ -50,7 +50,7 @@
             }
           }
         ],
-        "currentTab": 2
+        "currentTab": 1
       }
     ],
     "direction": "vertical"
@@ -231,11 +231,12 @@
       "obsidian-git:Open Git source control": false
     }
   },
-  "active": "89e36df2a5f4c602",
+  "active": "0f37fa753bb0571d",
   "lastOpenFiles": [
+    "RPRT/Catalog Products Categories and Archival.md",
+    "RPRT/RPRT-50 - Catalog Authority and Product Status.md",
     "RPRT/Studio Repertório.md",
     "2026-08-20.md",
-    "RPRT/RPRT-50 - Catalog Authority and Product Status.md",
     "RPRT/RPRT - Tracklist.md",
     "RPRT/2026-08-19.md",
     "RPRT/2026-08-20.md",
@@ -259,7 +260,6 @@
     "RPRT/2026-08-14.md",
     "RPRT/2026-08-13.md",
     "2026-08-12.md",
-    "RPRT/2026-08-11.md",
     "RPRT",
     "thumbnails/external/f0a66f1f345e27a26d74d0bc70984e8b.failed.png",
     "thumbnails/external/d255b3b66800e6ae8be11feff4edd16e.failed.png",
