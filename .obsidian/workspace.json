@@ -13,26 +13,22 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "2026-08-20.md",
+                "file": "RPRT/Studio Repertório.md",
                 "mode": "source",
                 "source": false
               },
               "icon": "lucide-file",
-              "title": "2026-08-20"
+              "title": "Studio Repertório"
             }
           },
           {
             "id": "bceb8a06488101a7",
             "type": "leaf",
             "state": {
-              "type": "markdown",
-              "state": {
-                "file": "RPRT/Studio Repertório.md",
-                "mode": "preview",
-                "source": false
-              },
-              "icon": "lucide-file",
-              "title": "Studio Repertório"
+              "type": "graph",
+              "state": {},
+              "icon": "lucide-git-fork",
+              "title": "Graph view"
             }
           },
           {
@@ -41,16 +37,16 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "RPRT/RPRT-50 - Catalog Authority and Product Status.md",
+                "file": "RPRT/Database Schemas.md",
                 "mode": "source",
                 "source": false
               },
               "icon": "lucide-file",
-              "title": "RPRT-50 - Catalog Authority and Product Status"
+              "title": "Database Schemas"
             }
           }
         ],
-        "currentTab": 1
+        "currentTab": 2
       }
     ],
     "direction": "vertical"
@@ -231,14 +227,15 @@
       "obsidian-git:Open Git source control": false
     }
   },
-  "active": "bceb8a06488101a7",
+  "active": "89e36df2a5f4c602",
   "lastOpenFiles": [
+    "RPRT/Studio Repertório.md",
+    "RPRT/Database Schemas.md",
+    "RPRT/RPRT-50 - Catalog Authority and Product Status.md",
+    "2026-08-20.md",
     "RPRT/Cart, Quote and Coupons Security.md",
     "RPRT/Product Media Storage.md",
-    "2026-08-20.md",
-    "RPRT/Studio Repertório.md",
     "RPRT/Catalog Products Categories and Archival.md",
-    "RPRT/RPRT-50 - Catalog Authority and Product Status.md",
     "RPRT/RPRT - Tracklist.md",
     "RPRT/2026-08-19.md",
     "RPRT/2026-08-20.md",
@@ -259,7 +256,6 @@
     "Blue Prince.canvas",
     "RPRT/Opaque Guest Access Token.md",
     "2026-08-05.md",
-    "RPRT/2026-08-14.md",
     "RPRT",
     "thumbnails/external/f0a66f1f345e27a26d74d0bc70984e8b.failed.png",
     "thumbnails/external/d255b3b66800e6ae8be11feff4edd16e.failed.png",
