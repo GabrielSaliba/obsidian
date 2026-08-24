@@ -8,12 +8,11 @@ tags:
   - schema
   - index
 type: schema-index
-status: Active
 ---
 [[Studio Repertório|Back to Studio Repertório]]
 
 > [!abstract] Database Schemas
-> A focused index of notes whose main subject is a database schema, table model, relationship model, or schema security boundary.
+> A focused index of implemented Repertório table models, relationships, constraints, RLS boundaries, and protected database commands.
 
 > [!warning] Source Of Truth
 > Repository migrations, database tests, and `docs/database.md` are authoritative.
@@ -24,35 +23,45 @@ status: Active
 
 ```mermaid
 flowchart TB
-    DB[(Repertório Database Schemas)]
-    ID[Identity]
+    DB[(Repertório Database)]
+    ID[Identity and Access]
     CAT[Catalog]
     COM[Commerce]
+    OPS[Reliability and Audit]
 
     DB --> ID
     DB --> CAT
     DB --> COM
+    DB --> OPS
 ```
 
-## <span style="color:rgb(112, 48, 160)">Identity Schema</span>
+## <span style="color:rgb(112, 48, 160)">Identity And Access</span>
 
-| Schema note | Tables and relationships | Authority |
-|---|---|:---:|
-| [[Auth Users and Profiles]] | `auth.users` and `public.profiles` | Example only |
+| Schema note | Database objects |
+|---|---|
+| [[Auth Users and Profiles]] | `auth.users`, `profiles`, `addresses`, Auth initialization triggers |
+| [[Administrator Membership Schema]] | `admin_users`, `is_admin()` |
 
-## <span style="color:rgb(0, 112, 192)">Catalog Schema</span>
+## <span style="color:rgb(0, 112, 192)">Catalog</span>
 
-| Schema note | Tables and relationships | Authority |
-|---|---|:---:|
-| [[Catalog Products Categories and Archival]] | `categories`, `products`, `product_media`, and `merchandising_placements` | Approved reference |
+| Schema note | Database objects |
+|---|---|
+| [[Catalog Products Categories and Archival]] | `categories`, `products`, `product_media`, `merchandising_placements` |
+| [[Product Media Storage]] | `storage.buckets`, `storage.objects`, product-media policies, archive guard |
 
-## <span style="color:rgb(0, 176, 80)">Commerce Schema</span>
+## <span style="color:rgb(0, 176, 80)">Commerce</span>
 
-| Schema note | Tables and relationships | Authority |
-|---|---|:---:|
-| [[Cart, Quote and Coupons Security]] | `carts`, `cart_items`, `shipping_quotes`, and `coupons` | Implemented reference |
+| Schema note | Database objects |
+|---|---|
+| [[Cart, Quote and Coupons Security]] | `carts`, `cart_items`, `shipping_quotes`, `coupons` |
+
+## <span style="color:rgb(255, 192, 0)">Reliability And Audit</span>
+
+| Schema note | Database objects |
+|---|---|
+| [[Reliability and Audit Schema]] | `webhook_events`, `domain_transitions`, `operational_alerts`, outbox and replay tables |
 
 ---
 
 > [!quote] Schema Boundary
-> This index excludes implementation plans, lifecycle contracts, provider-call rules, payment recovery contracts, and general database guidance.
+> This index contains database schema references only. Delivery plans, issue state, review state, pull-request state, and work logs stay outside these notes.

@@ -1,0 +1,573 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>PR #16 - RPRT-47 Identity Access Schema</title>
+  <style>
+    :root {
+      --background: oklch(0.97 0.005 260);
+      --foreground: oklch(0.18 0.02 260);
+      --card: oklch(1 0 0);
+      --card-foreground: oklch(0.18 0.02 260);
+      --primary: oklch(0.46 0.15 245);
+      --primary-foreground: oklch(1 0 0);
+      --secondary: oklch(0.48 0.13 165);
+      --secondary-foreground: oklch(1 0 0);
+      --muted: oklch(0.92 0.01 260);
+      --muted-foreground: oklch(0.40 0.02 260);
+      --accent: oklch(0.62 0.16 70);
+      --destructive: oklch(0.50 0.20 25);
+      --success: oklch(0.45 0.16 150);
+      --warning: oklch(0.57 0.15 85);
+      --border: oklch(0.86 0.012 260);
+      --code-bg: oklch(0.22 0.025 255);
+      --code-fg: oklch(0.94 0.01 255);
+      --font-sans: "IBM Plex Sans", "Segoe UI", sans-serif;
+      --font-mono: "IBM Plex Mono", "Cascadia Code", monospace;
+      --font-display: Georgia, "Times New Roman", serif;
+      --radius: 0.7rem;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body {
+      background: var(--background);
+      color: var(--foreground);
+      font-family: var(--font-sans);
+      font-size: 15px;
+      line-height: 1.65;
+      -webkit-font-smoothing: antialiased;
+    }
+    a { color: var(--primary); }
+    code { font-family: var(--font-mono); font-size: 0.88em; }
+    .container { max-width: 1120px; margin: 0 auto; padding: 64px 24px 96px; }
+    .eyebrow, .label {
+      color: var(--muted-foreground);
+      font-family: var(--font-mono);
+      font-size: 0.72rem;
+      font-weight: 600;
+      letter-spacing: 0.07em;
+      text-transform: uppercase;
+    }
+    h1, h2, h3 { font-family: var(--font-display); font-weight: 500; line-height: 1.2; }
+    h1 { font-size: clamp(2.3rem, 5vw, 4.4rem); max-width: 850px; margin: 10px 0 18px; }
+    h2 { font-size: 1.55rem; }
+    h3 { font-size: 1.12rem; }
+    header { padding-bottom: 12px; }
+    .pr-meta { display: flex; flex-wrap: wrap; gap: 10px 18px; color: var(--muted-foreground); font: 0.78rem var(--font-mono); }
+    .add { color: var(--success); }
+    .del { color: var(--destructive); }
+    .tldr {
+      background: var(--card);
+      border: 1.5px solid var(--border);
+      border-left: 5px solid var(--primary);
+      border-radius: var(--radius);
+      margin: 30px 0;
+      max-width: 850px;
+      padding: 22px 26px;
+    }
+    .tldr h3 { color: var(--primary); font: 700 0.72rem var(--font-mono); letter-spacing: 0.07em; margin-bottom: 8px; text-transform: uppercase; }
+    .tldr p { color: var(--muted-foreground); font-size: 1rem; }
+    .summary-strip { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 14px; margin: 32px 0; }
+    .stat-card { background: var(--card); border: 1.5px solid var(--border); border-radius: var(--radius); padding: 18px; }
+    .stat-value { display: block; font: 500 2rem var(--font-display); }
+    .stat-label { color: var(--muted-foreground); display: block; font: 600 0.68rem var(--font-mono); letter-spacing: 0.05em; margin-top: 3px; text-transform: uppercase; }
+    section { margin-top: 72px; scroll-margin-top: 24px; }
+    .section-header { align-items: baseline; border-bottom: 1.5px solid var(--border); display: flex; gap: 14px; margin-bottom: 26px; padding-bottom: 10px; }
+    .section-number { color: var(--primary); font: 700 0.76rem var(--font-mono); }
+    .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
+    .panel, .file-card, .focus-item, .diagram-panel, .callout {
+      background: var(--card);
+      border: 1.5px solid var(--border);
+      border-radius: var(--radius);
+    }
+    .panel { padding: 22px; }
+    .panel.before { color: var(--muted-foreground); }
+    .panel.after { border-color: color-mix(in oklab, var(--success) 50%, var(--border)); }
+    .panel h3 { margin: 7px 0 10px; }
+    .panel ul { margin-left: 20px; }
+    .diagram-panel { overflow: hidden; padding: 20px; }
+    .diagram-panel svg { display: block; height: auto; width: 100%; }
+    .diagram-caption { color: var(--muted-foreground); display: block; font: 0.72rem var(--font-mono); margin-top: 12px; text-align: center; }
+    .schema-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; margin-top: 20px; }
+    .concept-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
+    .concept { background: var(--card); border: 1.5px solid var(--border); border-radius: var(--radius); padding: 18px; }
+    .concept code { color: var(--primary); display: block; font-weight: 700; margin-bottom: 7px; }
+    .concept p { color: var(--muted-foreground); font-size: 0.86rem; }
+    .schema-card { background: var(--card); border: 1.5px solid var(--border); border-top: 4px solid var(--secondary); border-radius: var(--radius); padding: 20px; min-width: 0; }
+    .schema-card.profile { border-top-color: var(--primary); }
+    .schema-card h3 { margin-bottom: 10px; }
+    .field { align-items: baseline; border-top: 1px solid var(--border); display: grid; gap: 12px; grid-template-columns: 140px 1fr; padding: 8px 0; }
+    .field:first-of-type { border-top: 0; }
+    .field code { color: var(--primary); overflow-wrap: anywhere; }
+    .field span { color: var(--muted-foreground); font-size: 0.86rem; }
+    .table-wrap { border: 1.5px solid var(--border); border-radius: var(--radius); overflow-x: auto; }
+    table { border-collapse: collapse; min-width: 780px; width: 100%; }
+    caption { color: var(--muted-foreground); font: 0.75rem var(--font-mono); padding: 12px 16px; text-align: left; }
+    th { background: var(--muted); font: 700 0.7rem var(--font-mono); letter-spacing: 0.05em; text-align: left; text-transform: uppercase; }
+    th, td { border-bottom: 1px solid var(--border); padding: 13px 16px; vertical-align: top; }
+    tr:last-child td { border-bottom: 0; }
+    .yes { color: var(--success); font-weight: 700; }
+    .no { color: var(--muted-foreground); }
+    .flow { display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; align-items: stretch; }
+    .flow-step { background: var(--card); border: 1.5px solid var(--border); border-radius: var(--radius); padding: 16px; position: relative; min-width: 0; }
+    .flow-step:not(:last-child)::after { color: var(--primary); content: ">"; font: 700 1.1rem var(--font-mono); position: absolute; right: -9px; top: 44%; z-index: 2; }
+    .flow-step strong { display: block; font-size: 0.9rem; margin: 7px 0 5px; }
+    .flow-step p { color: var(--muted-foreground); font-size: 0.8rem; }
+    .flow-step.atomic { border-color: var(--success); }
+    .callout { border-left: 4px solid var(--warning); margin-top: 18px; padding: 18px 22px; }
+    .callout strong { display: block; margin-bottom: 4px; }
+    .callout p { color: var(--muted-foreground); }
+    .risk-map { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 22px; }
+    .chip { align-items: center; border: 1.5px solid var(--border); border-radius: 999px; display: inline-flex; font: 0.72rem var(--font-mono); gap: 7px; padding: 6px 11px; }
+    .chip::before { border-radius: 50%; content: ""; height: 8px; width: 8px; }
+    .chip.attention::before { background: var(--destructive); }
+    .chip.medium::before { background: var(--warning); }
+    .chip.safe::before { background: var(--success); }
+    .file-card { margin: 12px 0; overflow: hidden; }
+    .file-head { align-items: center; border-bottom: 1px solid var(--border); display: flex; flex-wrap: wrap; gap: 12px; justify-content: space-between; padding: 14px 18px; }
+    .file-path { font: 700 0.8rem var(--font-mono); overflow-wrap: anywhere; }
+    .badge { border-radius: 5px; font: 700 0.64rem var(--font-mono); letter-spacing: 0.04em; padding: 3px 7px; }
+    .badge.new { background: color-mix(in oklab, var(--success) 14%, transparent); color: var(--success); }
+    .badge.mod { background: color-mix(in oklab, var(--warning) 14%, transparent); color: var(--warning); }
+    .file-body { color: var(--muted-foreground); padding: 14px 18px 18px; }
+    .focus-list, .test-list { display: grid; gap: 10px; }
+    .focus-item { display: flex; gap: 14px; padding: 16px 18px; }
+    .focus-item > div { min-width: 0; width: 100%; }
+    .focus-number { align-items: center; background: var(--primary); border-radius: 50%; color: var(--primary-foreground); display: flex; flex: 0 0 27px; font: 700 0.75rem var(--font-mono); height: 27px; justify-content: center; }
+    .focus-item p { color: var(--muted-foreground); font-size: 0.88rem; margin-top: 3px; }
+    .focus-code { background: var(--code-bg); border: 1px solid color-mix(in oklab, var(--border) 65%, transparent); border-radius: 8px; margin-top: 12px; overflow-x: auto; padding: 13px 15px; }
+    .focus-code pre { color: var(--code-fg); font: 0.76rem/1.55 var(--font-mono); white-space: pre; }
+    .focus-code .kw { color: oklch(0.78 0.13 245); }
+    .focus-code .fn { color: oklch(0.78 0.14 165); }
+    .focus-code .str { color: oklch(0.80 0.13 90); }
+    .code-source { color: var(--muted-foreground); display: block; font: 0.68rem var(--font-mono); margin: 12px 0 5px; overflow-wrap: anywhere; }
+    .code-note { color: var(--muted-foreground); font-size: 0.84rem; margin-top: 8px; }
+    .knowledge-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; }
+    details.knowledge { background: var(--card); border: 1.5px solid var(--border); border-radius: var(--radius); padding: 16px 18px; }
+    details.knowledge summary { cursor: pointer; font-weight: 700; }
+    details.knowledge p { color: var(--muted-foreground); font-size: 0.88rem; margin-top: 10px; }
+    .test-item { align-items: flex-start; background: var(--card); border: 1.5px solid var(--border); border-radius: var(--radius); display: flex; gap: 11px; padding: 13px 16px; }
+    .check { align-items: center; background: var(--success); border-radius: 5px; color: white; display: flex; flex: 0 0 19px; font: 700 0.75rem var(--font-mono); height: 19px; justify-content: center; margin-top: 2px; }
+    .test-item.warn .check { background: var(--warning); color: var(--foreground); }
+    .test-item small { color: var(--muted-foreground); display: block; margin-top: 2px; }
+    .timeline { display: grid; gap: 0; }
+    .timeline-step { display: grid; grid-template-columns: 100px 28px 1fr; gap: 16px; }
+    .timeline-step .when { color: var(--muted-foreground); font: 0.72rem var(--font-mono); padding-top: 4px; text-align: right; }
+    .rail { align-items: center; display: flex; flex-direction: column; }
+    .dot { background: var(--card); border: 3px solid var(--primary); border-radius: 50%; flex: 0 0 14px; height: 14px; width: 14px; }
+    .line { background: var(--border); flex: 1; margin: 4px 0; width: 2px; }
+    .timeline-step:last-child .line { display: none; }
+    .timeline-body { padding-bottom: 30px; }
+    .timeline-body p { color: var(--muted-foreground); font-size: 0.88rem; margin-top: 4px; }
+    footer { border-top: 1.5px solid var(--border); color: var(--muted-foreground); font: 0.72rem var(--font-mono); margin-top: 72px; padding-top: 20px; }
+
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --background: oklch(0.17 0.018 255);
+        --foreground: oklch(0.93 0.01 255);
+        --card: oklch(0.22 0.022 255);
+        --card-foreground: oklch(0.93 0.01 255);
+        --muted: oklch(0.27 0.022 255);
+        --muted-foreground: oklch(0.72 0.02 255);
+        --border: oklch(0.34 0.025 255);
+        --primary: oklch(0.72 0.15 245);
+        --secondary: oklch(0.70 0.13 165);
+        --success: oklch(0.70 0.15 150);
+        --warning: oklch(0.76 0.14 85);
+        --destructive: oklch(0.70 0.18 25);
+      }
+    }
+    @media (max-width: 760px) {
+      .container { padding: 36px 16px 64px; }
+      .summary-strip, .two-col, .schema-grid, .concept-grid, .knowledge-grid { grid-template-columns: 1fr; }
+      .flow { grid-template-columns: 1fr; }
+      .flow-step:not(:last-child)::after { bottom: -14px; content: "v"; left: 50%; right: auto; top: auto; }
+      .timeline-step { grid-template-columns: 72px 22px 1fr; gap: 10px; }
+      .field { grid-template-columns: 1fr; gap: 1px; }
+    }
+  </style>
+</head>
+<body>
+  <main class="container">
+    <header>
+      <span class="eyebrow">Pull request 16 / RPRT-47 / repertorio</span>
+      <h1>Identity becomes a database contract</h1>
+      <div class="pr-meta">
+        <span>6 files</span><span class="add">+1,204</span><span class="del">-11</span>
+        <span>feat/rprt-47-identity-access-schema &rarr; dev</span><span>commit a919b82</span>
+      </div>
+    </header>
+
+    <div class="tldr">
+      <h3>TL;DR</h3>
+      <p>PR #16 creates the account identity boundary that later orders can trust. Auth users get a minimal profile and one durable welcome job atomically; customers manage only their own profile fields and saved Brazil addresses; administrator membership stays separate.</p>
+    </div>
+
+    <div class="summary-strip" aria-label="Pull request summary">
+      <div class="stat-card"><span class="stat-value">2</span><span class="stat-label">New public tables</span></div>
+      <div class="stat-card"><span class="stat-value">6</span><span class="stat-label">Owner RLS policies</span></div>
+      <div class="stat-card"><span class="stat-value">97</span><span class="stat-label">Identity assertions</span></div>
+      <div class="stat-card"><span class="stat-value">1</span><span class="stat-label">Atomic Auth trigger</span></div>
+    </div>
+
+    <section id="why">
+      <div class="section-header"><span class="section-number">01</span><h2>Why this boundary exists</h2></div>
+      <div class="two-col">
+        <div class="panel before">
+          <span class="label">Before</span>
+          <h3>Auth had no customer data boundary</h3>
+          <ul>
+            <li>No profile row for a new Auth principal.</li>
+            <li>No saved-address ownership model.</li>
+            <li>Welcome delivery existed as an outbox type, but no signup producer used it.</li>
+            <li>Guest and account identity responsibilities were mixed in one issue.</li>
+          </ul>
+        </div>
+        <div class="panel after">
+          <span class="label">After</span>
+          <h3>Each authority has one clear home</h3>
+          <ul>
+            <li>Login email: <code>auth.users</code>.</li>
+            <li>Display data: owner-only <code>profiles</code>.</li>
+            <li>Saved delivery data: owner-only <code>addresses</code>.</li>
+            <li>Staff authority: protected <code>admin_users</code>.</li>
+            <li>Guest order access: transferred to RPRT-46 with <code>orders</code>.</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <section id="concepts">
+      <div class="section-header"><span class="section-number">02</span><h2>Concepts used by this PR</h2></div>
+      <div class="concept-grid">
+        <article class="concept"><code>Supabase Auth</code><p>The trusted login system. Its <code>auth.users.id</code> value is the identity used by all new customer rows.</p></article>
+        <article class="concept"><code>Foreign key</code><p>A database link that requires an address or profile owner to exist in <code>auth.users</code>.</p></article>
+        <article class="concept"><code>SQL grant</code><p>The first access gate. It controls which role can use an operation and which columns it can write.</p></article>
+        <article class="concept"><code>Row-level security</code><p>The second access gate. RLS checks each row, so one customer cannot read or change another customer's data.</p></article>
+        <article class="concept"><code>Trigger and transaction</code><p>A trigger runs after an Auth insert. All trigger writes commit or roll back with that insert.</p></article>
+        <article class="concept"><code>Outbox and idempotency</code><p>The outbox stores durable email work. A stable business key makes an exact retry return the same job.</p></article>
+      </div>
+    </section>
+
+    <section id="schema">
+      <div class="section-header"><span class="section-number">03</span><h2>Schema and trust relationships</h2></div>
+      <div class="diagram-panel">
+        <svg viewBox="0 0 980 390" role="img" aria-labelledby="schema-title schema-desc">
+          <title id="schema-title">RPRT-47 database relationship diagram</title>
+          <desc id="schema-desc">Auth users cascade to profiles and addresses. Admin membership remains separate. Profile initialization creates an outbox welcome job and audit transition.</desc>
+          <defs>
+            <marker id="arrow" markerWidth="9" markerHeight="9" refX="8" refY="4.5" orient="auto"><path d="M0,0 L9,4.5 L0,9 Z" fill="var(--muted-foreground)"/></marker>
+            <marker id="arrowSuccess" markerWidth="9" markerHeight="9" refX="8" refY="4.5" orient="auto"><path d="M0,0 L9,4.5 L0,9 Z" fill="var(--success)"/></marker>
+          </defs>
+          <g font-family="var(--font-sans)">
+            <rect x="30" y="135" width="180" height="96" rx="12" fill="var(--muted)" stroke="var(--border)" stroke-width="2"/>
+            <text x="120" y="172" text-anchor="middle" fill="var(--foreground)" font-size="19" font-family="var(--font-display)">auth.users</text>
+            <text x="120" y="199" text-anchor="middle" fill="var(--muted-foreground)" font-size="12" font-family="var(--font-mono)">id + login email</text>
+
+            <rect x="320" y="25" width="210" height="104" rx="12" fill="var(--card)" stroke="var(--primary)" stroke-width="3"/>
+            <text x="425" y="62" text-anchor="middle" fill="var(--foreground)" font-size="19" font-family="var(--font-display)">profiles</text>
+            <text x="425" y="88" text-anchor="middle" fill="var(--muted-foreground)" font-size="12" font-family="var(--font-mono)">PK/FK user_id</text>
+            <text x="425" y="108" text-anchor="middle" fill="var(--muted-foreground)" font-size="12">name + E.164 phone</text>
+
+            <rect x="320" y="238" width="210" height="116" rx="12" fill="var(--card)" stroke="var(--secondary)" stroke-width="3"/>
+            <text x="425" y="276" text-anchor="middle" fill="var(--foreground)" font-size="19" font-family="var(--font-display)">addresses</text>
+            <text x="425" y="302" text-anchor="middle" fill="var(--muted-foreground)" font-size="12" font-family="var(--font-mono)">FK user_id + UUID id</text>
+            <text x="425" y="322" text-anchor="middle" fill="var(--muted-foreground)" font-size="12">CEP + BR delivery fields</text>
+            <text x="425" y="341" text-anchor="middle" fill="var(--muted-foreground)" font-size="12">owner CRUD through RLS</text>
+
+            <rect x="30" y="278" width="180" height="80" rx="12" fill="var(--card)" stroke="var(--warning)" stroke-width="2"/>
+            <text x="120" y="311" text-anchor="middle" fill="var(--foreground)" font-size="17" font-family="var(--font-display)">admin_users</text>
+            <text x="120" y="337" text-anchor="middle" fill="var(--muted-foreground)" font-size="11">separate staff membership</text>
+
+            <rect x="700" y="66" width="240" height="106" rx="12" fill="var(--card)" stroke="var(--success)" stroke-width="3"/>
+            <text x="820" y="102" text-anchor="middle" fill="var(--foreground)" font-size="18" font-family="var(--font-display)">outbox_jobs</text>
+            <text x="820" y="128" text-anchor="middle" fill="var(--muted-foreground)" font-size="11" font-family="var(--font-mono)">welcome-customer-email</text>
+            <text x="820" y="149" text-anchor="middle" fill="var(--muted-foreground)" font-size="11">stable profile ID + timestamp</text>
+
+            <rect x="700" y="242" width="240" height="90" rx="12" fill="var(--card)" stroke="var(--border)" stroke-width="2"/>
+            <text x="820" y="278" text-anchor="middle" fill="var(--foreground)" font-size="18" font-family="var(--font-display)">domain_transitions</text>
+            <text x="820" y="304" text-anchor="middle" fill="var(--muted-foreground)" font-size="11">immutable pending evidence</text>
+
+            <path d="M210 160 C255 125 268 85 320 78" fill="none" stroke="var(--muted-foreground)" stroke-width="2" marker-end="url(#arrow)"/>
+            <path d="M210 211 C260 245 270 288 320 295" fill="none" stroke="var(--muted-foreground)" stroke-width="2" marker-end="url(#arrow)"/>
+            <path d="M120 231 L120 278" fill="none" stroke="var(--muted-foreground)" stroke-width="2" marker-end="url(#arrow)"/>
+            <path d="M530 77 C610 72 626 104 700 114" fill="none" stroke="var(--success)" stroke-width="3" marker-end="url(#arrowSuccess)"/>
+            <path d="M820 172 L820 242" fill="none" stroke="var(--success)" stroke-width="3" stroke-dasharray="7 5" marker-end="url(#arrowSuccess)"/>
+            <text x="602" y="62" text-anchor="middle" fill="var(--success)" font-size="11" font-family="var(--font-mono)">same transaction</text>
+            <text x="270" y="101" text-anchor="middle" fill="var(--muted-foreground)" font-size="10" font-family="var(--font-mono)">ON DELETE CASCADE</text>
+            <text x="270" y="269" text-anchor="middle" fill="var(--muted-foreground)" font-size="10" font-family="var(--font-mono)">ON DELETE CASCADE</text>
+          </g>
+        </svg>
+        <span class="diagram-caption">The trigger creates profile, outbox job, and transition atomically. A failure rolls back the Auth user.</span>
+      </div>
+
+      <div class="schema-grid">
+        <article class="schema-card profile">
+          <span class="label">public.profiles</span><h3>Minimal display identity</h3>
+          <div class="field"><code>user_id</code><span>Auth UUID, primary key and cascading foreign key</span></div>
+          <div class="field"><code>full_name</code><span>Optional, trimmed, 1 to 200 characters</span></div>
+          <div class="field"><code>phone</code><span>Optional canonical E.164</span></div>
+          <div class="field"><code>created_at / updated_at</code><span>Database-controlled timestamps</span></div>
+        </article>
+        <article class="schema-card">
+          <span class="label">public.addresses</span><h3>Saved Brazil delivery data</h3>
+          <div class="field"><code>id / user_id</code><span>Database UUID plus indexed Auth owner</span></div>
+          <div class="field"><code>recipient / phone</code><span>Trimmed recipient and E.164 contact</span></div>
+          <div class="field"><code>CEP / street / number</code><span>8 digits and bounded canonical text</span></div>
+          <div class="field"><code>district / city / UF / BR</code><span>Required destination fields; country cannot change</span></div>
+        </article>
+      </div>
+      <span class="code-source">supabase/migrations/20260819205344_add_identity_access_schema.sql:1-18</span>
+      <div class="focus-code"><pre><span class="kw">create table</span> public.profiles (
+  user_id uuid <span class="kw">primary key</span>
+    <span class="kw">references</span> auth.users (id) <span class="kw">on delete cascade</span>,
+  full_name text,
+  phone text,
+  created_at timestamptz <span class="kw">not null default</span> statement_timestamp(),
+  updated_at timestamptz <span class="kw">not null default</span> statement_timestamp(),
+  <span class="kw">constraint</span> profiles_phone_e164_check <span class="kw">check</span> (
+    phone <span class="kw">is null or</span> phone ~ <span class="str">'^\+[1-9][0-9]{7,14}$'</span>
+  )
+);</pre></div>
+      <p class="code-note">The primary key makes the Auth-to-profile relation one-to-one. The cascade removes identity data when Auth removes the user. The check stores one canonical phone format.</p>
+
+      <span class="code-source">supabase/migrations/20260819205344_add_identity_access_schema.sql:60-115</span>
+      <div class="focus-code"><pre><span class="kw">create table</span> public.addresses (
+  id uuid <span class="kw">primary key default</span> gen_random_uuid(),
+  user_id uuid <span class="kw">not null references</span> auth.users (id) <span class="kw">on delete cascade</span>,
+  postal_code text <span class="kw">not null</span>,
+  state_code text <span class="kw">not null</span>,
+  country_code text <span class="kw">not null default</span> <span class="str">'BR'</span>,
+  <span class="kw">constraint</span> addresses_postal_code_format_check
+    <span class="kw">check</span> (postal_code ~ <span class="str">'^[0-9]{8}$'</span>),
+  <span class="kw">constraint</span> addresses_state_code_format_check
+    <span class="kw">check</span> (state_code ~ <span class="str">'^[A-Z]{2}$'</span>),
+  <span class="kw">constraint</span> addresses_country_code_check
+    <span class="kw">check</span> (country_code = <span class="str">'BR'</span>)
+);
+<span class="kw">create index</span> addresses_user_id_idx <span class="kw">on</span> public.addresses (user_id);</pre></div>
+      <p class="code-note">One user can own many address UUIDs. Canonical constraints stop formatted CEP values, lowercase state codes, and non-Brazil country values at the database boundary.</p>
+    </section>
+
+    <section id="permissions">
+      <div class="section-header"><span class="section-number">04</span><h2>Who can do what</h2></div>
+      <div class="table-wrap">
+        <table>
+          <caption>Grants are the first gate. RLS ownership is the second gate.</caption>
+          <thead><tr><th>Actor</th><th>Profiles</th><th>Addresses</th><th>What remains denied</th></tr></thead>
+          <tbody>
+            <tr><td><strong>Anonymous</strong></td><td class="no">No grant</td><td class="no">No grant</td><td>All direct reads and writes return permission errors.</td></tr>
+            <tr><td><strong>Customer</strong></td><td><span class="yes">Own SELECT</span><br>Own name/phone UPDATE</td><td><span class="yes">Own CRUD</span><br>Only reviewed input columns</td><td>Other owners, IDs, ownership, country, and timestamps.</td></tr>
+            <tr><td><strong>Administrator</strong></td><td>Same personal-owner policy</td><td>Same personal-owner policy</td><td>Membership does not reveal or mutate customer identity data.</td></tr>
+            <tr><td><strong>Service role</strong></td><td class="no">No direct grant</td><td class="no">No direct grant</td><td>RLS bypass does not replace a missing table grant.</td></tr>
+            <tr><td><strong>Postgres trigger</strong></td><td><span class="yes">Create minimal row</span></td><td class="no">No address effect</td><td>No metadata-derived role, email copy, CPF, or profile authority.</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <span class="code-source">supabase/migrations/20260819205344_add_identity_access_schema.sql:23-40</span>
+      <div class="focus-code"><pre><span class="kw">grant select on</span> public.profiles <span class="kw">to</span> authenticated;
+<span class="kw">grant update</span> (full_name, phone) <span class="kw">on</span> public.profiles <span class="kw">to</span> authenticated;
+
+<span class="kw">create policy</span> profiles_owner_update
+<span class="kw">on</span> public.profiles <span class="kw">for update to</span> authenticated
+<span class="kw">using</span> ((<span class="kw">select</span> auth.<span class="fn">uid</span>()) = user_id)
+<span class="kw">with check</span> ((<span class="kw">select</span> auth.<span class="fn">uid</span>()) = user_id);</pre></div>
+      <p class="code-note"><code>using</code> selects rows that the caller can update. <code>with check</code> also checks the new row. Column grants stop changes to ownership and timestamps even when the row belongs to the caller.</p>
+    </section>
+
+    <section id="transaction">
+      <div class="section-header"><span class="section-number">05</span><h2>One signup, one atomic outcome</h2></div>
+      <div class="flow" aria-label="Auth initialization flow">
+        <div class="flow-step"><span class="label">1</span><strong>Auth inserts user</strong><p>The trusted UUID and Auth creation time enter PostgreSQL.</p></div>
+        <div class="flow-step"><span class="label">2</span><strong>Trigger derives identity</strong><p>No caller user ID and no user metadata are trusted.</p></div>
+        <div class="flow-step atomic"><span class="label">3</span><strong>Profile initializes</strong><p>One minimal row, protected by the Auth UUID primary key.</p></div>
+        <div class="flow-step atomic"><span class="label">4</span><strong>Welcome job enqueues</strong><p>Stable key: profile ID plus normalized creation time.</p></div>
+        <div class="flow-step atomic"><span class="label">5</span><strong>Audit commits</strong><p>One pending transition. Any conflict rolls back every new row.</p></div>
+      </div>
+      <div class="callout">
+        <strong>No partial accounts</strong>
+        <p>If the profile constraint or outbox evidence fails, the Auth insert fails. The test suite proves that no Auth user or profile remains after a conflicting welcome key.</p>
+      </div>
+      <span class="code-source">supabase/migrations/20260819205344_add_identity_access_schema.sql:176-219</span>
+      <div class="focus-code"><pre><span class="kw">create function</span> private.<span class="fn">handle_new_auth_user</span>()
+<span class="kw">returns trigger language</span> plpgsql
+<span class="kw">security definer set search_path</span> = <span class="str">''</span>
+<span class="kw">as</span> $$
+<span class="kw">begin</span>
+  <span class="kw">insert into</span> public.profiles (user_id, created_at, updated_at)
+  <span class="kw">values</span> (new.id, profile_created_at, profile_created_at)
+  <span class="kw">on conflict</span> (user_id) <span class="kw">do nothing</span>;
+
+  <span class="kw">perform</span> public.<span class="fn">enqueue_outbox_job</span>(
+    <span class="str">'welcome-customer-email'</span>,
+    <span class="str">'welcome-customer-email:'</span> || new.id::text || <span class="str">':'</span> || normalized_profile_created_at,
+    pg_catalog.<span class="fn">jsonb_build_object</span>(<span class="str">'profile_id'</span>, new.id::text, ...), 1
+  );
+  <span class="kw">return</span> new;
+<span class="kw">end</span>;
+$$;</pre></div>
+      <p class="code-note"><code>security definer</code> gives the protected function enough rights to create rows. The empty <code>search_path</code> requires qualified object names and prevents name substitution. The function uses only trusted fields from the inserted Auth row.</p>
+    </section>
+
+    <section id="files">
+      <div class="section-header"><span class="section-number">06</span><h2>Six-file review tour</h2></div>
+      <div class="risk-map">
+        <span class="chip attention">migration: trust boundary</span>
+        <span class="chip attention">identity test: security proof</span>
+        <span class="chip medium">replay fixtures: queue integration</span>
+        <span class="chip safe">documentation and UUID normalization</span>
+      </div>
+      <article class="file-card">
+        <div class="file-head"><span class="file-path">supabase/migrations/20260819205344_add_identity_access_schema.sql</span><span><span class="badge new">NEW</span> <span class="add">+219</span></span></div>
+        <div class="file-body">Creates both tables, six owner policies, narrow column grants, timestamp triggers, and the protected Auth initialization trigger. This file is the main security review target.</div>
+      </article>
+      <article class="file-card">
+        <div class="file-head"><span class="file-path">supabase/tests/identity_access.test.sql</span><span><span class="badge new">NEW</span> <span class="add">+942</span></span></div>
+        <div class="file-body">Proves schemas, foreign keys, exact grants and policies, actor denials, canonical validation, admin self-only access, timestamp control, welcome evidence, idempotency, cascade behavior, and atomic rollback.</div>
+      </article>
+      <article class="file-card">
+        <div class="file-head"><span class="file-path">supabase/tests/outbox_replay_concurrency.test.sql</span><span><span class="badge mod">MOD</span> <span class="add">+20</span></span></div>
+        <div class="file-body">Cleans the committed welcome outbox evidence created by its remote Auth fixture. Both pre-cleanup and post-cleanup paths preserve test independence.</div>
+      </article>
+      <article class="file-card">
+        <div class="file-head"><span class="file-path">supabase/tests/admin_membership.test.sql</span><span><span class="badge mod">MOD</span> +10 / <span class="del">-10</span></span></div>
+        <div class="file-body">Normalizes fixed Auth fixture UUIDs to valid version and variant bits so they satisfy the approved stable-ID outbox contract.</div>
+      </article>
+      <article class="file-card">
+        <div class="file-head"><span class="file-path">supabase/tests/outbox_replay.test.sql</span><span><span class="badge mod">MOD</span> +1 / <span class="del">-1</span></span></div>
+        <div class="file-body">Claims the replay job together with the two welcome jobs created by its Auth fixtures, then continues to select the intended replay job by ID.</div>
+      </article>
+      <article class="file-card">
+        <div class="file-head"><span class="file-path">docs/database.md</span><span><span class="badge mod">MOD</span> <span class="add">+12</span></span></div>
+        <div class="file-body">Records data authority, owner operations, atomic signup behavior, the empty hosted-database assumption, and the permanent guest-access handoff to RPRT-46.</div>
+      </article>
+    </section>
+
+    <section id="focus">
+      <div class="section-header"><span class="section-number">07</span><h2>Implementation details</h2></div>
+      <div class="focus-list">
+        <div class="focus-item"><span class="focus-number">1</span><div><strong><code>private.handle_new_auth_user()</code></strong><p>Verify the conflict-safe profile row and welcome job are one transaction. No user metadata enters the profile or authorization model.</p><span class="code-source">supabase/migrations/20260819205344_add_identity_access_schema.sql:182-208</span><div class="focus-code"><pre><span class="kw">insert into</span> public.profiles (user_id, created_at, updated_at)
+<span class="kw">values</span> (new.id, profile_created_at, profile_created_at)
+<span class="kw">on conflict</span> (user_id) <span class="kw">do nothing</span>;
+
+<span class="kw">perform</span> public.<span class="fn">enqueue_outbox_job</span>(
+  <span class="str">'welcome-customer-email'</span>,
+  <span class="str">'welcome-customer-email:'</span> || new.id::text || <span class="str">':'</span>
+    || normalized_profile_created_at,
+  pg_catalog.<span class="fn">jsonb_build_object</span>(
+    <span class="str">'profile_id'</span>, new.id::text,
+    <span class="str">'normalized_profile_created_at'</span>, normalized_profile_created_at,
+    <span class="str">'template_key'</span>, <span class="str">'welcome-customer'</span>,
+    <span class="str">'template_version'</span>, 1
+  ),
+  1
+);</pre></div></div></div>
+        <div class="focus-item"><span class="focus-number">2</span><div><strong>Owner predicates on both tables</strong><p>Every policy names the authenticated role. Updates check ownership before and after the write.</p><span class="code-source">supabase/migrations/20260819205344_add_identity_access_schema.sql:29-40</span><div class="focus-code"><pre><span class="kw">create policy</span> profiles_owner_update
+<span class="kw">on</span> public.profiles <span class="kw">for update to</span> authenticated
+<span class="kw">using</span> ((<span class="kw">select</span> auth.<span class="fn">uid</span>()) = user_id)
+<span class="kw">with check</span> ((<span class="kw">select</span> auth.<span class="fn">uid</span>()) = user_id);</pre></div></div></div>
+        <div class="focus-item"><span class="focus-number">3</span><div><strong>Narrow column grants</strong><p>RLS limits rows; column grants limit fields. Clients cannot write IDs, ownership, fixed country, or timestamps.</p><span class="code-source">supabase/migrations/20260819205344_add_identity_access_schema.sql:26-27, 122-145</span><div class="focus-code"><pre><span class="kw">grant update</span> (full_name, phone)
+<span class="kw">on</span> public.profiles <span class="kw">to</span> authenticated;
+
+<span class="kw">grant insert</span> (user_id, recipient_name, phone,
+  postal_code, street, number, complement,
+  district, city, state_code)
+<span class="kw">on</span> public.addresses <span class="kw">to</span> authenticated;</pre></div></div></div>
+        <div class="focus-item"><span class="focus-number">4</span><div><strong>Committed replay-fixture cleanup</strong><p>The dblink test removes welcome transition evidence before its welcome job, then deletes the Auth fixture and cascading profile.</p><span class="code-source">supabase/tests/outbox_replay_concurrency.test.sql:238-252</span><div class="focus-code"><pre><span class="kw">delete from</span> public.domain_transitions
+<span class="kw">where</span> aggregate_type = <span class="str">'outbox_job'</span>
+  <span class="kw">and</span> aggregate_id <span class="kw">in</span> (
+    <span class="kw">select</span> id <span class="kw">from</span> public.outbox_jobs
+    <span class="kw">where</span> payload -&gt;&gt; <span class="str">'profile_id'</span>
+      = <span class="str">'c1000000-0000-4000-8000-000000000001'</span>
+  );
+<span class="kw">delete from</span> public.outbox_jobs
+<span class="kw">where</span> payload -&gt;&gt; <span class="str">'profile_id'</span>
+  = <span class="str">'c1000000-0000-4000-8000-000000000001'</span>;</pre></div></div></div>
+        <div class="focus-item"><span class="focus-number">5</span><div><strong>Exact retry versus conflicting evidence</strong><p>PR #16 calls existing outbox infrastructure. The unique business key accepts an exact retry, but it rejects a different payload under the same key.</p><span class="code-source">Supporting context, not changed by PR #16: supabase/migrations/20260818220114_add_policy_based_outbox_enqueue.sql:386-425</span><div class="focus-code"><pre><span class="kw">on conflict</span> (business_key) <span class="kw">do nothing</span>
+<span class="kw">returning</span> id <span class="kw">into</span> inserted_id;
+
+<span class="kw">if</span> existing_job.job_type <span class="kw">is distinct from</span> p_job_type
+  <span class="kw">or</span> existing_job.payload <span class="kw">is distinct from</span> p_payload
+  <span class="kw">or</span> existing_job.payload_version <span class="kw">is distinct from</span> p_payload_version <span class="kw">then</span>
+  <span class="kw">raise exception</span> <span class="str">'business key already exists with conflicting job evidence'</span>;
+<span class="kw">end if</span>;
+
+<span class="kw">return</span> existing_job.id;</pre></div></div></div>
+      </div>
+    </section>
+
+    <section id="tests">
+      <div class="section-header"><span class="section-number">08</span><h2>How the tests prove the contract</h2></div>
+      <div class="test-list">
+        <div class="test-item"><span class="check">OK</span><div><strong>97 identity/access assertions</strong><small>Profiles, addresses, actors, validation, trigger metadata, idempotency, atomicity.</small></div></div>
+        <div class="test-item"><span class="check">OK</span><div><strong>Clean eight-migration replay and database lint</strong><small>No schema warnings. Two clean resets completed.</small></div></div>
+        <div class="test-item"><span class="check">OK</span><div><strong>36 unit tests plus TypeScript, ESLint, Prettier</strong><small>Application quality checks are green.</small></div></div>
+        <div class="test-item"><span class="check">OK</span><div><strong>Zero committed fixture rows</strong><small>Auth users, profiles, addresses, and outbox jobs were empty after the database suite.</small></div></div>
+        <div class="test-item warn"><span class="check">!</span><div><strong>Known PR #14 replay-role failure</strong><small>The suite reaches the pre-existing missing owner-role reset near line 440. Commit <code>0968bef</code> on PR #14 owns the fix; it is not an RPRT-47 defect.</small></div></div>
+      </div>
+      <span class="code-source">supabase/tests/identity_access.test.sql:159-180</span>
+      <div class="focus-code"><pre><span class="kw">set local role</span> authenticated;
+<span class="kw">select</span> set_config(
+  <span class="str">'request.jwt.claim.sub'</span>,
+  <span class="str">'11000000-0000-4000-8000-000000000001'</span>,
+  true
+);
+
+<span class="kw">select</span> results_eq(
+  $$<span class="kw">select</span> user_id, full_name, phone <span class="kw">from</span> public.profiles$$,
+  $$<span class="kw">values</span> (
+    <span class="str">'11000000-0000-4000-8000-000000000001'</span>::uuid,
+    <span class="str">'Owner Name'</span>::text,
+    <span class="str">'+5531999990001'</span>::text
+  )$$,
+  <span class="str">'a customer reads only their own profile'</span>
+);</pre></div>
+      <p class="code-note">The test becomes the authenticated database role and sets the JWT subject that Supabase uses. The expected result has only the owner's row.</p>
+
+      <span class="code-source">supabase/tests/identity_access.test.sql:916-941</span>
+      <div class="focus-code"><pre><span class="kw">select</span> throws_ok(
+  $$
+    <span class="kw">insert into</span> auth.users (id, email, created_at)
+    <span class="kw">values</span> (
+      <span class="str">'11000000-0000-4000-8000-000000000006'</span>,
+      <span class="str">'profile-atomicity@example.invalid'</span>,
+      <span class="str">'2026-08-19 12:34:56+00'</span>
+    )
+  $$,
+  <span class="str">'23514'</span>,
+  <span class="str">'business key already exists with conflicting job evidence'</span>,
+  <span class="str">'conflicting welcome evidence rolls back Auth initialization'</span>
+);
+
+<span class="kw">select</span> results_eq(
+  $$
+    <span class="kw">select</span>
+      (<span class="kw">select count</span>(*) <span class="kw">from</span> auth.users
+        <span class="kw">where</span> id = <span class="str">'11000000-0000-4000-8000-000000000006'</span>),
+      (<span class="kw">select count</span>(*) <span class="kw">from</span> public.profiles
+        <span class="kw">where</span> user_id = <span class="str">'11000000-0000-4000-8000-000000000006'</span>)
+  $$,
+  $$<span class="kw">values</span> (0::bigint, 0::bigint)$$,
+  <span class="str">'failed welcome enqueue leaves no partial Auth user or profile'</span>
+);</pre></div>
+      <p class="code-note">This is the atomicity proof. A welcome-job conflict makes the Auth insert fail, and both the user and profile counts remain zero.</p>
+    </section>
+
+    <section id="knowledge">
+      <div class="section-header"><span class="section-number">09</span><h2>Check your understanding</h2></div>
+      <div class="knowledge-grid">
+        <details class="knowledge"><summary>Why are both grants and RLS necessary?</summary><p>Grants control operations and columns. RLS controls rows. Together, they stop a user from changing protected fields and from accessing another user's rows.</p></details>
+        <details class="knowledge"><summary>Why is <code>user_id</code> the profile primary key?</summary><p>It enforces one profile at most for each Auth user without a second identity value.</p></details>
+        <details class="knowledge"><summary>Why does the trigger use <code>SECURITY DEFINER</code>?</summary><p>Application roles cannot insert profiles or outbox jobs. The protected trigger must use its owner's rights to do this work.</p></details>
+        <details class="knowledge"><summary>What makes signup atomic?</summary><p>The trigger runs inside the Auth insert transaction. An exception in profile or outbox work rolls back all writes, including the Auth user.</p></details>
+        <details class="knowledge"><summary>Why include creation time in the welcome business key?</summary><p>It identifies one stable account-creation event. Repeating the same evidence returns the same job, while different evidence is rejected.</p></details>
+        <details class="knowledge"><summary>Why does administrator membership not widen access?</summary><p>The profile and address policies check only <code>auth.uid() = user_id</code>. They do not query <code>admin_users</code>.</p></details>
+      </div>
+    </section>
+
+    <footer>Generated for <a href="https://github.com/guisaliba/repertorio/pull/16">PR #16</a> and <a href="https://linear.app/guisaliba/issue/RPRT-47/implement-identity-and-access-schema-security">RPRT-47</a>. No secrets, customer data, raw tokens, or hosted database values are included.</footer>
+  </main>
+</body>
+</html>

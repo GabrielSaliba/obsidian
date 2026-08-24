@@ -1,0 +1,406 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="dark">
+  <title>PR #19 - Catalog authority schema</title>
+  <style>
+    :root {
+      --background: oklch(0.14 0.018 260);
+      --foreground: oklch(0.92 0.012 255);
+      --card: oklch(0.19 0.022 260);
+      --card-foreground: oklch(0.92 0.012 255);
+      --primary: oklch(0.72 0.18 282);
+      --primary-foreground: oklch(0.13 0.018 260);
+      --secondary: oklch(0.72 0.13 181);
+      --secondary-foreground: oklch(0.13 0.018 260);
+      --muted: oklch(0.24 0.022 260);
+      --muted-foreground: oklch(0.70 0.018 255);
+      --accent: oklch(0.76 0.16 58);
+      --accent-foreground: oklch(0.13 0.018 260);
+      --destructive: oklch(0.70 0.19 25);
+      --destructive-foreground: oklch(0.13 0.018 260);
+      --success: oklch(0.72 0.16 150);
+      --success-foreground: oklch(0.13 0.018 260);
+      --warning: oklch(0.78 0.15 85);
+      --warning-foreground: oklch(0.13 0.018 260);
+      --border: oklch(0.34 0.025 260);
+      --input: oklch(0.24 0.022 260);
+      --ring: oklch(0.72 0.18 282);
+      --code-bg: oklch(0.11 0.018 260);
+      --font-sans: Inter, system-ui, -apple-system, sans-serif;
+      --font-mono: "JetBrains Mono", "Fira Code", ui-monospace, monospace;
+      --font-display: ui-serif, Georgia, "Times New Roman", serif;
+      --radius: 0.625rem;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body {
+      background:
+        linear-gradient(var(--border) 1px, transparent 1px),
+        linear-gradient(90deg, var(--border) 1px, transparent 1px),
+        var(--background);
+      background-size: 32px 32px;
+      color: var(--foreground);
+      font-family: var(--font-sans);
+      font-size: 15px;
+      line-height: 1.65;
+      -webkit-font-smoothing: antialiased;
+    }
+    .container { max-width: 1120px; margin: 0 auto; padding: 64px 24px 88px; }
+    main, header { background: color-mix(in oklab, var(--background) 92%, transparent); }
+    header { border-top: 5px solid var(--primary); padding: 32px; border-inline: 1.5px solid var(--border); border-bottom: 1.5px solid var(--border); }
+    h1, h2, h3, h4 { font-family: var(--font-display); font-weight: 500; line-height: 1.2; }
+    h1 { max-width: 760px; margin: 10px 0 20px; font-size: clamp(2rem, 5vw, 3.35rem); }
+    h2 { font-size: 1.45rem; }
+    h3 { font-size: 1.08rem; }
+    p { max-width: 72ch; }
+    code, .mono { font-family: var(--font-mono); }
+    code { background: var(--code-bg); border-radius: 4px; padding: 1px 5px; font-size: 0.88em; }
+    .eyebrow, .label {
+      color: var(--muted-foreground);
+      font-family: var(--font-mono);
+      font-size: 0.72rem;
+      font-weight: 600;
+      letter-spacing: 0.07em;
+      text-transform: uppercase;
+    }
+    .pr-meta { display: flex; flex-wrap: wrap; gap: 8px; font-family: var(--font-mono); font-size: 0.76rem; }
+    .pr-meta span { background: var(--muted); border: 1px solid var(--border); border-radius: 3px; padding: 5px 9px; }
+    .pr-meta .additions { color: var(--success); }
+    .pr-meta .deletions { color: var(--destructive); }
+    .branch { overflow-wrap: anywhere; }
+    .tldr { background: var(--card); border: 1.5px solid var(--border); border-left: 5px solid var(--primary); padding: 22px 24px; }
+    .tldr h2 { color: var(--primary); font-family: var(--font-mono); font-size: 0.75rem; font-weight: 700; letter-spacing: 0.07em; margin-bottom: 8px; text-transform: uppercase; }
+    .tldr p { color: var(--muted-foreground); font-size: 0.98rem; }
+    section { padding: 64px 32px 0; }
+    .section-header { align-items: baseline; border-bottom: 1.5px solid var(--border); display: flex; gap: 16px; margin-bottom: 24px; padding-bottom: 10px; }
+    .section-number { color: var(--primary); font-family: var(--font-mono); font-size: 0.75rem; font-weight: 700; }
+    .before-after, .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+    .ba-panel, .panel { background: var(--card); border: 1.5px solid var(--border); border-radius: var(--radius); padding: 20px; }
+    .ba-panel.after { border-color: var(--success); }
+    .ba-panel h3 { font-family: var(--font-mono); font-size: 0.72rem; font-weight: 700; letter-spacing: 0.07em; margin-bottom: 10px; text-transform: uppercase; }
+    .ba-panel.before h3 { color: var(--muted-foreground); }
+    .ba-panel.after h3 { color: var(--success); }
+    .ba-panel ul, .panel ul { margin: 10px 0 0 18px; }
+    .ba-panel li, .panel li { margin: 5px 0; }
+    .blueprint { background: var(--card); border: 1.5px solid var(--border); border-radius: var(--radius); overflow: hidden; }
+    .blueprint-toolbar { align-items: center; background: var(--muted); border-bottom: 1.5px solid var(--border); display: flex; flex-wrap: wrap; gap: 8px 16px; justify-content: space-between; padding: 11px 16px; }
+    .blueprint-toolbar span { font-family: var(--font-mono); font-size: 0.72rem; }
+    .schema-grid { display: grid; grid-template-columns: 0.9fr 1.2fr; gap: 42px 72px; padding: 34px; position: relative; }
+    .table-box { border: 1.5px solid var(--foreground); box-shadow: 5px 5px 0 var(--border); min-width: 0; position: relative; }
+    .table-box::after { color: var(--primary); content: attr(data-link); font-family: var(--font-mono); font-size: 0.68rem; position: absolute; right: -58px; top: 50%; white-space: nowrap; }
+    .table-box:nth-child(even)::after { display: none; }
+    .table-name { align-items: center; background: var(--foreground); color: var(--card); display: flex; font-family: var(--font-mono); font-size: 0.78rem; font-weight: 700; justify-content: space-between; padding: 9px 12px; }
+    .table-name small { color: var(--border); font-size: 0.62rem; font-weight: 500; }
+    .field { border-top: 1px solid var(--border); display: grid; font-family: var(--font-mono); font-size: 0.7rem; grid-template-columns: minmax(95px, 1fr) auto; gap: 12px; padding: 7px 11px; }
+    .field:first-of-type { border-top: 0; }
+    .field em { color: var(--muted-foreground); font-style: normal; text-align: right; }
+    .field.key strong { color: var(--primary); }
+    .visibility-lane { border-top: 1.5px solid var(--border); display: grid; grid-template-columns: repeat(4, 1fr); }
+    .gate { border-right: 1px solid var(--border); padding: 15px; text-align: center; }
+    .gate:last-child { border-right: 0; }
+    .gate b { display: block; font-family: var(--font-mono); font-size: 0.72rem; margin-bottom: 4px; }
+    .gate span { color: var(--muted-foreground); font-size: 0.78rem; }
+    .examples { display: grid; gap: 12px; margin-top: 18px; }
+    .rule { align-items: start; background: var(--card); border: 1.5px solid var(--border); border-left: 4px solid var(--success); display: grid; gap: 4px 16px; grid-template-columns: 120px 1fr; padding: 14px 18px; }
+    .rule.reject { border-left-color: var(--destructive); }
+    .rule.guard { border-left-color: var(--primary); }
+    .rule .label { color: var(--foreground); }
+    .rule p { font-size: 0.88rem; }
+    .flow-strip { display: grid; grid-template-columns: repeat(4, 1fr); margin-top: 18px; }
+    .flow-step { background: var(--card); border: 1.5px solid var(--border); padding: 15px; position: relative; }
+    .flow-step + .flow-step { border-left: 0; }
+    .flow-step:not(:last-child)::after { background: var(--primary); border: 3px solid var(--card); border-radius: 50%; content: ""; height: 12px; position: absolute; right: -7px; top: 22px; width: 12px; z-index: 2; }
+    .flow-step b { display: block; font-family: var(--font-mono); font-size: 0.72rem; margin-bottom: 5px; }
+    .flow-step p { color: var(--muted-foreground); font-size: 0.8rem; }
+    .file-card, details.file-card { background: var(--card); border: 1.5px solid var(--border); border-radius: var(--radius); margin: 12px 0; overflow: hidden; scroll-margin-top: 20px; }
+    .file-head, details.file-card summary { align-items: center; display: flex; gap: 10px; justify-content: space-between; list-style: none; padding: 15px 18px; }
+    details.file-card summary { cursor: pointer; }
+    details.file-card summary::after { color: var(--muted-foreground); content: "+"; font-family: var(--font-mono); margin-left: auto; }
+    details.file-card[open] summary::after { content: "-"; }
+    .file-info { align-items: center; display: flex; flex-wrap: wrap; gap: 10px; min-width: 0; }
+    .file-path { font-family: var(--font-mono); font-size: 0.78rem; font-weight: 700; overflow-wrap: anywhere; }
+    .file-badge, .risk-tag, .badge { border-radius: 3px; font-family: var(--font-mono); font-size: 0.62rem; font-weight: 700; letter-spacing: 0.05em; padding: 2px 7px; text-transform: uppercase; white-space: nowrap; }
+    .file-badge.new, .safe { background: color-mix(in oklab, var(--success) 14%, transparent); color: var(--success); }
+    .file-badge.mod, .medium { background: color-mix(in oklab, var(--warning) 15%, transparent); color: var(--warning); }
+    .attention { background: color-mix(in oklab, var(--destructive) 12%, transparent); color: var(--destructive); }
+    .file-stats { font-family: var(--font-mono); font-size: 0.7rem; }
+    .additions { color: var(--success); }
+    .deletions { color: var(--destructive); }
+    .file-body { border-top: 1px solid var(--border); color: var(--muted-foreground); padding: 14px 18px 18px; }
+    .file-body p { font-size: 0.87rem; }
+    .diff-lines { background: var(--code-bg); border: 1px solid var(--border); font-family: var(--font-mono); font-size: 0.73rem; margin-top: 12px; overflow-x: auto; padding: 12px; white-space: pre; }
+    .risk-map { display: flex; flex-wrap: wrap; gap: 8px; }
+    .chip { align-items: center; border: 1.5px solid currentColor; border-radius: 20px; display: inline-flex; font-family: var(--font-mono); font-size: 0.7rem; gap: 7px; padding: 6px 11px; }
+    .chip .dot { background: currentColor; border-radius: 50%; height: 8px; width: 8px; }
+    .risk-grid { border: 1.5px solid var(--border); border-radius: var(--radius); margin-top: 18px; overflow: hidden; }
+    .risk-row { align-items: center; border-bottom: 1px solid var(--border); display: grid; gap: 18px; grid-template-columns: 1fr auto 1.5fr; padding: 14px 18px; }
+    .risk-row:last-child { border-bottom: 0; }
+    .risk-row p { color: var(--muted-foreground); font-size: 0.84rem; }
+    .focus-list, .test-list { display: grid; gap: 10px; }
+    .focus-item, .test-item { align-items: flex-start; background: var(--card); border: 1.5px solid var(--border); border-radius: var(--radius); display: flex; gap: 14px; padding: 15px 18px; }
+    .focus-number { align-items: center; background: var(--primary); border-radius: 50%; color: var(--primary-foreground); display: flex; flex: 0 0 26px; font-family: var(--font-mono); font-size: 0.75rem; font-weight: 700; height: 26px; justify-content: center; }
+    .focus-item strong { display: block; font-family: var(--font-mono); font-size: 0.79rem; margin-bottom: 4px; }
+    .focus-item p, .test-item p { color: var(--muted-foreground); font-size: 0.86rem; }
+    .check { border: 1.5px solid var(--border); border-radius: 4px; flex: 0 0 18px; height: 18px; margin-top: 2px; position: relative; }
+    .test-item.done .check { background: var(--success); border-color: var(--success); }
+    .test-item.done .check::after { border-bottom: 2px solid var(--card); border-right: 2px solid var(--card); content: ""; height: 9px; left: 5px; position: absolute; top: 1px; transform: rotate(40deg); width: 5px; }
+    .test-item.known .check { background: var(--warning); border-color: var(--warning); }
+    .test-item.known .check::after { color: var(--warning-foreground); content: "!"; font-family: var(--font-mono); font-size: 0.72rem; font-weight: 800; left: 5px; position: absolute; top: -2px; }
+    .sequence { display: grid; grid-template-columns: repeat(4, 1fr); }
+    .sequence article { background: var(--card); border: 1.5px solid var(--border); min-height: 140px; padding: 16px; }
+    .sequence article + article { border-left: 0; }
+    .sequence .phase { color: var(--primary); font-family: var(--font-mono); font-size: 0.68rem; font-weight: 700; text-transform: uppercase; }
+    .sequence h3 { font-size: 1rem; margin: 7px 0; }
+    .sequence p { color: var(--muted-foreground); font-size: 0.82rem; }
+    .scope-grid { display: grid; gap: 8px; grid-template-columns: repeat(3, 1fr); margin-top: 18px; }
+    .scope-item { background: var(--muted); border: 1px dashed var(--muted-foreground); font-family: var(--font-mono); font-size: 0.74rem; padding: 10px 12px; text-align: center; }
+    footer { border-top: 1.5px solid var(--border); color: var(--muted-foreground); font-family: var(--font-mono); font-size: 0.7rem; margin-top: 64px; padding: 20px 32px; }
+    @media (max-width: 760px) {
+      .container { padding: 20px 12px 48px; }
+      header, section { padding-left: 18px; padding-right: 18px; }
+      section { padding-top: 48px; }
+      .before-after, .two-col, .schema-grid, .visibility-lane, .flow-strip, .sequence, .scope-grid { grid-template-columns: 1fr; }
+      .schema-grid { gap: 24px; padding: 18px; }
+      .table-box::after { display: none; }
+      .gate { border-bottom: 1px solid var(--border); border-right: 0; }
+      .gate:last-child { border-bottom: 0; }
+      .flow-step + .flow-step, .sequence article + article { border-left: 1.5px solid var(--border); border-top: 0; }
+      .flow-step:not(:last-child)::after { bottom: -7px; left: 22px; right: auto; top: auto; }
+      .rule { grid-template-columns: 1fr; }
+      .risk-row { align-items: start; grid-template-columns: 1fr auto; }
+      .risk-row p { grid-column: 1 / -1; }
+      .file-head { align-items: flex-start; }
+    }
+    @media print {
+      body { background: var(--background); }
+      .container { max-width: none; padding: 0; }
+      section { break-inside: avoid; }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <span class="eyebrow">Draft pull request / repertorio / database authority</span>
+      <h1>Catalog authority: four tables, guarded state, public visibility</h1>
+      <div class="pr-meta" aria-label="Pull request metadata">
+        <span>PR #19</span>
+        <span>7 files</span>
+        <span class="additions">+2911</span>
+        <span class="deletions">-6</span>
+        <span class="branch">feat/rprt-50-catalog-schema -&gt; feat/rprt-47-identity-access-schema</span>
+        <span>commit fca3bda</span>
+      </div>
+    </header>
+
+    <main>
+      <div class="tldr">
+        <h2>TL;DR</h2>
+        <p>PR #19 makes PostgreSQL the authority for categories, products, media identity, merchandising, publication, stock, sales mode, shipping resolution, and public visibility. Ordinary catalog edits use admin RLS; stock, publication, and sales-mode transitions use narrow security-definer commands with locks, optimistic expectations, immutable audit evidence, derived admin identity, and an empty <code>search_path</code>.</p>
+      </div>
+
+      <section id="why">
+        <div class="section-header"><span class="section-number">01</span><h2>Why this boundary</h2></div>
+        <div class="before-after">
+          <article class="ba-panel before">
+            <h3>Before</h3>
+            <ul>
+              <li>Catalog rules were architecture intent, not database facts.</li>
+              <li>Visibility, shipping readiness, and media identity could diverge by caller.</li>
+              <li>Stock and publication had no serialized, audited mutation path.</li>
+            </ul>
+          </article>
+          <article class="ba-panel after">
+            <h3>After</h3>
+            <ul>
+              <li>Four RLS tables define the M1 catalog contract.</li>
+              <li>Constraints and triggers reject incomplete or unsafe states.</li>
+              <li>Public reads compose category, product, media, and placement gates.</li>
+            </ul>
+          </article>
+        </div>
+      </section>
+
+      <section id="blueprint">
+        <div class="section-header"><span class="section-number">02</span><h2>Four-table data and visibility blueprint</h2></div>
+        <div class="blueprint">
+          <div class="blueprint-toolbar"><span>schema: public</span><span>RLS: enabled on all four tables</span><span>hard delete: no application path</span></div>
+          <div class="schema-grid">
+            <article class="table-box" data-link="1:N --&gt;">
+              <div class="table-name">categories <small>navigation + defaults</small></div>
+              <div class="field key"><strong>id</strong><em>uuid PK</em></div>
+              <div class="field"><span>parent_id</span><em>self FK, immutable</em></div>
+              <div class="field"><span>slug</span><em>unique</em></div>
+              <div class="field"><span>is_active</span><em>path gate</em></div>
+              <div class="field"><span>default_package</span><em>0 or 4 fields</em></div>
+            </article>
+            <article class="table-box">
+              <div class="table-name">products <small>commerce + lifecycle</small></div>
+              <div class="field key"><strong>id</strong><em>uuid PK</em></div>
+              <div class="field"><span>category_id</span><em>FK, canonical</em></div>
+              <div class="field"><span>slug</span><em>unique</em></div>
+              <div class="field"><span>sales_mode</span><em>direct / assisted</em></div>
+              <div class="field"><span>status + stock</span><em>guarded</em></div>
+              <div class="field"><span>package override</span><em>0 or 4 fields</em></div>
+            </article>
+            <article class="table-box" data-link="N:1 --&gt;">
+              <div class="table-name">product_media <small>immutable object identity</small></div>
+              <div class="field key"><strong>id</strong><em>uuid PK</em></div>
+              <div class="field"><span>product_id</span><em>FK</em></div>
+              <div class="field"><span>bucket + object_path</span><em>unique</em></div>
+              <div class="field"><span>display_order</span><em>unique per product</em></div>
+              <div class="field"><span>is_active</span><em>media gate</em></div>
+            </article>
+            <article class="table-box">
+              <div class="table-name">merchandising_placements <small>named timed slots</small></div>
+              <div class="field key"><strong>id</strong><em>uuid PK</em></div>
+              <div class="field"><span>product_id</span><em>FK</em></div>
+              <div class="field"><span>placement_key</span><em>named surface</em></div>
+              <div class="field"><span>position</span><em>unique per key</em></div>
+              <div class="field"><span>enabled + window</span><em>time gate</em></div>
+            </article>
+          </div>
+          <div class="visibility-lane" aria-label="Public visibility gates">
+            <div class="gate"><b>1. CATEGORY PATH</b><span>root and child are active</span></div>
+            <div class="gate"><b>2. PRODUCT</b><span>published or unavailable</span></div>
+            <div class="gate"><b>3. MEDIA</b><span>active and linked to a public product</span></div>
+            <div class="gate"><b>4. PLACEMENT</b><span>enabled, current window, public product</span></div>
+          </div>
+        </div>
+
+        <div class="examples" aria-label="Catalog invariants and examples">
+          <div class="rule"><span class="label">Hierarchy</span><p><code>Decor</code> -&gt; <code>Almofadas</code> is the exact two-level tree. <code>Capas</code> under <code>Almofadas</code> is a rejected third level; parent identity cannot change later.</p></div>
+          <div class="rule"><span class="label">Slug</span><p><code>Sofa Lisboa</code> converts to <code>sofa-lisboa</code>. Accented <code>sof&aacute;-lisboa</code>, double-hyphen <code>sofa--lisboa</code>, and duplicate <code>sofa-lisboa</code> forms are rejected.</p></div>
+          <div class="rule"><span class="label">B-tree identity</span><p>Unique B-tree constraints protect category <code>(slug)</code>, product <code>(slug)</code>, media object <code>(bucket_id, object_path)</code>, and media slot <code>(product_id, display_order)</code> identities.</p></div>
+          <div class="rule"><span class="label">Media</span><p>Object identity is immutable: <code>products/&lt;product-id&gt;/&lt;random-uuid&gt;.webp</code>. Replace media by inserting a new row and disabling the old row, never by changing its path.</p></div>
+          <div class="rule"><span class="label">Placement</span><p><code>home-featured</code>, position <code>0</code>, active from Sep 1 through Sep 30 is visible only inside that window and only while its product remains public.</p></div>
+          <div class="rule"><span class="label">Shipping</span><p>Complete category package <code>(2000, 400, 300, 200)</code> is accepted; any partial bundle is rejected. A complete product package overrides the category bundle.</p></div>
+          <div class="rule reject"><span class="label">Fail closed</span><p>Removing inherited shipping from public <code>Almofada Linho</code> is rejected. Publication also rejects a direct product when neither product nor category supplies a complete package.</p></div>
+        </div>
+      </section>
+
+      <section id="mutation-boundary">
+        <div class="section-header"><span class="section-number">03</span><h2>Admin mutation boundary</h2></div>
+        <div class="flow-strip">
+          <article class="flow-step"><b>ORDINARY EDIT</b><p>Admin RLS permits approved fields: names, descriptions, SEO, ordering, active flags, package metadata, and placement windows.</p></article>
+          <article class="flow-step"><b>GUARDED TRANSITION</b><p>Direct updates to stock, status, sales mode, media identity, IDs, and timestamps are denied.</p></article>
+          <article class="flow-step"><b>LOCK + CHECK</b><p>Command derives <code>auth.uid()</code>, checks <code>is_admin()</code>, locks rows, and checks expected state.</p></article>
+          <article class="flow-step"><b>AUDIT</b><p>Successful state change writes one immutable <code>domain_transitions</code> record.</p></article>
+        </div>
+        <div class="examples">
+          <div class="rule guard"><span class="label">Function safety</span><p><code>set_available_stock</code>, <code>set_product_status</code>, and <code>set_product_sales_mode</code> are <code>SECURITY DEFINER</code>, use <code>search_path = ''</code>, and derive administrator identity from <code>auth.uid()</code>; callers cannot supply actor identity.</p></div>
+          <div class="rule"><span class="label">Stock success</span><p>Expected <code>8</code>, current <code>8</code>, new <code>12</code>: apply <code>8 -&gt; 12</code> and audit once.</p></div>
+          <div class="rule reject"><span class="label">Stock conflict</span><p>Expected <code>8</code>, current <code>10</code>: do not overwrite. Return conflict with latest quantity <code>10</code>.</p></div>
+          <div class="rule"><span class="label">Publication</span><p>A valid draft with an active category path and resolved shipping publishes successfully and receives database publication time. Missing shipping is rejected.</p></div>
+          <div class="rule guard"><span class="label">Sales mode</span><p>Sales-mode changes are draft-only. Changing <code>direct_stocked</code> to <code>assisted</code> atomically clears price, stock, weight, height, width, and length.</p></div>
+        </div>
+      </section>
+
+      <section id="files">
+        <div class="section-header"><span class="section-number">04</span><h2>File tour</h2></div>
+        <article class="file-card" id="migration">
+          <div class="file-head"><div class="file-info"><span class="file-path">supabase/migrations/20260820070049_add_catalog_schema.sql</span><span class="file-badge new">NEW</span><span class="file-stats"><span class="additions">+1000</span></span></div><span class="risk-tag attention">ATTENTION</span></div>
+          <div class="file-body"><p>The authority layer: four tables, constraints, indexes, grants, RLS, visibility helpers, hierarchy and package triggers, and three guarded commands.</p><div class="diff-lines">+ categories -&gt; products -&gt; product_media
+                         -&gt; merchandising_placements
+ public visibility = active path + public product + relation-specific gate
+ transition writes = lock + expected state + domain_transitions</div></div>
+        </article>
+        <article class="file-card" id="contract-tests">
+          <div class="file-head"><div class="file-info"><span class="file-path">supabase/tests/catalog_schema.test.sql</span><span class="file-badge new">NEW</span><span class="file-stats"><span class="additions">+1563</span></span></div><span class="risk-tag medium">MEDIUM</span></div>
+          <div class="file-body"><p>116 pgTAP checks cover shape, constraints, exact grants, RLS visibility, guarded commands, immutable identity, transitions, and indexes.</p></div>
+        </article>
+        <article class="file-card" id="concurrency-tests">
+          <div class="file-head"><div class="file-info"><span class="file-path">supabase/tests/catalog_schema_concurrency.test.sql</span><span class="file-badge new">NEW</span><span class="file-stats"><span class="additions">+313</span></span></div><span class="risk-tag attention">ATTENTION</span></div>
+          <div class="file-body"><p>Eight cross-session pgTAP checks prove both publication/package-removal race orders preserve a coherent final state.</p></div>
+        </article>
+        <details class="file-card">
+          <summary><span class="file-info"><span class="file-path">docs/database.md</span><span class="file-badge mod">MOD</span><span class="file-stats"><span class="additions">+17</span></span><span class="risk-tag safe">SAFE</span></span></summary>
+          <div class="file-body"><p>Records the catalog contract, visibility model, mutation boundary, shipping inheritance, and deferred ownership.</p></div>
+        </details>
+        <details class="file-card">
+          <summary><span class="file-info"><span class="file-path">src/architecture/graph.ts</span><span class="file-badge mod">MOD</span><span class="file-stats"><span class="additions">+9</span> <span class="deletions">-5</span></span><span class="risk-tag safe">SAFE</span></span></summary>
+          <div class="file-body"><p>Moves catalog-media from planned to partial and links implementation evidence.</p></div>
+        </details>
+        <details class="file-card">
+          <summary><span class="file-info"><span class="file-path">src/architecture/coverage.json</span><span class="file-badge mod">MOD</span><span class="file-stats"><span class="additions">+7</span></span><span class="risk-tag safe">SAFE</span></span></summary>
+          <div class="file-body"><p>Assigns the migration and both catalog test files to the catalog-media node.</p></div>
+        </details>
+        <details class="file-card">
+          <summary><span class="file-info"><span class="file-path">src/architecture/measured.generated.ts</span><span class="file-badge mod">MOD</span><span class="file-stats"><span class="additions">+2</span> <span class="deletions">-1</span></span><span class="risk-tag safe">SAFE</span></span></summary>
+          <div class="file-body"><p>Refreshes measured architecture counts: catalog-media now has 3 owned files and 2879 LOC.</p></div>
+        </details>
+      </section>
+
+      <section id="risk">
+        <div class="section-header"><span class="section-number">05</span><h2>Risk map</h2></div>
+        <div class="risk-map" aria-label="Files by review risk">
+          <span class="chip attention"><span class="dot"></span>migration SQL</span>
+          <span class="chip attention"><span class="dot"></span>concurrency tests</span>
+          <span class="chip medium"><span class="dot"></span>contract tests</span>
+          <span class="chip safe"><span class="dot"></span>database docs</span>
+          <span class="chip safe"><span class="dot"></span>architecture evidence</span>
+        </div>
+        <div class="risk-grid">
+          <div class="risk-row"><strong>Privilege escalation</strong><span class="badge attention">HIGH</span><p>Review definer ownership, empty search paths, derived identity, revokes, narrow execute grants, and exact column grants.</p></div>
+          <div class="risk-row"><strong>Shipping/publication race</strong><span class="badge attention">HIGH</span><p>Advisory category locks must cover both orderings and re-read the locked dependency state.</p></div>
+          <div class="risk-row"><strong>Public data leak</strong><span class="badge medium">MED</span><p>Visibility must fail closed through active category path, product status, media active state, and placement window.</p></div>
+          <div class="risk-row"><strong>Migration ordering</strong><span class="badge medium">MED</span><p>The migration depends on identity/admin and immutable audit objects from the stacked base.</p></div>
+          <div class="risk-row"><strong>Architecture metadata</strong><span class="badge safe">LOW</span><p>Generated counts and ownership links are mechanical evidence updates.</p></div>
+        </div>
+      </section>
+
+      <section id="focus">
+        <div class="section-header"><span class="section-number">06</span><h2>Reviewer focus</h2></div>
+        <div class="focus-list">
+          <div class="focus-item"><span class="focus-number">1</span><div><strong>validate_product_publication() + protect_category_package_dependents()</strong><p>Prove no interleaving can leave a public direct product without resolved shipping.</p></div></div>
+          <div class="focus-item"><span class="focus-number">2</span><div><strong>RLS helpers and policies</strong><p>Trace active category-path visibility and media visibility coupling. Hidden and missing UUIDs must both return false.</p></div></div>
+          <div class="focus-item"><span class="focus-number">3</span><div><strong>set_available_stock() / set_product_status() / set_product_sales_mode()</strong><p>Check optimistic expectations, draft-only mode changes, cleared commerce fields, audit cardinality, and no-op behavior.</p></div></div>
+          <div class="focus-item"><span class="focus-number">4</span><div><strong>Constraints and unique indexes</strong><p>Check the exact hierarchy, slug grammar, complete-package rule, immutable media path grammar, and B-tree identities.</p></div></div>
+          <div class="focus-item"><span class="focus-number">5</span><div><strong>Column privileges</strong><p>Confirm normal admin RLS updates stay useful while guarded fields cannot be bypassed with direct SQL.</p></div></div>
+        </div>
+      </section>
+
+      <section id="tests">
+        <div class="section-header"><span class="section-number">07</span><h2>Test plan</h2></div>
+        <div class="test-list">
+          <div class="test-item done"><span class="check"></span><p><strong>Schema contract:</strong> 116 pgTAP assertions cover tables, constraints, grants, policies, commands, indexes, and business examples.</p></div>
+          <div class="test-item done"><span class="check"></span><p><strong>Concurrency:</strong> 8 dblink assertions cover publication-first and package-removal-first races.</p></div>
+          <div class="test-item done"><span class="check"></span><p><strong>Public visibility:</strong> active paths, published/unavailable products, active media, and current enabled placements.</p></div>
+          <div class="test-item done"><span class="check"></span><p><strong>Mutation security:</strong> customers denied; admins use guarded transitions; direct bypass and identity replacement denied.</p></div>
+          <div class="test-item"><span class="check"></span><p><strong>Merge gate:</strong> run <code>pnpm db:verify</code> on the final rebased stack to reset, lint, and execute all database tests.</p></div>
+          <div class="test-item known"><span class="check"></span><p><strong>Known unrelated failure:</strong> the existing outbox replay test failure is outside this catalog change. Keep it visible, but do not weaken catalog tests or treat it as catalog regression evidence.</p></div>
+        </div>
+      </section>
+
+      <section id="sequence">
+        <div class="section-header"><span class="section-number">08</span><h2>Stack and follow-on sequence</h2></div>
+        <div class="sequence">
+          <article><span class="phase">First</span><h3>Merge PR #16</h3><p>Land the identity/admin base that supplies <code>admin_users</code> and <code>is_admin()</code>.</p></article>
+          <article><span class="phase">Then</span><h3>Land PR #19</h3><p>Apply catalog migration <code>20260820070049</code> after the PR #16 migrations and immutable audit boundary.</p></article>
+          <article><span class="phase">Later</span><h3>Rebase PR #15</h3><p>Rebase the dependent work after catalog authority is stable; do not reorder an applied migration.</p></article>
+          <article><span class="phase">After rebase</span><h3>Inventory, then types</h3><p>Add the inventory step on the catalog contract, then regenerate database types from the final ordered schema.</p></article>
+        </div>
+      </section>
+
+      <section id="scope">
+        <div class="section-header"><span class="section-number">09</span><h2>Explicit scope exclusions</h2></div>
+        <p>This PR establishes database authority only. It does not implement these adjacent product surfaces:</p>
+        <div class="scope-grid">
+          <div class="scope-item">posts / editorial</div>
+          <div class="scope-item">newsletter</div>
+          <div class="scope-item">Storage buckets / policies</div>
+          <div class="scope-item">category or product seed data</div>
+          <div class="scope-item">full-text search</div>
+          <div class="scope-item">admin or storefront UI</div>
+        </div>
+      </section>
+
+      <footer>Draft PR #19 / commit fca3bda / catalog authority review blueprint</footer>
+    </main>
+  </div>
+</body>
+</html>

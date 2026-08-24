@@ -1,17 +1,40 @@
-[RPRT-49: Implement cart quote and coupon schema security](https://linear.app/guisaliba/issue/RPRT-49/implement-cart-quote-and-coupon-schema-security)
+---
+tags:
+  - RPRT
+  - database
+  - commerce
+  - cart
+  - shipping-quotes
+  - coupons
+  - RLS
+  - schema
+  - reference
+type: schema-reference
+---
+[[Studio Repertório]]
+[[Database Schemas]]
+[[Catalog Products Categories and Archival]]
 
-> [!abstract] Security boundary
+# Cart, Quote, and Coupons Schema
+
+> [!abstract] Commerce Schema
 > The browser sends cart intent. PostgreSQL owns price, stock, shipping, discount, totals, expiry, and consumption truth.
 
-## Result
+> [!warning] Source Of Truth
+> The repository migration, pgTAP tests, and `docs/database.md` are authoritative.
 
-| Contract | Result |
-| --- | --- |
-| Public tables | `carts`, `cart_items`, `shipping_quotes`, `coupons` |
-| Focused database assertions | 216 passed |
-| Committed race proofs | 6 passed |
-| Cart policy | One non-expiring cart per authenticated account |
-| Guest policy | Browser-local cart; only protected quote evidence is stored |
+> [!example] Visual Explainer
+> [[Visual Explainers/RPRT-49 Cart Quote Coupon Visual Explainer.html|Open the local commerce schema visual explainer]]
+
+## <span style="color:rgb(112, 48, 160)">Schema Boundary</span>
+
+| Object | Purpose |
+|---|---|
+| `carts` | One non-expiring cart per authenticated account |
+| `cart_items` | Product intent owned through the authenticated cart |
+| `shipping_quotes` | Protected immutable quote evidence |
+| `coupons` | Protected discount campaign definitions |
+| Guest cart | Browser-local only; no guest cart row is stored |
 
 ## Guest Quote Flow
 

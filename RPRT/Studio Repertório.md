@@ -20,18 +20,19 @@ status: Active
 
 | Note | Purpose |
 |---|---|
-| [[RPRT - Tracklist|Work Log]] | Daily delivery notes, decisions, issues, and next work. |
+| [[RPRT - Tracklist\|Work Log]] | Daily delivery notes, decisions, issues, and next work. |
 | [[Database Schemas]] | Database tables, relationships, and schema security references. |
-| [[PR13 Quick Guide|PR #13 Quick Guide]] | Short implementation sequence for the reliability and audit work. |
+| [[Visual Explainers]] | Local HTML diagrams and implementation walkthroughs. |
+| [[PR13 Quick Guide\|PR #13 Quick Guide]] | Short implementation sequence for the reliability and audit work. |
 
 ## <span style="color:#80352F">Data Architecture</span>
 
 > [!example] Database Schemas
-> Open [[Database Schemas]] for the focused map of identity, catalog, and commerce schema notes.
+> Open [[Database Schemas]] for the implemented identity, catalog, commerce, reliability, and audit schemas.
 
 | Hub | Coverage |
 |---|---|
-| [[Database Schemas|Database Schema Index]] | Tables, relationships, diagrams, and schema security boundaries |
+| [[Database Schemas\|Database Schema Index]] | Tables, relationships, diagrams, and schema security boundaries |
 
 ## <span style="color:rgb(112, 48, 160)">Platform and Integrations</span>
 
@@ -41,6 +42,7 @@ status: Active
 | Note | Category |
 |---|---|
 | [[Auth Users and Profiles]] | Authentication and profile data |
+| [[Administrator Membership Schema]] | Administrator authorization |
 | [[Resend]] | Transactional email integration |
 
 ## <span style="color:rgb(0, 112, 192)">Catalog and Product Media</span>
@@ -82,6 +84,7 @@ status: Active
 | Note | Category | State |
 |---|---|:---:|
 | [[RPRT-52 - Reliability and Audit Foundation Plan]] | Implementation plan | In progress |
+| [[Reliability and Audit Schema]] | Implemented schema | Reference |
 | [[RPRT-43 - Provider Call Counting and Lease Contract]] | Provider-call and lease contract | Reference |
 
 ---

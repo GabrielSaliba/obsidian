@@ -7,5 +7,5 @@
 [[Game Development]]
 [[Software Delevopment]]
 [[Games]]
-[[Personal Watchlist]]
-
+[[Book View.base|Books]]
+[[Personal Learning#Watchlist|Personal Watchlist]]

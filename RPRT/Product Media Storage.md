@@ -7,24 +7,26 @@ tags:
   - RLS
   - database
   - reference
-status: In Review
-source_issue: RPRT-10
-pull_request: 20
-implementation_commit: ca4dc53
+type: storage-reference
 ---
 [[Studio Repertório]]
 [[Catalog Products Categories and Archival]]
+[[Database Schemas]]
+[[Administrator Membership Schema]]
 
 # Product Media Storage
 
 > [!abstract] Product Media Storage Reference
-> This note describes the M1 Supabase Storage contract for immutable Studio Repertório product media. It covers the bucket, object paths, actors, upload rules, public delivery, archival concurrency, accepted validation boundary, and verification evidence.
+> This note describes the Supabase Storage contract for immutable Studio Repertório product media. It covers the bucket, object paths, actors, upload rules, public delivery, archival concurrency, validation boundaries, and verification evidence.
 
-> [!info] In Review
-> RPRT-10 and PR #20 define the current implementation. Reviewed implementation commit: [`ca4dc53`](https://github.com/guisaliba/repertorio/commit/ca4dc53).
+> [!info] Storage Contract
+> Product-media object identity is immutable. Relational media presentation data and Storage object delivery remain separate boundaries.
 
 > [!warning] Source Of Truth
-> The repository migration, tests, `docs/database.md`, and PR #20 are authoritative. This note is a durable guide to that contract.
+> The repository migration, tests, and `docs/database.md` are authoritative.
+
+> [!example] Visual Explainer
+> [[Visual Explainers/RPRT-10 Product Media Storage Visual Explainer.html|Open the local product media visual explainer]]
 
 ## <span style="color:rgb(112, 48, 160)">Storage Boundary</span>
 

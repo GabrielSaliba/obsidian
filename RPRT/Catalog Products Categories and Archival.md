@@ -9,23 +9,25 @@ tags:
   - slug
   - database
   - reference
-status: Approved
-source_issue: RPRT-50
-final_commit: b266b21
+type: schema-reference
 ---
 [[Studio Repertório]]
-[[RPRT-50 - Catalog Authority and Product Status]]
+[[Database Schemas]]
+[[Product Media Storage]]
 
 # Catalog, Products, Categories, and Archival
 
-> [!abstract] Catalog Reference
-> This note describes the approved M1 catalog authority for Studio Repertório. It covers categories, products, sales modes, statuses, archival, slugs, media, merchandising, stock, package defaults, security, concurrency, audit, and dependent commerce rules.
+> [!abstract] Catalog Schema
+> This note describes the Repertório catalog tables, relationships, sales modes, product state, archival, media, merchandising, stock, package defaults, security, concurrency, and audit boundaries.
 
-> [!success] Approved Contract
-> RPRT-50 and PR #19 define the current contract. Final implementation commit: [`b266b21`](https://github.com/guisaliba/repertorio/commit/b266b21).
+> [!info] Schema Contract
+> Catalog identity, public visibility, mutable presentation data, guarded lifecycle commands, and immutable transition evidence remain separate concerns.
 
 > [!warning] Source Of Truth
-> The repository migrations, tests, `docs/database.md`, Technical Architecture, and Lifecycle Diagrams are authoritative. This note is a durable guide to that contract.
+> The repository migrations, tests, `docs/database.md`, Technical Architecture, and Lifecycle Diagrams are authoritative.
+
+> [!example] Visual Explainer
+> [[Visual Explainers/RPRT-50 Catalog Authority Visual Explainer.html|Open the local catalog schema visual explainer]]
 
 ## <span style="color:rgb(112, 48, 160)">Catalog Boundary</span>
 
