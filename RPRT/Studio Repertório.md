@@ -18,12 +18,11 @@ status: Active
 
 ## <span style="color:#80352F">Project Navigation</span>
 
-| Note | Purpose |
-|---|---|
-| [[RPRT - Tracklist\|Work Log]] | Daily delivery notes, decisions, issues, and next work. |
-| [[Database Schemas]] | Database tables, relationships, and schema security references. |
-| [[Visual Explainers]] | Local HTML diagrams and implementation walkthroughs. |
-| [[PR13 Quick Guide\|PR #13 Quick Guide]] | Short implementation sequence for the reliability and audit work. |
+| Note                           | Purpose                                                         |
+| ------------------------------ | --------------------------------------------------------------- |
+| [[RPRT - Tracklist\|Work Log]] | Daily delivery notes, decisions, issues, and next work.         |
+| [[Database Schemas]]           | Database tables, relationships, and schema security references. |
+| [[Visual Explainers]]          | Local HTML diagrams and implementation walkthroughs.            |
 
 ## <span style="color:#80352F">Data Architecture</span>
 

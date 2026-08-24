@@ -56,7 +56,7 @@
               "type": "markdown",
               "state": {
                 "file": "RPRT/Studio Repertório.md",
-                "mode": "preview",
+                "mode": "source",
                 "source": false
               },
               "icon": "lucide-file",
@@ -257,6 +257,7 @@
   },
   "active": "c504cb38a88a7549",
   "lastOpenFiles": [
+    "RPRT/Order and Settlement Security.md",
     "RPRT/Auth Users and Profiles.md",
     "RPRT/Visual Explainers.md",
     "RPRT/Database Schemas.md",
@@ -287,7 +288,6 @@
     "RPRT/2026-08-17.md",
     "RPRT/RPRT-41 - Payment Recovery Gate Contract.md",
     "RPRT/2026-08-15.md",
-    "RPRT/2026-08-16.md",
     "Blue Prince.canvas",
     "RPRT",
     "thumbnails/external/f0a66f1f345e27a26d74d0bc70984e8b.failed.png",

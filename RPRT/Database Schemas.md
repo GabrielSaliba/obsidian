@@ -54,6 +54,7 @@ flowchart TB
 | Schema note | Database objects |
 |---|---|
 | [[Cart, Quote and Coupons Security]] | `carts`, `cart_items`, `shipping_quotes`, `coupons` |
+| [[Order and Settlement Security]] | Orders, item snapshots, guest access, payment attempts, reservations, recovery, cancellation, and fulfillment |
 
 ## <span style="color:rgb(255, 192, 0)">Reliability And Audit</span>
 
