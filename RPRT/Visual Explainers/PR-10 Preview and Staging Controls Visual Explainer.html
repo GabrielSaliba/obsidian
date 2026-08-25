@@ -1,0 +1,648 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PR #10 — Preview and Staging Controls</title>
+<style>
+  :root {
+    --font-body: "Trebuchet MS", "Aptos", sans-serif;
+    --font-mono: "Courier New", monospace;
+    --bg: #f4f1e9;
+    --surface: #fffdf7;
+    --surface-2: #ebe6d9;
+    --surface-3: #ded8ca;
+    --border: #c8c0b1;
+    --border-strong: #988f80;
+    --text: #20251f;
+    --text-dim: #62695f;
+    --blue: #1d4f6e;
+    --blue-dim: #dceaf1;
+    --green: #356447;
+    --green-dim: #dce9df;
+    --amber: #9a6118;
+    --amber-dim: #f4e6ca;
+    --red: #9b3734;
+    --red-dim: #f2ddda;
+    --ink: #142e3d;
+    --shadow: 0 8px 28px rgba(41, 37, 30, 0.09);
+  }
+
+  [data-theme="dark"] {
+    --bg: #101820;
+    --surface: #17232d;
+    --surface-2: #1d2c37;
+    --surface-3: #273944;
+    --border: #344954;
+    --border-strong: #57707c;
+    --text: #eef1e8;
+    --text-dim: #a8b3ad;
+    --blue: #76b6d8;
+    --blue-dim: #183a4b;
+    --green: #8bc59b;
+    --green-dim: #1c3b2a;
+    --amber: #e5b45f;
+    --amber-dim: #493719;
+    --red: #e78a82;
+    --red-dim: #4b2727;
+    --ink: #d4ecf6;
+    --shadow: 0 10px 30px rgba(0, 0, 0, 0.24);
+  }
+
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    margin: 0;
+    color: var(--text);
+    background-color: var(--bg);
+    background-image:
+      linear-gradient(var(--border) 1px, transparent 1px),
+      linear-gradient(90deg, var(--border) 1px, transparent 1px);
+    background-size: 48px 48px;
+    font-family: var(--font-body);
+    line-height: 1.55;
+    overflow-wrap: break-word;
+  }
+
+  .wrap {
+    max-width: 1440px;
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: 190px minmax(0, 1fr);
+    gap: 0 42px;
+    padding: 28px 36px 80px;
+  }
+  .main { min-width: 0; }
+  .toc {
+    position: sticky;
+    top: 22px;
+    align-self: start;
+    grid-row: 1 / -1;
+    max-height: calc(100dvh - 44px);
+    overflow-y: auto;
+    padding: 14px 0;
+  }
+  .toc-title {
+    color: var(--text-dim);
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 10px;
+    padding-bottom: 10px;
+    font: 700 10px/1 var(--font-mono);
+    letter-spacing: 1.6px;
+    text-transform: uppercase;
+  }
+  .toc a {
+    display: block;
+    color: var(--text-dim);
+    border-left: 2px solid transparent;
+    border-radius: 4px;
+    padding: 6px 9px;
+    margin: 2px 0;
+    text-decoration: none;
+    font-size: 12px;
+  }
+  .toc a:hover { color: var(--text); background: var(--surface-2); }
+  .toc a.active { color: var(--blue); border-left-color: var(--blue); background: var(--blue-dim); }
+
+  .theme-toggle {
+    position: fixed;
+    top: 18px;
+    right: 18px;
+    z-index: 300;
+    color: var(--text);
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 8px 11px;
+    cursor: pointer;
+    font: 700 11px var(--font-mono);
+    box-shadow: var(--shadow);
+  }
+
+  .hero {
+    position: relative;
+    overflow: hidden;
+    background: var(--ink);
+    color: #f6f4ea;
+    border: 1px solid var(--border-strong);
+    border-radius: 18px;
+    padding: clamp(30px, 6vw, 68px);
+    box-shadow: var(--shadow);
+    margin-bottom: 30px;
+  }
+  .hero::after {
+    content: "ENV";
+    position: absolute;
+    right: -18px;
+    bottom: -72px;
+    color: rgba(255,255,255,.055);
+    font: 900 210px/1 var(--font-mono);
+    letter-spacing: -22px;
+  }
+  .eyebrow {
+    color: #f0bd69;
+    font: 700 11px var(--font-mono);
+    letter-spacing: 1.6px;
+    text-transform: uppercase;
+  }
+  h1 {
+    max-width: 900px;
+    margin: 12px 0 18px;
+    font-size: clamp(38px, 7vw, 76px);
+    line-height: .98;
+    letter-spacing: -3px;
+    text-wrap: balance;
+  }
+  .hero-lead {
+    max-width: 760px;
+    color: #cad8db;
+    font-size: clamp(17px, 2vw, 21px);
+  }
+  .hero-lead strong { color: #fff8e7; }
+  .meta-row { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 26px; }
+  .meta {
+    border: 1px solid rgba(255,255,255,.17);
+    border-radius: 999px;
+    padding: 5px 10px;
+    color: #d8e2e2;
+    font: 11px var(--font-mono);
+  }
+
+  .sec-head {
+    scroll-margin-top: 24px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin: 52px 0 18px;
+    font: 700 14px var(--font-mono);
+    color: var(--blue);
+    letter-spacing: 1.2px;
+    text-transform: uppercase;
+  }
+  .sec-head::after { content: ""; flex: 1; height: 1px; background: var(--border); }
+  h2, h3, p { margin-top: 0; }
+  h2 { font-size: clamp(25px, 3vw, 38px); line-height: 1.12; letter-spacing: -1px; }
+  h3 { font-size: 17px; }
+  code {
+    color: var(--blue);
+    background: var(--blue-dim);
+    border-radius: 4px;
+    padding: 1px 5px;
+    font: 12px var(--font-mono);
+  }
+  a { color: var(--blue); }
+
+  .grid-2, .grid-3, .grid-4 { display: grid; gap: 16px; }
+  .grid-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .grid-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .grid-4 { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+  .grid-2 > *, .grid-3 > *, .grid-4 > * { min-width: 0; }
+
+  .ve-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 20px;
+    min-width: 0;
+  }
+  .ve-card.elevated { box-shadow: var(--shadow); }
+  .ve-card.recessed { background: var(--surface-2); box-shadow: inset 0 1px 3px rgba(0,0,0,.08); }
+  .ve-card.blue { border-top: 4px solid var(--blue); }
+  .ve-card.green { border-top: 4px solid var(--green); }
+  .ve-card.amber { border-top: 4px solid var(--amber); }
+  .ve-card.red { border-top: 4px solid var(--red); }
+  .label {
+    margin-bottom: 10px;
+    color: var(--text-dim);
+    font: 700 10px var(--font-mono);
+    letter-spacing: 1.4px;
+    text-transform: uppercase;
+  }
+  .big { font-size: 30px; font-weight: 800; letter-spacing: -1px; }
+  .muted { color: var(--text-dim); }
+  .small { font-size: 13px; }
+  .tight { margin-bottom: 6px; }
+
+  .before-after {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    overflow: hidden;
+    background: var(--surface);
+  }
+  .before-after > * { min-width: 0; padding: 24px; }
+  .before { background: var(--red-dim); border-right: 1px solid var(--border); }
+  .after { background: var(--green-dim); }
+  .before h3 { color: var(--red); }
+  .after h3 { color: var(--green); }
+  ul.clean { list-style: none; padding: 0; margin: 12px 0 0; }
+  ul.clean li { position: relative; padding-left: 18px; margin: 8px 0; }
+  ul.clean li::before { content: "›"; position: absolute; left: 2px; color: var(--blue); font-weight: 800; }
+
+  .table-wrap { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; overflow: hidden; }
+  .table-scroll { overflow-x: auto; }
+  table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  th { color: var(--text-dim); background: var(--surface-2); text-align: left; padding: 13px 15px; border-bottom: 2px solid var(--border); white-space: nowrap; font: 700 10px var(--font-mono); letter-spacing: 1px; text-transform: uppercase; }
+  td { padding: 14px 15px; border-bottom: 1px solid var(--border); vertical-align: top; }
+  tr:last-child td { border-bottom: 0; }
+  tbody tr:hover { background: var(--blue-dim); }
+  .status { display: inline-block; border-radius: 5px; padding: 3px 7px; font: 700 10px var(--font-mono); white-space: nowrap; }
+  .allow { color: var(--green); background: var(--green-dim); }
+  .deny { color: var(--red); background: var(--red-dim); }
+  .limited { color: var(--amber); background: var(--amber-dim); }
+
+  .flow {
+    display: grid;
+    grid-template-columns: repeat(5, minmax(130px, 1fr));
+    gap: 30px;
+    align-items: stretch;
+    overflow-x: auto;
+    padding: 10px 4px 16px;
+  }
+  .flow-step {
+    position: relative;
+    min-width: 130px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 16px;
+  }
+  .flow-step:not(:last-child)::after {
+    content: "→";
+    position: absolute;
+    right: -24px;
+    top: 50%;
+    color: var(--border-strong);
+    font-size: 20px;
+    transform: translateY(-50%);
+  }
+  .step-num { color: var(--amber); font: 700 10px var(--font-mono); margin-bottom: 7px; }
+  .step-title { font-weight: 800; margin-bottom: 4px; }
+  .step-copy { color: var(--text-dim); font-size: 12px; }
+
+  .branch-card .branch { font: 800 18px var(--font-mono); margin-bottom: 10px; }
+  .kv { display: grid; grid-template-columns: 92px 1fr; gap: 8px; margin: 7px 0; font-size: 12px; }
+  .kv b { color: var(--text-dim); font: 700 10px var(--font-mono); text-transform: uppercase; }
+
+  .algorithm {
+    display: grid;
+    grid-template-columns: minmax(0, 1.25fr) 50px minmax(0, .7fr) 50px minmax(0, .8fr);
+    align-items: center;
+    gap: 8px;
+  }
+  .algorithm .box { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 16px; min-width: 0; }
+  .algorithm .arrow { text-align: center; color: var(--amber); font-size: 25px; }
+  .mono-block { display: block; overflow-x: auto; color: var(--text); background: var(--surface-2); border: 1px solid var(--border); border-radius: 7px; padding: 10px; white-space: nowrap; font: 11px var(--font-mono); }
+
+  .guard-rail { position: relative; padding-left: 25px; }
+  .guard-rail::before { content: ""; position: absolute; left: 6px; top: 8px; bottom: 8px; width: 2px; background: var(--border-strong); }
+  .guard-item { position: relative; background: var(--surface); border: 1px solid var(--border); border-radius: 9px; padding: 13px 15px; margin: 9px 0; }
+  .guard-item::before { content: ""; position: absolute; left: -24px; top: 17px; width: 10px; height: 10px; border-radius: 50%; background: var(--green); border: 3px solid var(--bg); }
+  .guard-item strong { font-family: var(--font-mono); font-size: 12px; }
+
+  .simulator { display: grid; grid-template-columns: 300px minmax(0, 1fr); gap: 18px; }
+  .scenario-list { display: grid; gap: 8px; }
+  .scenario {
+    width: 100%;
+    text-align: left;
+    color: var(--text);
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 12px 13px;
+    cursor: pointer;
+    font-family: var(--font-body);
+  }
+  .scenario:hover, .scenario.active { border-color: var(--blue); background: var(--blue-dim); }
+  .result {
+    min-height: 240px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 26px;
+    background: var(--surface);
+  }
+  .result.allowed { border-left: 6px solid var(--green); }
+  .result.denied { border-left: 6px solid var(--red); }
+  .result-state { font: 800 28px var(--font-mono); margin-bottom: 10px; }
+  .result.allowed .result-state { color: var(--green); }
+  .result.denied .result-state { color: var(--red); }
+  .checks { margin: 12px 0 0; padding-left: 20px; color: var(--text-dim); font-size: 13px; }
+
+  .file-map { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: 10px; }
+  .file { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 13px; }
+  .file code { display: block; width: fit-content; margin-bottom: 5px; }
+  .file p { margin: 0; color: var(--text-dim); font-size: 12px; }
+
+  .callout { background: var(--amber-dim); border: 1px solid var(--amber); border-left-width: 5px; border-radius: 8px; padding: 16px 18px; }
+  .callout strong { color: var(--amber); }
+  .footer { margin-top: 56px; padding-top: 20px; border-top: 1px solid var(--border); color: var(--text-dim); font-size: 12px; }
+
+  @media (max-width: 1000px) {
+    body { background-size: 32px 32px; }
+    .wrap { grid-template-columns: 1fr; padding: 0 22px 60px; }
+    .toc { position: sticky; top: 0; z-index: 200; display: flex; align-items: center; gap: 4px; overflow-x: auto; max-height: none; background: var(--bg); border-bottom: 1px solid var(--border); margin: 0 -22px; padding: 9px 22px; grid-row: auto; }
+    .toc-title { display: none; }
+    .toc a { flex-shrink: 0; white-space: nowrap; border-left: 0; border-bottom: 2px solid transparent; }
+    .toc a.active { border-left: 0; border-bottom-color: var(--blue); }
+    .hero { margin-top: 22px; }
+    .sec-head { scroll-margin-top: 60px; }
+    .grid-4 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .flow { grid-template-columns: repeat(5, 180px); }
+  }
+  @media (max-width: 700px) {
+    .grid-2, .grid-3, .grid-4, .before-after, .simulator, .file-map { grid-template-columns: 1fr; }
+    .before { border-right: 0; border-bottom: 1px solid var(--border); }
+    .algorithm { grid-template-columns: 1fr; }
+    .algorithm .arrow { transform: rotate(90deg); }
+    .theme-toggle { top: auto; bottom: 14px; right: 14px; }
+    h1 { letter-spacing: -2px; }
+  }
+  @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } * { transition: none !important; } }
+</style>
+</head>
+<body>
+<button class="theme-toggle" type="button" id="themeToggle">Light / Dark</button>
+<div class="wrap">
+  <nav class="toc" id="toc" aria-label="Page sections">
+    <div class="toc-title">PR #10 Map</div>
+    <a href="#summary" class="active">1. Core idea</a>
+    <a href="#problem">2. The problem</a>
+    <a href="#matrix">3. Identities</a>
+    <a href="#startup">4. Startup gate</a>
+    <a href="#isolation">5. Preview isolation</a>
+    <a href="#migration">6. Migration gate</a>
+    <a href="#simulator">7. Simulator</a>
+    <a href="#files">8. File map</a>
+    <a href="#boundaries">9. Boundaries</a>
+  </nav>
+
+  <main class="main">
+    <header class="hero">
+      <div class="eyebrow">Merged PR #10 · RPRT-56 · Deployment security</div>
+      <h1>Every deployment must prove its identity.</h1>
+      <p class="hero-lead">The PR creates a <strong>fail-closed environment contract</strong>. A deployment gets database access only when its declared identity, branch, Vercel metadata, Supabase target, and secret scope agree.</p>
+      <div class="meta-row">
+        <span class="meta">20 files changed</span>
+        <span class="meta">962 additions</span>
+        <span class="meta">4 commits</span>
+        <span class="meta">Merged into dev</span>
+        <span class="meta">36 tests recorded</span>
+      </div>
+    </header>
+
+    <div class="sec-head" id="summary">1 — Core idea</div>
+    <div class="grid-3">
+      <article class="ve-card elevated blue">
+        <div class="label">Identity</div>
+        <div class="big">Who am I?</div>
+        <p class="muted small">The app uses <code>APP_ENVIRONMENT</code>, not <code>NODE_ENV</code>, to identify local, Preview, staging, or production.</p>
+      </article>
+      <article class="ve-card elevated amber">
+        <div class="label">Evidence</div>
+        <div class="big">Can I prove it?</div>
+        <p class="muted small">The branch, Vercel level, GitHub repository, Supabase project, and secret scope must match the checked-in policy.</p>
+      </article>
+      <article class="ve-card elevated green">
+        <div class="label">Result</div>
+        <div class="big">Allow or stop</div>
+        <p class="muted small">A valid deployment starts. A missing or contradictory value stops the build or first server evaluation.</p>
+      </article>
+    </div>
+
+    <div class="sec-head" id="problem">2 — The problem it solves</div>
+    <div class="before-after">
+      <section class="before">
+        <h3>Before: one Vercel label, two trust levels</h3>
+        <p>On Vercel Hobby, both <code>dev</code> and feature branches report <code>VERCEL_ENV=preview</code>.</p>
+        <ul class="clean">
+          <li>The app could not reliably separate staging from a feature Preview.</li>
+          <li>Both environments use the shared staging Supabase project.</li>
+          <li>A wrongly scoped secret could give a feature branch administrative access.</li>
+          <li>A wrong workflow could promote migrations from an unsafe context.</li>
+          <li>Different branches could mix their test records.</li>
+        </ul>
+      </section>
+      <section class="after">
+        <h3>After: application identity plus proof</h3>
+        <p>The application adds its own identity and checks it against platform facts.</p>
+        <ul class="clean">
+          <li><code>preview</code> means a feature branch with no privileged key.</li>
+          <li><code>staging</code> means exactly <code>dev</code> on Vercel Preview.</li>
+          <li><code>production</code> means exactly <code>main</code> on Vercel Production.</li>
+          <li>Each Preview gets a stable test-data namespace.</li>
+          <li>Migration promotion requires a separate protected GitHub context.</li>
+        </ul>
+      </section>
+    </div>
+    <div class="callout" style="margin-top:16px"><strong>Why not NODE_ENV?</strong> Next.js uses <code>NODE_ENV=production</code> for optimized Vercel Preview builds. It describes the framework build mode, not the business deployment environment.</div>
+
+    <div class="sec-head" id="matrix">3 — The four deployment identities</div>
+    <div class="table-wrap">
+      <div class="table-scroll">
+        <table>
+          <thead><tr><th>Identity</th><th>Where</th><th>Vercel level</th><th>Supabase target</th><th>Secret key</th><th>Preview ID</th></tr></thead>
+          <tbody>
+            <tr><td><strong>Local</strong></td><td>Developer checkout</td><td>None</td><td>Approved staging project</td><td><span class="status allow">Required</span></td><td>None</td></tr>
+            <tr><td><strong>Preview</strong></td><td>Feature branch</td><td><code>preview</code></td><td>Approved staging project</td><td><span class="status deny">Forbidden</span></td><td><span class="status limited">Required</span></td></tr>
+            <tr><td><strong>Staging</strong></td><td><code>dev</code></td><td><code>preview</code> on Hobby</td><td>Approved staging project</td><td><span class="status allow">Required</span></td><td>None</td></tr>
+            <tr><td><strong>Production</strong></td><td><code>main</code></td><td><code>production</code></td><td>Approved production project</td><td><span class="status allow">Required</span></td><td>None</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <div class="grid-4" style="margin-top:16px">
+      <article class="ve-card branch-card blue"><div class="branch">local</div><div class="kv"><b>Trust</b><span>Developer machine</span></div><div class="kv"><b>Rule</b><span>No Vercel metadata</span></div><div class="kv"><b>Access</b><span>Privileged staging access</span></div></article>
+      <article class="ve-card branch-card amber"><div class="branch">preview</div><div class="kv"><b>Trust</b><span>Untrusted feature code</span></div><div class="kv"><b>Rule</b><span>Not <code>dev</code> or <code>main</code></span></div><div class="kv"><b>Access</b><span>RLS-limited only</span></div></article>
+      <article class="ve-card branch-card green"><div class="branch">staging</div><div class="kv"><b>Trust</b><span>Approved integration branch</span></div><div class="kv"><b>Rule</b><span>Exactly <code>dev</code></span></div><div class="kv"><b>Access</b><span>Privileged staging access</span></div></article>
+      <article class="ve-card branch-card red"><div class="branch">production</div><div class="kv"><b>Trust</b><span>Release branch</span></div><div class="kv"><b>Rule</b><span>Exactly <code>main</code></span></div><div class="kv"><b>Access</b><span>Currently denied until project approval</span></div></article>
+    </div>
+
+    <div class="sec-head" id="startup">4 — How the startup gate works</div>
+    <div class="flow" aria-label="Startup validation pipeline">
+      <div class="flow-step"><div class="step-num">01</div><div class="step-title">Root layout loads</div><div class="step-copy"><code>src/app/layout.tsx</code> imports the server environment boundary.</div></div>
+      <div class="flow-step"><div class="step-num">02</div><div class="step-title">Read facts</div><div class="step-copy">Read app identity, Vercel Git metadata, Supabase URL, project reference, and secret presence.</div></div>
+      <div class="flow-step"><div class="step-num">03</div><div class="step-title">Parse shape</div><div class="step-copy">Zod checks accepted values, HTTPS, project-ref format, and key prefixes.</div></div>
+      <div class="flow-step"><div class="step-num">04</div><div class="step-title">Compare policy</div><div class="step-copy">Branch, repository, Vercel level, Supabase target, and secret rules must agree.</div></div>
+      <div class="flow-step"><div class="step-num">05</div><div class="step-title">Allow or fail</div><div class="step-copy">Return safe server values or throw an error before application use.</div></div>
+    </div>
+    <div class="grid-2" style="margin-top:8px">
+      <article class="ve-card green">
+        <div class="label">If validation passes</div>
+        <h3 class="tight">The app receives derived capabilities</h3>
+        <ul class="clean small"><li><code>environment</code></li><li><code>hasPrivilegedSupabaseAccess</code></li><li><code>previewIsolationId</code></li></ul>
+      </article>
+      <article class="ve-card red">
+        <div class="label">If validation fails</div>
+        <h3 class="tight">The app does not continue silently</h3>
+        <p class="muted small">Wrong repository, wrong branch, wrong Supabase target, forbidden secret, missing identity, and unsupported production all cause a hard failure.</p>
+      </article>
+    </div>
+    <div class="callout" style="margin-top:16px"><strong>Defense in depth:</strong> Feature Previews do not receive <code>SUPABASE_SECRET_KEY</code>. In addition, <code>createAdminSupabaseClient()</code> checks <code>hasPrivilegedSupabaseAccess</code> and refuses to create an admin client.</div>
+
+    <div class="sec-head" id="isolation">5 — How Preview test-data isolation works</div>
+    <h2>Stable per branch, different across branches</h2>
+    <p class="muted">The identifier is a namespace for records created by Preview tests. It is not a password and it does not grant access.</p>
+    <div class="algorithm">
+      <div class="box"><div class="label">Canonical input</div><span class="mono-block">preview:v1:&lt;project-ref&gt;:guisaliba/repertorio:&lt;case-sensitive-branch&gt;</span></div>
+      <div class="arrow">→</div>
+      <div class="box"><div class="label">Transform</div><strong>SHA-256</strong><p class="muted small" style="margin:6px 0 0">Keep first 24 lowercase hex characters.</p></div>
+      <div class="arrow">→</div>
+      <div class="box"><div class="label">Output</div><span class="mono-block">preview_77bd3f2872963e3114698ade</span></div>
+    </div>
+    <div class="grid-3" style="margin-top:16px">
+      <article class="ve-card"><div class="label">Same branch</div><strong>Same identifier</strong><p class="muted small">Redeployments can find and clean their own records.</p></article>
+      <article class="ve-card"><div class="label">Different branch</div><strong>Different identifier</strong><p class="muted small">Parallel feature work does not use the same test namespace.</p></article>
+      <article class="ve-card"><div class="label">Security meaning</div><strong>No authority</strong><p class="muted small">RLS and application authorization still control access.</p></article>
+    </div>
+
+    <div class="sec-head" id="migration">6 — The migration-promotion gate</div>
+    <div class="grid-2">
+      <section class="ve-card elevated">
+        <div class="label">Command</div>
+        <div class="big"><code>pnpm verify:migration-promotion</code></div>
+        <p class="muted">The command makes no network request and reads no migration credential. It checks the execution context immediately before a later workflow runs <code>supabase db push</code>.</p>
+        <div class="callout"><strong>Deny by default:</strong> one missing or wrong value causes a nonzero exit.</div>
+      </section>
+      <section class="guard-rail" aria-label="Migration promotion checks">
+        <div class="guard-item"><strong>GitHub Actions</strong><br><span class="muted small"><code>GITHUB_ACTIONS=true</code></span></div>
+        <div class="guard-item"><strong>Approved repository</strong><br><span class="muted small"><code>guisaliba/repertorio</code></span></div>
+        <div class="guard-item"><strong>Protected dev branch</strong><br><span class="muted small"><code>refs/heads/dev</code> and protected flag</span></div>
+        <div class="guard-item"><strong>Exact workflow file</strong><br><span class="muted small"><code>promote-staging-migrations.yml</code></span></div>
+        <div class="guard-item"><strong>Staging identity and project</strong><br><span class="muted small">Both must match checked-in policy</span></div>
+        <div class="guard-item"><strong>Explicit approval</strong><br><span class="muted small"><code>MIGRATION_PROMOTION_APPROVED=true</code></span></div>
+        <div class="guard-item"><strong>No Vercel context</strong><br><span class="muted small">All Vercel metadata must be absent</span></div>
+      </section>
+    </div>
+    <p class="muted small" style="margin-top:14px"><strong>Important:</strong> PR #10 adds the guard command. RPRT-4 still owns the future GitHub Actions workflow and supplies credentials only after this guard passes.</p>
+
+    <div class="sec-head" id="simulator">7 — Try the decision model</div>
+    <div class="simulator">
+      <div class="scenario-list" role="list">
+        <button class="scenario active" type="button" data-scenario="preview-secret">Feature Preview receives admin secret</button>
+        <button class="scenario" type="button" data-scenario="staging-valid">Valid dev staging deployment</button>
+        <button class="scenario" type="button" data-scenario="production-now">Production deployment today</button>
+        <button class="scenario" type="button" data-scenario="local-vercel">Local identity with Vercel metadata</button>
+        <button class="scenario" type="button" data-scenario="migration-shell">Migration command from a local shell</button>
+      </div>
+      <div class="result denied" id="resultPanel" aria-live="polite">
+        <div class="result-state" id="resultState">DENIED</div>
+        <h3 id="resultTitle">Feature Preview receives admin secret</h3>
+        <p class="muted" id="resultReason">Feature Previews must not receive <code>SUPABASE_SECRET_KEY</code>. The deployment fails instead of accepting excessive privilege.</p>
+        <ul class="checks" id="resultChecks"><li>Identity: preview</li><li>Branch: feature branch</li><li>Secret: present, but forbidden</li></ul>
+      </div>
+    </div>
+
+    <div class="sec-head" id="files">8 — Where the behavior lives</div>
+    <div class="file-map">
+      <div class="file"><code>src/lib/env/deployment-policy.mts</code><p>Checked-in repository, branch, Supabase, and workflow policy.</p></div>
+      <div class="file"><code>src/lib/env/deployment.mts</code><p>Environment resolver, Preview hash, and migration authorization logic.</p></div>
+      <div class="file"><code>src/lib/env/server.ts</code><p>Reads process values and creates the validated server environment.</p></div>
+      <div class="file"><code>src/app/layout.tsx</code><p>Loads validation at the application root so bad configuration fails early.</p></div>
+      <div class="file"><code>src/lib/supabase/admin.ts</code><p>Refuses privileged clients when the derived capability is false.</p></div>
+      <div class="file"><code>scripts/verify-migration-promotion.mts</code><p>CLI entry point for the future protected promotion workflow.</p></div>
+      <div class="file"><code>docs/environments.md</code><p>Operator contract for identities, scopes, URLs, ownership, and promotion.</p></div>
+      <div class="file"><code>*.unit.test.ts</code><p>Tests allowed paths, denied paths, stable hashes, and secret isolation.</p></div>
+    </div>
+
+    <div class="sec-head" id="boundaries">9 — Scope and safety boundaries</div>
+    <div class="grid-2">
+      <article class="ve-card green">
+        <div class="label">This PR does</div>
+        <ul class="clean"><li>Defines deployment identity.</li><li>Checks platform and database evidence.</li><li>Removes admin privilege from feature Previews.</li><li>Creates stable test namespaces.</li><li>Creates a migration context guard.</li><li>Documents and tests the contract.</li></ul>
+      </article>
+      <article class="ve-card red">
+        <div class="label">This PR does not</div>
+        <ul class="clean"><li>Create or run a database migration.</li><li>Create the promotion workflow.</li><li>Configure production values.</li><li>Create the production Supabase project.</li><li>Give a Preview administrative access.</li><li>Replace RLS or application authorization.</li></ul>
+      </article>
+    </div>
+    <div class="callout" style="margin-top:16px"><strong>The final mental model:</strong> environment variables are claims. Branch, platform, repository, project, and secret scope are evidence. The application grants a capability only when every fact agrees with policy.</div>
+
+    <footer class="footer">
+      Source: <a href="https://github.com/guisaliba/repertorio/pull/10">guisaliba/repertorio PR #10</a>, merged into <code>dev</code>. This explainer covers the merged implementation and its recorded test evidence.
+    </footer>
+  </main>
+</div>
+
+<script>
+  const scenarios = {
+    "preview-secret": {
+      state: "DENIED", allowed: false,
+      title: "Feature Preview receives admin secret",
+      reason: "Feature Previews must not receive SUPABASE_SECRET_KEY. The deployment fails instead of accepting excessive privilege.",
+      checks: ["Identity: preview", "Branch: feature branch", "Secret: present, but forbidden"]
+    },
+    "staging-valid": {
+      state: "ALLOWED", allowed: true,
+      title: "Valid dev staging deployment",
+      reason: "The staging identity, dev branch, Vercel Preview level, approved repository, staging Supabase project, and required secret all agree.",
+      checks: ["Identity: staging", "Branch: dev", "Vercel level: preview", "Supabase: approved staging project", "Secret: present"]
+    },
+    "production-now": {
+      state: "DENIED", allowed: false,
+      title: "Production deployment today",
+      reason: "The checked-in production Supabase project reference is null. Production stays disabled until a reviewed change records the approved project.",
+      checks: ["Identity: production", "Branch: main", "Vercel level: production", "Approved production project: missing"]
+    },
+    "local-vercel": {
+      state: "DENIED", allowed: false,
+      title: "Local identity with Vercel metadata",
+      reason: "A local checkout must not claim Vercel deployment facts. Mixed local and deployed identity is contradictory.",
+      checks: ["Identity: local", "Vercel metadata: present", "Policy: local requires all Vercel metadata to be absent"]
+    },
+    "migration-shell": {
+      state: "DENIED", allowed: false,
+      title: "Migration command from a local shell",
+      reason: "The migration guard requires the exact protected GitHub Actions workflow on dev. A normal shell does not have that authorization context.",
+      checks: ["GitHub Actions: absent", "Protected dev ref: absent", "Exact workflow: absent", "Explicit approval: absent"]
+    }
+  };
+
+  const panel = document.getElementById("resultPanel");
+  const state = document.getElementById("resultState");
+  const title = document.getElementById("resultTitle");
+  const reason = document.getElementById("resultReason");
+  const checks = document.getElementById("resultChecks");
+
+  document.querySelectorAll(".scenario").forEach(button => {
+    button.addEventListener("click", () => {
+      document.querySelectorAll(".scenario").forEach(item => item.classList.remove("active"));
+      button.classList.add("active");
+      const data = scenarios[button.dataset.scenario];
+      panel.className = "result " + (data.allowed ? "allowed" : "denied");
+      state.textContent = data.state;
+      title.textContent = data.title;
+      reason.textContent = data.reason;
+      checks.replaceChildren(...data.checks.map(text => {
+        const item = document.createElement("li");
+        item.textContent = text;
+        return item;
+      }));
+    });
+  });
+
+  document.getElementById("themeToggle").addEventListener("click", () => {
+    const root = document.documentElement;
+    root.dataset.theme = root.dataset.theme === "dark" ? "light" : "dark";
+  });
+
+  const tocLinks = [...document.querySelectorAll(".toc a")];
+  const sections = tocLinks.map(link => ({ link, section: document.querySelector(link.getAttribute("href")) })).filter(item => item.section);
+  const observer = new IntersectionObserver(entries => {
+    entries.forEach(entry => {
+      if (!entry.isIntersecting) return;
+      tocLinks.forEach(link => link.classList.remove("active"));
+      const match = sections.find(item => item.section === entry.target);
+      if (match) {
+        match.link.classList.add("active");
+        if (innerWidth <= 1000) match.link.scrollIntoView({ behavior: "smooth", block: "nearest", inline: "center" });
+      }
+    });
+  }, { rootMargin: "-12% 0px -78% 0px" });
+  sections.forEach(item => observer.observe(item.section));
+</script>
+</body>
+</html>

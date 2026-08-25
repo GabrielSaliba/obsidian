@@ -25,6 +25,7 @@ type: schema-reference
 
 > [!example] Visual Explainer
 > [[Visual Explainers/RPRT-47 Identity Schema Visual Explainer.html|Open the local identity schema visual explainer]]
+> [[Visual Explainers/Account and Guest Order Journey Visual Explainer.html|Compare account and guest access through order creation]]
 
 ## <span style="color:rgb(112, 48, 160)">Schema Boundary</span>
 

@@ -1,0 +1,713 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="plannotator-theme" content="host">
+<title>RPRT-42 Cancellation Contract — Visual Explainer</title>
+<style>
+:root {
+  --background: oklch(0.97 0.005 260);
+  --foreground: oklch(0.18 0.02 260);
+  --card: oklch(1 0 0);
+  --card-foreground: oklch(0.18 0.02 260);
+  --muted: oklch(0.92 0.01 260);
+  --muted-foreground: oklch(0.40 0.02 260);
+  --primary: oklch(0.50 0.25 280);
+  --primary-foreground: oklch(1 0 0);
+  --secondary: oklch(0.50 0.18 180);
+  --accent: oklch(0.60 0.22 50);
+  --accent-foreground: oklch(0.18 0.02 260);
+  --destructive: oklch(0.50 0.25 25);
+  --success: oklch(0.45 0.20 150);
+  --warning: oklch(0.55 0.18 85);
+  --border: oklch(0.88 0.01 260);
+  --code-bg: oklch(0.92 0.01 260);
+  --ring: oklch(0.50 0.25 280);
+  --radius: 0.625rem;
+  --font-sans: Inter, ui-sans-serif, system-ui, -apple-system, sans-serif;
+  --font-mono: "JetBrains Mono", "Fira Code", ui-monospace, monospace;
+  --font-display: ui-serif, Georgia, "Times New Roman", serif;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: oklch(0.15 0.02 260);
+    --foreground: oklch(0.90 0.01 260);
+    --card: oklch(0.22 0.02 260);
+    --card-foreground: oklch(0.90 0.01 260);
+    --muted: oklch(0.26 0.02 260);
+    --muted-foreground: oklch(0.72 0.02 260);
+    --primary: oklch(0.75 0.18 280);
+    --primary-foreground: oklch(0.15 0.02 260);
+    --secondary: oklch(0.72 0.15 180);
+    --accent: oklch(0.70 0.20 60);
+    --border: oklch(0.35 0.02 260);
+    --code-bg: oklch(0.26 0.02 260);
+    --destructive: oklch(0.65 0.20 25);
+    --success: oklch(0.72 0.17 150);
+    --warning: oklch(0.75 0.15 85);
+  }
+}
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body {
+  margin: 0;
+  background-color: var(--background);
+  background-image: radial-gradient(circle, color-mix(in oklab, var(--border) 55%, transparent) 1px, transparent 1px);
+  background-size: 26px 26px;
+  color: var(--foreground);
+  font-family: var(--font-sans);
+  font-size: 15px;
+  line-height: 1.65;
+  -webkit-font-smoothing: antialiased;
+}
+a { color: var(--primary); text-decoration-thickness: 1px; text-underline-offset: 3px; }
+code {
+  font-family: var(--font-mono);
+  font-size: 0.84em;
+  color: var(--primary);
+  background: color-mix(in oklab, var(--primary) 10%, transparent);
+  padding: 0.1em 0.35em;
+  border-radius: 4px;
+  overflow-wrap: anywhere;
+}
+.wrap {
+  width: min(1480px, 100%);
+  margin: 0 auto;
+  padding: 30px 34px 80px;
+  display: grid;
+  grid-template-columns: 190px minmax(0, 1fr);
+  gap: 46px;
+}
+.main { min-width: 0; max-width: 1120px; }
+.toc {
+  position: sticky;
+  top: 24px;
+  align-self: start;
+  grid-row: 1 / -1;
+  max-height: calc(100dvh - 48px);
+  overflow-y: auto;
+  padding: 14px 0;
+}
+.toc-title {
+  margin-bottom: 10px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--border);
+  color: var(--muted-foreground);
+  font-family: var(--font-mono);
+  font-size: 0.67rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+.toc a {
+  display: block;
+  margin: 2px 0;
+  padding: 6px 10px;
+  border-left: 2px solid transparent;
+  border-radius: 5px;
+  color: var(--muted-foreground);
+  font-size: 0.76rem;
+  line-height: 1.35;
+  text-decoration: none;
+}
+.toc a:hover { color: var(--foreground); background: var(--muted); }
+.toc a.active { color: var(--foreground); border-left-color: var(--primary); background: var(--muted); }
+.eyebrow, .section-number, .micro, .badge, .step-kicker, .field-name {
+  font-family: var(--font-mono);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+header { padding: 44px 0 18px; }
+.eyebrow { color: var(--primary); font-size: 0.72rem; font-weight: 700; }
+h1, h2, h3 { font-family: var(--font-display); font-weight: 500; text-wrap: balance; }
+h1 { margin: 8px 0 14px; max-width: 900px; font-size: clamp(2.35rem, 6vw, 4.5rem); line-height: 0.98; letter-spacing: -0.04em; }
+.lede { max-width: 760px; margin: 0; color: var(--muted-foreground); font-size: 1.05rem; }
+.source-link { margin-top: 18px; font-family: var(--font-mono); font-size: 0.74rem; }
+.hero-rule {
+  margin: 34px 0 0;
+  padding: 20px 24px;
+  border: 1.5px solid var(--primary);
+  border-radius: var(--radius);
+  background: color-mix(in oklab, var(--primary) 5%, var(--card));
+  box-shadow: 0 6px 26px color-mix(in oklab, var(--primary) 10%, transparent);
+  font-size: 1.02rem;
+}
+.hero-rule strong { color: var(--primary); }
+.summary-strip {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 12px;
+  margin: 26px 0 12px;
+}
+.kpi-card {
+  min-width: 0;
+  padding: 16px;
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--card);
+  text-align: center;
+}
+.kpi-value { display: block; font-family: var(--font-display); font-size: 1.8rem; line-height: 1; }
+.kpi-label { display: block; margin-top: 7px; color: var(--muted-foreground); font-family: var(--font-mono); font-size: 0.62rem; line-height: 1.3; text-transform: uppercase; letter-spacing: 0.06em; }
+section { margin-top: 78px; scroll-margin-top: 20px; }
+.sec-head {
+  display: flex;
+  gap: 15px;
+  align-items: baseline;
+  margin-bottom: 25px;
+  padding-bottom: 9px;
+  border-bottom: 1.5px solid var(--border);
+}
+.section-number { color: var(--primary); font-size: 0.74rem; font-weight: 700; }
+.sec-head h2 { margin: 0; font-size: clamp(1.55rem, 3vw, 2.2rem); line-height: 1.1; }
+.section-intro { max-width: 760px; margin: -10px 0 24px; color: var(--muted-foreground); }
+.ve-card {
+  min-width: 0;
+  padding: 20px 22px;
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--card);
+  overflow-wrap: break-word;
+}
+.ve-card--hero { background: color-mix(in oklab, var(--primary) 5%, var(--card)); border-color: var(--primary); box-shadow: 0 4px 24px color-mix(in oklab, var(--primary) 10%, transparent); }
+.ve-card--recessed { background: var(--muted); border-color: transparent; }
+.ve-card h3 { margin: 0 0 7px; font-size: 1.18rem; }
+.ve-card p { margin: 0; color: var(--muted-foreground); font-size: 0.91rem; }
+.ve-card ul { margin: 10px 0 0; padding-left: 1.15rem; color: var(--muted-foreground); font-size: 0.88rem; }
+.ve-card li + li { margin-top: 5px; }
+.grid-2, .grid-3, .grid-4 { display: grid; gap: 16px; align-items: stretch; }
+.grid-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.grid-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.grid-4 { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+.pipeline {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 0;
+  align-items: stretch;
+  overflow-x: auto;
+  padding: 4px 0 14px;
+}
+.pipe-step {
+  min-width: 175px;
+  padding: 18px 17px;
+  border: 1.5px solid var(--border);
+  background: var(--card);
+  position: relative;
+}
+.pipe-step:first-child { border-radius: var(--radius) 0 0 var(--radius); }
+.pipe-step:last-child { border-radius: 0 var(--radius) var(--radius) 0; }
+.pipe-step:not(:last-child)::after {
+  content: "→";
+  position: absolute;
+  z-index: 2;
+  top: 50%; right: -12px;
+  width: 24px; height: 24px;
+  display: grid; place-items: center;
+  transform: translateY(-50%);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: var(--background);
+  color: var(--primary);
+  font-weight: 700;
+}
+.step-kicker { color: var(--primary); font-size: 0.62rem; font-weight: 700; }
+.step-name { margin: 6px 0 5px; font-weight: 700; font-size: 0.91rem; }
+.step-detail { color: var(--muted-foreground); font-size: 0.76rem; line-height: 1.45; }
+.state { display: inline-block; margin-top: 9px; padding: 3px 7px; border-radius: 5px; background: var(--code-bg); color: var(--foreground); font-family: var(--font-mono); font-size: 0.65rem; }
+.atomic-band {
+  margin-top: 16px;
+  padding: 13px 18px;
+  border-left: 4px solid var(--success);
+  border-radius: 0 var(--radius) var(--radius) 0;
+  background: color-mix(in oklab, var(--success) 10%, var(--card));
+  color: var(--muted-foreground);
+  font-size: 0.86rem;
+}
+.atomic-band strong { color: var(--foreground); }
+.transition-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; }
+.transition-card { position: relative; padding-top: 42px; }
+.transition-card::before {
+  content: attr(data-num);
+  position: absolute; top: 16px; left: 20px;
+  color: var(--primary);
+  font-family: var(--font-mono); font-size: 0.66rem; font-weight: 700;
+}
+.arrow-state { margin: 11px 0; font-family: var(--font-mono); font-size: 0.77rem; color: var(--foreground); }
+.arrow-state b { color: var(--primary); }
+.schema {
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius);
+  overflow: hidden;
+  background: var(--card);
+}
+.schema-head { padding: 15px 18px; border-bottom: 1px solid var(--border); background: color-mix(in oklab, var(--primary) 6%, var(--card)); }
+.schema-head h3 { margin: 0; font-family: var(--font-mono); font-size: 0.85rem; }
+.schema-head p { margin: 4px 0 0; color: var(--muted-foreground); font-size: 0.76rem; }
+.field { display: grid; grid-template-columns: minmax(145px, 0.85fr) 1.6fr; gap: 14px; padding: 10px 18px; border-bottom: 1px solid var(--border); }
+.field:last-child { border-bottom: none; }
+.field-name { color: var(--primary); font-size: 0.66rem; overflow-wrap: anywhere; }
+.field-rule { color: var(--muted-foreground); font-size: 0.76rem; line-height: 1.45; }
+.relation-map {
+  display: grid;
+  grid-template-columns: 1fr 70px 1fr 70px 1fr;
+  gap: 8px;
+  align-items: center;
+  margin-bottom: 18px;
+}
+.relation-box { padding: 16px; border: 1.5px solid var(--border); border-radius: var(--radius); background: var(--card); text-align: center; }
+.relation-box strong { display: block; font-family: var(--font-mono); font-size: 0.73rem; color: var(--primary); }
+.relation-box span { color: var(--muted-foreground); font-size: 0.72rem; }
+.relation-arrow { text-align: center; color: var(--primary); font-family: var(--font-mono); font-size: 1.4rem; }
+.table-wrap { overflow-x: auto; border: 1.5px solid var(--border); border-radius: var(--radius); background: var(--card); }
+table { width: 100%; border-collapse: collapse; min-width: 720px; }
+caption { padding: 13px 17px; text-align: left; color: var(--muted-foreground); font-size: 0.77rem; }
+th { background: var(--muted); color: var(--muted-foreground); font-family: var(--font-mono); font-size: 0.67rem; letter-spacing: 0.05em; text-transform: uppercase; }
+th, td { padding: 13px 15px; border-bottom: 1px solid var(--border); text-align: left; vertical-align: top; }
+tr:last-child td { border-bottom: none; }
+td { font-size: 0.82rem; }
+.badge { display: inline-block; padding: 3px 7px; border-radius: 5px; font-size: 0.62rem; font-weight: 700; white-space: nowrap; }
+.badge.ok { color: var(--success); background: color-mix(in oklab, var(--success) 13%, transparent); }
+.badge.stop { color: var(--destructive); background: color-mix(in oklab, var(--destructive) 13%, transparent); }
+.badge.wait { color: var(--warning); background: color-mix(in oklab, var(--warning) 13%, transparent); }
+.badge.info { color: var(--primary); background: color-mix(in oklab, var(--primary) 12%, transparent); }
+.split-path { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
+.path-card { padding: 23px; border: 1.5px solid var(--border); border-radius: var(--radius); background: var(--card); }
+.path-card.safe { border-top: 4px solid var(--success); }
+.path-card.alert { border-top: 4px solid var(--warning); }
+.path-card h3 { margin: 0 0 12px; }
+.path-list { margin: 0; padding-left: 1.2rem; color: var(--muted-foreground); font-size: 0.85rem; }
+.path-list li + li { margin-top: 8px; }
+.lock-row { display: grid; grid-template-columns: repeat(6, minmax(135px, 1fr)); gap: 8px; overflow-x: auto; padding-bottom: 10px; }
+.lock-step { min-width: 135px; padding: 13px; border: 1px solid var(--border); border-radius: var(--radius); background: var(--card); text-align: center; }
+.lock-num { color: var(--primary); font-family: var(--font-mono); font-size: 0.65rem; }
+.lock-name { margin-top: 4px; font-size: 0.78rem; font-weight: 650; }
+.callout {
+  padding: 17px 21px;
+  border-left: 4px solid var(--primary);
+  border-radius: 0 var(--radius) var(--radius) 0;
+  background: var(--card);
+  color: var(--muted-foreground);
+}
+.callout strong { color: var(--foreground); }
+.scope-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.scope-card { padding: 18px 20px; border-radius: var(--radius); }
+.scope-card.in { border: 1px solid color-mix(in oklab, var(--success) 45%, var(--border)); background: color-mix(in oklab, var(--success) 6%, var(--card)); }
+.scope-card.out { border: 1px solid color-mix(in oklab, var(--muted-foreground) 30%, var(--border)); background: var(--muted); }
+.scope-card h3 { margin: 0 0 8px; font-size: 1.05rem; }
+.scope-card ul { margin: 0; padding-left: 1.1rem; color: var(--muted-foreground); font-size: 0.82rem; }
+.check-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+.check { position: relative; padding: 13px 15px 13px 42px; border: 1px solid var(--border); border-radius: var(--radius); background: var(--card); color: var(--muted-foreground); font-size: 0.79rem; }
+.check::before { content: "✓"; position: absolute; left: 15px; top: 12px; color: var(--success); font-weight: 800; }
+details { margin-top: 14px; border: 1.5px solid var(--border); border-radius: var(--radius); background: var(--card); }
+summary { padding: 14px 18px; cursor: pointer; font-weight: 650; }
+.details-body { padding: 0 18px 18px; color: var(--muted-foreground); font-size: 0.84rem; }
+.details-body ol, .details-body ul { margin-bottom: 0; }
+.footer { margin-top: 75px; padding-top: 22px; border-top: 1px solid var(--border); color: var(--muted-foreground); font-family: var(--font-mono); font-size: 0.72rem; }
+@media (max-width: 1050px) {
+  .wrap { grid-template-columns: 1fr; padding-top: 0; }
+  .toc {
+    position: sticky; top: 0; z-index: 50; grid-row: auto;
+    display: flex; gap: 4px; align-items: center; overflow-x: auto;
+    max-height: none; margin: 0 -34px; padding: 10px 34px;
+    background: var(--background); border-bottom: 1px solid var(--border);
+  }
+  .toc-title { display: none; }
+  .toc a { flex-shrink: 0; border-left: 0; border-bottom: 2px solid transparent; white-space: nowrap; }
+  .toc a.active { border-bottom-color: var(--primary); }
+  section { scroll-margin-top: 60px; }
+}
+@media (max-width: 760px) {
+  .wrap { padding: 0 18px 60px; }
+  .toc { margin: 0 -18px; padding-left: 18px; padding-right: 18px; }
+  header { padding-top: 34px; }
+  .summary-strip { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .summary-strip .kpi-card:last-child { grid-column: 1 / -1; }
+  .grid-2, .grid-3, .grid-4, .transition-grid, .split-path, .scope-grid, .check-grid { grid-template-columns: 1fr; }
+  .relation-map { grid-template-columns: 1fr; }
+  .relation-arrow { transform: rotate(90deg); }
+  .field { grid-template-columns: 1fr; gap: 4px; }
+  h1 { font-size: 2.5rem; }
+}
+@media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <nav class="toc" id="toc" aria-label="Document sections">
+    <div class="toc-title">Contract map</div>
+    <a href="#overview">1. Mental model</a>
+    <a href="#paid-flow">2. Paid flow</a>
+    <a href="#evidence">3. Evidence</a>
+    <a href="#races">4. Races</a>
+    <a href="#stock">5. Stock</a>
+    <a href="#branches">6. Other branches</a>
+    <a href="#controls">7. Controls</a>
+    <a href="#failures">8. Failures</a>
+    <a href="#choices">9. Decisions</a>
+    <a href="#proof">10. Proof</a>
+  </nav>
+
+  <main class="main">
+    <header>
+      <div class="eyebrow">RPRT-42 · Contract explainer</div>
+      <h1>Cancel safely after payment.</h1>
+      <p class="lede">A visual map of how immutable cancellation intent, verified refund evidence, order-lock races, consumed-stock restoration, and post-handoff recovery work together.</p>
+      <p class="source-link"><a href="https://linear.app/guisaliba/document/rprt-42-cancellation-intent-and-paid-stock-recovery-contract-862263dca56a">Open the normative Linear document ↗</a></p>
+      <div class="hero-rule"><strong>The central rule:</strong> a paid order is not cancelled when staff asks. The system first stores immutable intent and requests a full refund. Only verified refund evidence can cancel the order, stop fulfillment, and return stock.</div>
+      <div class="summary-strip" aria-label="Contract summary">
+        <div class="kpi-card"><span class="kpi-value">1</span><span class="kpi-label">Intent per order</span></div>
+        <div class="kpi-card"><span class="kpi-value">6</span><span class="kpi-label">Forward commands blocked</span></div>
+        <div class="kpi-card"><span class="kpi-value">3</span><span class="kpi-label">Audit transitions</span></div>
+        <div class="kpi-card"><span class="kpi-value">0</span><span class="kpi-label">Consumed rows rewritten</span></div>
+        <div class="kpi-card"><span class="kpi-value">12</span><span class="kpi-label">Core invariants</span></div>
+      </div>
+    </header>
+
+    <section id="overview">
+      <div class="sec-head"><span class="section-number">01</span><h2>The mental model</h2></div>
+      <p class="section-intro">Remote refund work cannot be inside a PostgreSQL transaction. The contract splits the operation into durable intent, an external call, and verified local convergence.</p>
+      <div class="pipeline">
+        <div class="pipe-step">
+          <div class="step-kicker">Before</div>
+          <div class="step-name">Accepted settlement</div>
+          <div class="step-detail">Order is <code>placed</code>. The settlement pointer references the accepted attempt.</div>
+          <span class="state">payment: paid</span>
+        </div>
+        <div class="pipe-step">
+          <div class="step-kicker">Local TX A</div>
+          <div class="step-name">Commit intent</div>
+          <div class="step-detail">Staff request, exact payment transition, audit, and refund job commit together.</div>
+          <span class="state">refund_pending</span>
+        </div>
+        <div class="pipe-step">
+          <div class="step-kicker">External</div>
+          <div class="step-name">Request full refund</div>
+          <div class="step-detail">Protected worker calls the provider. Timeout or unknown result proves nothing.</div>
+          <span class="state">outbox: full-refund</span>
+        </div>
+        <div class="pipe-step">
+          <div class="step-kicker">Evidence</div>
+          <div class="step-name">Verify provider truth</div>
+          <div class="step-detail">Authenticated webhook or protected lookup proves the exact full refund.</div>
+          <span class="state">verified evidence</span>
+        </div>
+        <div class="pipe-step">
+          <div class="step-kicker">Local TX B</div>
+          <div class="step-name">Converge</div>
+          <div class="step-detail">Refund, cancellation, restoration, audit, and recovery effects succeed together.</div>
+          <span class="state">order: cancelled</span>
+        </div>
+      </div>
+      <div class="atomic-band"><strong>Two atomic boundaries.</strong> The first transaction creates durable intent and refund work. The second applies verified refund truth and every local cancellation effect. A remote API call never sits inside either database transaction.</div>
+      <div class="grid-3" style="margin-top:18px">
+        <div class="ve-card"><h3>Intent is not cancellation</h3><p>The order remains <code>placed</code>. Intent only freezes forward work and starts refund processing.</p></div>
+        <div class="ve-card"><h3>Refund request is not proof</h3><p>Timeout, dead letter, lost response, elapsed time, and staff statements cannot change payment to <code>refunded</code>.</p></div>
+        <div class="ve-card"><h3>History is not authority</h3><p>The settlement pointer remains historical evidence after refund. Current state and command guards decide authority.</p></div>
+      </div>
+    </section>
+
+    <section id="paid-flow">
+      <div class="sec-head"><span class="section-number">02</span><h2>Paid cancellation, step by step</h2></div>
+      <div class="transition-grid">
+        <div class="ve-card transition-card" data-num="TRANSITION 01">
+          <h3>Refund request</h3>
+          <div class="arrow-state"><b>payment</b> · paid → refund_pending</div>
+          <p><code>refund_request_transition_id</code> proves that staff accepted this exact settlement attempt for full-refund cancellation.</p>
+        </div>
+        <div class="ve-card transition-card" data-num="TRANSITION 02">
+          <h3>Verified refund</h3>
+          <div class="arrow-state"><b>payment</b> · refund_pending → refunded</div>
+          <p><code>refund_transition_id</code> proves that authenticated provider evidence confirmed the exact full refund.</p>
+        </div>
+        <div class="ve-card transition-card" data-num="TRANSITION 03">
+          <h3>Order cancellation</h3>
+          <div class="arrow-state"><b>order</b> · placed → cancelled</div>
+          <p><code>cancellation_transition_id</code> proves that the order and fulfillment cancelled in the same transaction as verified refund convergence.</p>
+        </div>
+      </div>
+      <div class="callout" style="margin-top:17px"><strong>Why transitions 02 and 03 are both stored on each restoration:</strong> refund proof alone cannot return stock, and an unrelated cancellation cannot return paid stock. The pair proves verified refund and matching order cancellation happened together.</div>
+      <details>
+        <summary>What <code>request_paid_order_cancellation</code> must do</summary>
+        <div class="details-body">
+          <ol>
+            <li>Authenticate authorized staff and require a safe non-blank reason plus idempotency key.</li>
+            <li>Lock the order first and require <code>placed</code>.</li>
+            <li>Require fulfillment to be <code>unfulfilled</code>, <code>in_production</code>, or <code>ready_for_fulfillment</code>, with no handoff.</li>
+            <li>Reject processing, ambiguous, completed, or provider-confirmed label evidence until RPRT-25 proves safe label cancellation.</li>
+            <li>Lock the exact settlement attempt and require it to be <code>paid</code>.</li>
+            <li>Insert intent, transition payment to <code>refund_pending</code>, write audit, and create one refund job.</li>
+            <li>Do not yet cancel, restore stock, clear settlement, or send customer email.</li>
+          </ol>
+        </div>
+      </details>
+    </section>
+
+    <section id="evidence">
+      <div class="sec-head"><span class="section-number">03</span><h2>The immutable evidence model</h2></div>
+      <p class="section-intro">There are no mutable cancellation flags on <code>orders</code>. Each important fact is append-only, tightly linked, and protected from direct writes.</p>
+      <div class="relation-map" aria-label="Evidence relationships">
+        <div class="relation-box"><strong>order_cancellation_intents</strong><span>one accepted intent per order</span></div>
+        <div class="relation-arrow">→</div>
+        <div class="relation-box"><strong>domain_transitions</strong><span>request, refund, cancellation proof</span></div>
+        <div class="relation-arrow">→</div>
+        <div class="relation-box"><strong>stock_restorations</strong><span>one row per consumed reservation</span></div>
+      </div>
+      <div class="grid-2">
+        <div class="schema">
+          <div class="schema-head"><h3>order_cancellation_intents</h3><p>Immutable opening fact. Never cleared, replaced, deactivated, or withdrawn.</p></div>
+          <div class="field"><span class="field-name">id</span><span class="field-rule">Database UUID primary key.</span></div>
+          <div class="field"><span class="field-name">order_id</span><span class="field-rule">Required and unique. One accepted intent per order.</span></div>
+          <div class="field"><span class="field-name">intent_kind</span><span class="field-rule">Fixed to <code>full_refund_then_cancel</code>.</span></div>
+          <div class="field"><span class="field-name">settlement_payment_attempt_id</span><span class="field-rule">Exact same-order accepted settlement attempt.</span></div>
+          <div class="field"><span class="field-name">refund_request_transition_id</span><span class="field-rule">Unique exact <code>paid → refund_pending</code> transition.</span></div>
+          <div class="field"><span class="field-name">requested_by_staff_id</span><span class="field-rule">Authenticated staff identity derived by the command.</span></div>
+          <div class="field"><span class="field-name">reason · idempotency_key · requested_at</span><span class="field-rule">Required safe reason, unique command key, and database time.</span></div>
+        </div>
+        <div class="schema">
+          <div class="schema-head"><h3>paid_cancellation_stock_restorations</h3><p>Exactly-once restoration fact. The original reservation stays consumed.</p></div>
+          <div class="field"><span class="field-name">reservation_id</span><span class="field-rule">Primary key. One restoration maximum per consumed reservation.</span></div>
+          <div class="field"><span class="field-name">order_id · product_id</span><span class="field-rule">Required same-order and same-product references.</span></div>
+          <div class="field"><span class="field-name">quantity</span><span class="field-rule">Positive and exactly equal to immutable reservation quantity.</span></div>
+          <div class="field"><span class="field-name">refund_transition_id</span><span class="field-rule">Verified <code>refund_pending → refunded</code> evidence.</span></div>
+          <div class="field"><span class="field-name">cancellation_transition_id</span><span class="field-rule">Same-transaction <code>placed → cancelled</code> evidence.</span></div>
+          <div class="field"><span class="field-name">restored_at</span><span class="field-rule">Database time. Rows cannot update or delete.</span></div>
+        </div>
+        <div class="schema">
+          <div class="schema-head"><h3>post_handoff_refund_cases</h3><p>Separate, non-blocking operational recovery after irreversible handoff.</p></div>
+          <div class="field"><span class="field-name">id · order_id</span><span class="field-rule">Database case identity and affected order.</span></div>
+          <div class="field"><span class="field-name">settlement_attempt_id</span><span class="field-rule">The accepted historical settlement that was later refunded.</span></div>
+          <div class="field"><span class="field-name">verified_refund_transition_id</span><span class="field-rule">Unique verified refund fact.</span></div>
+          <div class="field"><span class="field-name">handoff_transition_id</span><span class="field-rule">The authoritative carrier, pickup, or local-handoff proof.</span></div>
+          <div class="field"><span class="field-name">state_snapshot · opened_at</span><span class="field-rule">Safe diagnosis data and database opening time.</span></div>
+        </div>
+        <div class="schema">
+          <div class="schema-head"><h3>post_handoff_refund_resolutions</h3><p>One optional administrative outcome. It cannot rewrite business truth.</p></div>
+          <div class="field"><span class="field-name">case_id</span><span class="field-rule">Primary key. Maximum one resolution per case.</span></div>
+          <div class="field"><span class="field-name">resolving_transition</span><span class="field-rule">Unique immutable audit transition.</span></div>
+          <div class="field"><span class="field-name">staff · reason · proof</span><span class="field-rule">Authenticated staff, written reason, and append-only proof.</span></div>
+          <div class="field"><span class="field-name">resolved_at</span><span class="field-rule">Database time. No lifecycle, stock, refund, or email effects.</span></div>
+        </div>
+      </div>
+    </section>
+
+    <section id="races">
+      <div class="sec-head"><span class="section-number">04</span><h2>Race rules: first commit wins</h2></div>
+      <p class="section-intro">All competing commands lock the order first, then re-read every guard. The first committed truth controls the waiting command.</p>
+      <div class="table-wrap">
+        <table>
+          <caption>Deterministic outcomes under the order lock</caption>
+          <thead><tr><th>First committed truth</th><th>Waiting operation</th><th>Required result</th><th>Status</th></tr></thead>
+          <tbody>
+            <tr><td>Paid-cancellation intent</td><td>Production, readiness, new label, or handoff</td><td>Reject with no business effect.</td><td><span class="badge stop">Blocked</span></td></tr>
+            <tr><td>Carrier, pickup, or local handoff</td><td>Paid-cancellation request</td><td>Reject; create no intent, refund transition, audit, or refund job.</td><td><span class="badge stop">Handoff wins</span></td></tr>
+            <tr><td>Verified pre-handoff refund convergence</td><td>Any later handoff</td><td>Order and fulfillment are terminal <code>cancelled</code>.</td><td><span class="badge ok">Cancel wins</span></td></tr>
+            <tr><td>Handoff, then unexpected verified refund</td><td>Normal cancellation</td><td>Keep fulfillment and stock; open post-handoff recovery.</td><td><span class="badge wait">Recover</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+      <h3 style="margin:28px 0 12px">The shipping-label sub-race</h3>
+      <div class="grid-4">
+        <div class="ve-card"><span class="badge ok">Intent may win</span><h3 style="margin-top:10px">Unclaimed pending job</h3><p>The job does not block intent. The worker must lock the order, recheck, record a permanent no-call result, and never dispatch.</p></div>
+        <div class="ve-card"><span class="badge stop">Cancellation rejects</span><h3 style="margin-top:10px">Processing job</h3><p>A provider call can already be in flight. Cancellation fails closed until provider cancellation is proven safe.</p></div>
+        <div class="ve-card"><span class="badge stop">Cancellation rejects</span><h3 style="margin-top:10px">Ambiguous result</h3><p>The provider might have created a label. Local absence is not proof.</p></div>
+        <div class="ve-card"><span class="badge stop">Cancellation rejects</span><h3 style="margin-top:10px">Completed or confirmed</h3><p>Known label truth wins. RPRT-25 must later define a safe provider label-cancellation path.</p></div>
+      </div>
+    </section>
+
+    <section id="stock">
+      <div class="sec-head"><span class="section-number">05</span><h2>Stock returns without rewriting history</h2></div>
+      <div class="split-path">
+        <div class="path-card safe">
+          <h3>What changes</h3>
+          <ul class="path-list">
+            <li>One immutable restoration row is inserted for every eligible consumed reservation.</li>
+            <li><code>products.stock_quantity</code> increases by each immutable reservation quantity.</li>
+            <li>The complete direct-stock set restores together, including from <code>in_production</code>.</li>
+            <li>Assisted orders have no reservation or stock effect.</li>
+          </ul>
+        </div>
+        <div class="path-card alert">
+          <h3>What never changes</h3>
+          <ul class="path-list">
+            <li>A consumed reservation never moves to <code>released</code>.</li>
+            <li>Partial restoration is forbidden.</li>
+            <li>Duplicate refund evidence cannot increment quantity twice.</li>
+            <li>Post-handoff refund never restores stock automatically.</li>
+          </ul>
+        </div>
+      </div>
+      <div class="pipeline" style="grid-template-columns:repeat(4,minmax(0,1fr)); margin-top:20px">
+        <div class="pipe-step"><div class="step-kicker">Select</div><div class="step-name">Complete eligible set</div><div class="step-detail">Every reservation consumed by the exact accepted settlement, and no unrelated reservation.</div></div>
+        <div class="pipe-step"><div class="step-kicker">Lock</div><div class="step-name">Products then reservations</div><div class="step-detail">Stable ID order inside the common lock sequence.</div></div>
+        <div class="pipe-step"><div class="step-kicker">Insert</div><div class="step-name">One fact per reservation</div><div class="step-detail">Reservation ID as primary key enforces at-most-once restoration.</div></div>
+        <div class="pipe-step"><div class="step-kicker">Increment</div><div class="step-name">All quantities or none</div><div class="step-detail">Any failed insert or increment rolls back the complete local refund convergence.</div></div>
+      </div>
+    </section>
+
+    <section id="branches">
+      <div class="sec-head"><span class="section-number">06</span><h2>Unpaid and post-handoff branches</h2></div>
+      <div class="split-path">
+        <div class="path-card safe">
+          <span class="badge info">Unpaid cancellation</span>
+          <h3 style="margin-top:12px">Prove every attempt cannot become paid</h3>
+          <ul class="path-list">
+            <li><code>not_started</code> can be superseded only with proof that no provider call occurred and an audit reason.</li>
+            <li><code>creating</code>, <code>creation_unknown</code>, and <code>pending</code> block cancellation until verified evidence resolves them.</li>
+            <li>Verified provider cancellation maps the exact attempt to <code>failed</code> with reason <code>provider_checkout_cancelled_verified</code>.</li>
+            <li>Verified provider expiry maps to <code>expired</code>. No payment <code>cancelled</code> state is added.</li>
+            <li>Only then can active reservations release exactly once.</li>
+          </ul>
+        </div>
+        <div class="path-card alert">
+          <span class="badge wait">Post-handoff refund</span>
+          <h3 style="margin-top:12px">Record conflict; do not rewrite delivery truth</h3>
+          <ul class="path-list">
+            <li>Record the accepted settlement attempt as <code>refunded</code>.</li>
+            <li>Keep order, fulfillment, consumed reservations, stock, and settlement pointer unchanged.</li>
+            <li>Continue post-handoff tracking from authoritative handoff evidence.</li>
+            <li>Open one separate recovery case and emit an independent operational alert.</li>
+            <li>Administrative resolution records the operational outcome only.</li>
+          </ul>
+        </div>
+      </div>
+      <div class="callout" style="margin-top:17px"><strong>Late payment never reopens a cancelled order.</strong> Verified late paid truth enters the cancelled-order refund recovery path. Duplicate-payment refund also cannot satisfy the accepted-settlement cancellation intent or restore its stock.</div>
+    </section>
+
+    <section id="controls">
+      <div class="sec-head"><span class="section-number">07</span><h2>Security, locks, and idempotency</h2></div>
+      <h3 style="margin:0 0 12px">One common relative lock order</h3>
+      <div class="lock-row">
+        <div class="lock-step"><div class="lock-num">01</div><div class="lock-name">Order</div></div>
+        <div class="lock-step"><div class="lock-num">02</div><div class="lock-name">Payment attempts</div></div>
+        <div class="lock-step"><div class="lock-num">03</div><div class="lock-name">Recovery cases</div></div>
+        <div class="lock-step"><div class="lock-num">04</div><div class="lock-name">Products</div></div>
+        <div class="lock-step"><div class="lock-num">05</div><div class="lock-name">Reservations</div></div>
+        <div class="lock-step"><div class="lock-num">06</div><div class="lock-name">Append-only inserts</div></div>
+      </div>
+      <div class="grid-3" style="margin-top:18px">
+        <div class="ve-card"><h3>Authorization</h3><p>Customers, guests, normal staff access, workers, <code>anon</code>, and <code>authenticated</code> cannot directly mutate evidence tables. Narrow guarded commands derive actor identity and use fixed safe <code>search_path</code>.</p></div>
+        <div class="ve-card"><h3>Idempotency</h3><p>One intent per order, one caller key, one refund job key, one restoration per reservation, one post-handoff case per verified refund, and one resolution per case.</p></div>
+        <div class="ve-card"><h3>Safe diagnosis</h3><p>Operations can inspect IDs, safe states, times, job state, transition references, restoration completion, recovery, and alert state without raw payloads, credentials, or sensitive customer data.</p></div>
+      </div>
+      <details>
+        <summary>Stable identities and business keys</summary>
+        <div class="details-body">
+          <ul>
+            <li>Intent: unique order plus unique caller idempotency key.</li>
+            <li>Refund job: <code>full-refund:&lt;payment-attempt-id&gt;:&lt;refund-request-transition-id&gt;</code>.</li>
+            <li>Verified provider truth: provider event or protected reconciliation deduplication key.</li>
+            <li>Stock restoration: consumed reservation primary key.</li>
+            <li>Post-handoff case: unique verified-refund transition.</li>
+            <li>Administrative resolution: unique case and resolving transition.</li>
+          </ul>
+        </div>
+      </details>
+    </section>
+
+    <section id="failures">
+      <div class="sec-head"><span class="section-number">08</span><h2>Failure behavior is fail-closed</h2></div>
+      <div class="table-wrap">
+        <table>
+          <caption>Every uncertain result preserves evidence and blocks unsafe progress</caption>
+          <thead><tr><th>Failure</th><th>Persisted result</th><th>Forbidden shortcut</th></tr></thead>
+          <tbody>
+            <tr><td>Refund timeout or unknown response</td><td>Keep <code>refund_pending</code> and intent active; require verified evidence.</td><td>Do not hand off or assume refund.</td></tr>
+            <tr><td>Refund job dead letter</td><td>Keep intent active and alert operations independently.</td><td>Do not withdraw intent or restore stock.</td></tr>
+            <tr><td>Stock restoration failure</td><td>Roll back all local refund convergence effects.</td><td>No refunded payment beside active fulfillment or partial stock.</td></tr>
+            <tr><td>Duplicate refund webhook</td><td>Return the first result.</td><td>No repeated quantity, audit, or recovery effects.</td></tr>
+            <tr><td>Handoff wins first</td><td>Reject the cancellation request.</td><td>No intent, refund transition, audit, or refund job.</td></tr>
+            <tr><td>Unexpected refund after handoff</td><td>Keep fulfillment and stock; open recovery and alert.</td><td>Do not use normal cancellation.</td></tr>
+            <tr><td>Duplicate payment refund</td><td>Refund only the duplicate attempt.</td><td>Do not satisfy intent or restore settlement stock.</td></tr>
+            <tr><td>Late payment on cancelled order</td><td>Keep terminal order; enter cancelled-order refund recovery.</td><td>Never reopen the order.</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section id="choices">
+      <div class="sec-head"><span class="section-number">09</span><h2>What was selected, and what was rejected</h2></div>
+      <div class="table-wrap">
+        <table>
+          <caption>The decisions that define the contract</caption>
+          <thead><tr><th>Question</th><th>Selected</th><th>Rejected</th><th>Why</th></tr></thead>
+          <tbody>
+            <tr><td>Intent gate</td><td>Block all forward fulfillment.</td><td>Block handoff only; permit label work.</td><td>Work stops as soon as intent and refund work commit.</td></tr>
+            <tr><td>Race winner</td><td>First order-lock commit.</td><td>Cancellation always wins; refund time wins.</td><td>One deterministic local result without rewriting handoff truth.</td></tr>
+            <tr><td>Consumed stock</td><td>Immutable restoration facts.</td><td>Rewrite to released; silent increment; no return.</td><td>Preserve history and prove exactly-once restoration.</td></tr>
+            <tr><td>Intent withdrawal</td><td>Never after acceptance.</td><td>Withdraw before provider call or verified refund.</td><td>Refund work can become ambiguous and must fail closed.</td></tr>
+            <tr><td>Post-handoff refund</td><td>Preserve fulfillment; open recovery.</td><td>Force cancellation; silently continue.</td><td>Handoff is irreversible, but the conflict needs durable resolution.</td></tr>
+            <tr><td>In-production stock</td><td>Restore after verified pre-handoff refund.</td><td>Manual review; reject cancellation.</td><td>Approved product rule returns pre-handoff direct stock.</td></tr>
+            <tr><td>Settlement pointer</td><td>Keep historical pointer.</td><td>Clear it; move to another history table.</td><td>The pointer records accepted settlement; guards control authority.</td></tr>
+            <tr><td>Customer message</td><td>No new M1 email job.</td><td>Refund email; intent and refund emails.</td><td>This task defines database safety, not product messaging.</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section id="proof">
+      <div class="sec-head"><span class="section-number">10</span><h2>What implementation must prove</h2></div>
+      <p class="section-intro">RPRT-46 owns ordered migrations, protected predicates and commands, grants, pgTAP tests, concurrency tests, and generated types. These checks define completion.</p>
+      <div class="check-grid">
+        <div class="check">One request creates one immutable intent, one payment transition, one audit result, and one refund job.</div>
+        <div class="check">Duplicate requests and provider events create no duplicate effect or customer email.</div>
+        <div class="check">Intent blocks all six forward commands and cannot be changed or withdrawn.</div>
+        <div class="check">Intent-first, label-first, carrier-first, pickup-first, and local-handoff-first races are deterministic.</div>
+        <div class="check">Concurrent refund and handoff paths use the common lock order without deadlock or mixed truth.</div>
+        <div class="check">Verified pre-handoff refund applies every local effect atomically and rolls all back on failure.</div>
+        <div class="check">Every consumed reservation stays consumed; complete quantity restores all-or-none and at most once.</div>
+        <div class="check">Restoration works from unfulfilled, in production, and ready; assisted orders have no stock effect.</div>
+        <div class="check">Duplicate and cancelled-order refunds cannot satisfy accepted-settlement intent.</div>
+        <div class="check">Post-handoff refund preserves delivery truth, permits tracking, opens one case, and alerts independently.</div>
+        <div class="check">Verified provider cancellation maps to failed; unverified evidence cannot release stock.</div>
+        <div class="check">Late payment never reopens a cancelled order; historical settlement grants no unsafe authority.</div>
+        <div class="check">Intent constraints prove fixed kind, required actor and reason, pointer equality, and exact transition binding.</div>
+        <div class="check">Restoration constraints prove same order, same product, exact quantity, and complete eligible set.</div>
+        <div class="check">Post-handoff resolution proves one guarded outcome and no lifecycle, stock, refund, or email effects.</div>
+        <div class="check">Cross-order references, direct mutation, and unauthorized command execution fail.</div>
+      </div>
+      <div class="scope-grid" style="margin-top:24px">
+        <div class="scope-card in"><h3>Inside RPRT-42</h3><ul><li>Unpaid cancellation safety</li><li>Paid pre-handoff cancellation</li><li>Refund and handoff races</li><li>Consumed-stock restoration</li><li>Post-handoff refund recovery</li><li>Pointer, audit, outbox, authorization, and tests</li></ul></div>
+        <div class="scope-card out"><h3>Explicitly outside</h3><ul><li>Return lifecycle</li><li>Partial refunds</li><li>Customer-initiated cancellation</li><li>Automatic unpaid-order timing</li><li>Customer cancellation email work</li><li>Safe provider label cancellation until RPRT-25</li></ul></div>
+      </div>
+      <div class="ve-card ve-card--hero" style="margin-top:22px"><h3>Review gate</h3><p>RPRT-42 owns this contract and technical-lead approval. RPRT-46 must not implement it before approval. The implementation must preserve immutable evidence, hard intent gates, deterministic locking, exactly-once stock effects, and fail-closed provider boundaries.</p></div>
+    </section>
+
+    <div class="footer">Generated from the RPRT-42 Linear contract · Visual explainer only · The Linear document remains normative.</div>
+  </main>
+</div>
+
+<script>
+(function () {
+  const toc = document.getElementById('toc');
+  const links = [...toc.querySelectorAll('a')];
+  const sections = links.map(link => ({
+    link,
+    el: document.getElementById(link.getAttribute('href').slice(1))
+  })).filter(item => item.el);
+  const observer = new IntersectionObserver(entries => {
+    for (const entry of entries) {
+      if (!entry.isIntersecting) continue;
+      links.forEach(link => link.classList.remove('active'));
+      const match = sections.find(item => item.el === entry.target);
+      if (match) {
+        match.link.classList.add('active');
+        if (window.innerWidth <= 1050) {
+          match.link.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+        }
+      }
+    }
+  }, { rootMargin: '-10% 0px -80% 0px' });
+  sections.forEach(item => observer.observe(item.el));
+  links.forEach(link => link.addEventListener('click', event => {
+    event.preventDefault();
+    const el = document.getElementById(link.getAttribute('href').slice(1));
+    if (el) {
+      el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      history.replaceState(null, '', link.getAttribute('href'));
+    }
+  }));
+})();
+</script>
+</body>
+</html>

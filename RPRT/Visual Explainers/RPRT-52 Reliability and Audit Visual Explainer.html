@@ -1,0 +1,1631 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="description"
+      content="Visual explainer for Studio Repertorio PR #13: reliability and audit schema security."
+    />
+    <title>PR #13 - Reliability and Audit Schema Security</title>
+    <style>
+      :root {
+        --font-body: Aptos, Candara, "Trebuchet MS", sans-serif;
+        --font-display: "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, serif;
+        --font-mono: "Cascadia Code", "SFMono-Regular", Consolas, monospace;
+        --bg: #f4f1e8;
+        --surface: #fffdf7;
+        --surface-2: #eae6da;
+        --surface-3: #ded9ca;
+        --border: rgba(29, 41, 48, 0.14);
+        --border-strong: rgba(29, 41, 48, 0.28);
+        --text: #1d2930;
+        --text-dim: #637078;
+        --navy: #173f54;
+        --navy-soft: rgba(23, 63, 84, 0.1);
+        --gold: #b87716;
+        --gold-soft: rgba(184, 119, 22, 0.12);
+        --green: #397257;
+        --green-soft: rgba(57, 114, 87, 0.11);
+        --red: #a34135;
+        --red-soft: rgba(163, 65, 53, 0.11);
+        --blue: #376a8b;
+        --blue-soft: rgba(55, 106, 139, 0.11);
+        --shadow: 0 10px 35px rgba(40, 36, 28, 0.08);
+      }
+
+      html[data-theme="dark"] {
+        --bg: #10191e;
+        --surface: #17242b;
+        --surface-2: #1c2c34;
+        --surface-3: #263740;
+        --border: rgba(222, 230, 226, 0.09);
+        --border-strong: rgba(222, 230, 226, 0.2);
+        --text: #edf0e9;
+        --text-dim: #9eaaa8;
+        --navy: #78b7d0;
+        --navy-soft: rgba(120, 183, 208, 0.11);
+        --gold: #e3aa4f;
+        --gold-soft: rgba(227, 170, 79, 0.12);
+        --green: #7dc09a;
+        --green-soft: rgba(125, 192, 154, 0.12);
+        --red: #e28c7f;
+        --red-soft: rgba(226, 140, 127, 0.12);
+        --blue: #87b7d7;
+        --blue-soft: rgba(135, 183, 215, 0.12);
+        --shadow: 0 14px 42px rgba(0, 0, 0, 0.22);
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      html {
+        scroll-behavior: smooth;
+      }
+
+      body {
+        margin: 0;
+        min-height: 100vh;
+        color: var(--text);
+        background-color: var(--bg);
+        background-image:
+          linear-gradient(var(--border) 1px, transparent 1px),
+          linear-gradient(90deg, var(--border) 1px, transparent 1px),
+          radial-gradient(circle at 82% 4%, var(--gold-soft), transparent 34%),
+          radial-gradient(circle at 5% 80%, var(--navy-soft), transparent 30%);
+        background-size:
+          32px 32px,
+          32px 32px,
+          auto,
+          auto;
+        font-family: var(--font-body);
+        font-size: 15px;
+        line-height: 1.6;
+        -webkit-font-smoothing: antialiased;
+      }
+
+      a {
+        color: var(--navy);
+        text-underline-offset: 3px;
+      }
+
+      code,
+      .mono {
+        font-family: var(--font-mono);
+      }
+
+      code {
+        padding: 0.1em 0.34em;
+        color: var(--gold);
+        background: var(--gold-soft);
+        border-radius: 4px;
+        overflow-wrap: anywhere;
+      }
+
+      button {
+        color: inherit;
+        font: inherit;
+      }
+
+      .wrap {
+        width: min(1500px, 100%);
+        margin: 0 auto;
+        padding: 28px 36px 80px;
+        display: grid;
+        grid-template-columns: 190px minmax(0, 1fr);
+        gap: 0 46px;
+      }
+
+      .main {
+        min-width: 0;
+      }
+
+      .toc {
+        position: sticky;
+        top: 24px;
+        align-self: start;
+        grid-row: 1 / -1;
+        max-height: calc(100dvh - 48px);
+        overflow-y: auto;
+        padding: 14px 0;
+      }
+
+      .toc-title {
+        margin-bottom: 9px;
+        padding-bottom: 10px;
+        color: var(--text-dim);
+        border-bottom: 1px solid var(--border);
+        font-family: var(--font-mono);
+        font-size: 9px;
+        font-weight: 700;
+        letter-spacing: 2px;
+        text-transform: uppercase;
+      }
+
+      .toc a {
+        display: block;
+        margin-bottom: 2px;
+        padding: 6px 9px;
+        color: var(--text-dim);
+        border-left: 2px solid transparent;
+        border-radius: 4px;
+        font-size: 12px;
+        line-height: 1.35;
+        text-decoration: none;
+        transition: 150ms ease;
+      }
+
+      .toc a:hover,
+      .toc a.active {
+        color: var(--text);
+        background: var(--surface-2);
+        border-left-color: var(--gold);
+      }
+
+      .theme-toggle {
+        width: 100%;
+        margin-top: 18px;
+        padding: 8px 10px;
+        color: var(--text-dim);
+        background: transparent;
+        border: 1px solid var(--border);
+        border-radius: 6px;
+        cursor: pointer;
+        font-family: var(--font-mono);
+        font-size: 10px;
+        text-align: left;
+      }
+
+      .theme-toggle:hover {
+        color: var(--text);
+        border-color: var(--border-strong);
+      }
+
+      .hero {
+        position: relative;
+        overflow: hidden;
+        margin-bottom: 26px;
+        padding: 36px 38px 30px;
+        background: var(--surface);
+        border: 1px solid var(--border-strong);
+        border-radius: 16px;
+        box-shadow: var(--shadow);
+      }
+
+      .hero::after {
+        content: "13";
+        position: absolute;
+        top: -35px;
+        right: 14px;
+        color: var(--gold-soft);
+        font-family: var(--font-display);
+        font-size: 190px;
+        font-weight: 700;
+        line-height: 1;
+        pointer-events: none;
+      }
+
+      .eyebrow,
+      .section-kicker,
+      .ve-card__label {
+        color: var(--gold);
+        font-family: var(--font-mono);
+        font-size: 10px;
+        font-weight: 700;
+        letter-spacing: 1.7px;
+        text-transform: uppercase;
+      }
+
+      .hero h1 {
+        max-width: 850px;
+        margin: 8px 0 12px;
+        font-family: var(--font-display);
+        font-size: clamp(42px, 7vw, 78px);
+        font-weight: 600;
+        letter-spacing: -0.035em;
+        line-height: 0.98;
+        text-wrap: balance;
+      }
+
+      .hero-lede {
+        max-width: 810px;
+        margin: 0;
+        color: var(--text-dim);
+        font-size: 17px;
+      }
+
+      .status-row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin-top: 24px;
+      }
+
+      .pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 7px;
+        padding: 6px 10px;
+        color: var(--text-dim);
+        background: var(--surface-2);
+        border: 1px solid var(--border);
+        border-radius: 999px;
+        font-family: var(--font-mono);
+        font-size: 10px;
+        font-weight: 600;
+      }
+
+      .pill::before {
+        content: "";
+        width: 7px;
+        height: 7px;
+        background: var(--green);
+        border-radius: 50%;
+      }
+
+      .pill.warn::before {
+        background: var(--gold);
+      }
+
+      .kpis {
+        display: grid;
+        grid-template-columns: repeat(5, minmax(0, 1fr));
+        gap: 10px;
+        margin-bottom: 34px;
+      }
+
+      .kpi {
+        min-width: 0;
+        padding: 16px;
+        background: color-mix(in srgb, var(--surface) 92%, transparent);
+        border: 1px solid var(--border);
+        border-radius: 10px;
+      }
+
+      .kpi strong {
+        display: block;
+        margin-bottom: 3px;
+        color: var(--navy);
+        font-family: var(--font-display);
+        font-size: 31px;
+        line-height: 1;
+      }
+
+      .kpi span {
+        color: var(--text-dim);
+        font-family: var(--font-mono);
+        font-size: 9px;
+        letter-spacing: 0.7px;
+        text-transform: uppercase;
+      }
+
+      .sec-head {
+        display: flex;
+        align-items: baseline;
+        gap: 13px;
+        margin: 48px 0 18px;
+        scroll-margin-top: 26px;
+      }
+
+      .sec-num {
+        color: var(--gold);
+        font-family: var(--font-mono);
+        font-size: 12px;
+      }
+
+      .sec-head h2 {
+        margin: 0;
+        font-family: var(--font-display);
+        font-size: clamp(29px, 4vw, 44px);
+        font-weight: 600;
+        letter-spacing: -0.025em;
+        line-height: 1.05;
+      }
+
+      .section-intro {
+        max-width: 880px;
+        margin: -7px 0 22px 37px;
+        color: var(--text-dim);
+      }
+
+      .ve-card {
+        min-width: 0;
+        padding: 20px;
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 11px;
+      }
+
+      .ve-card--hero {
+        background: color-mix(in srgb, var(--surface) 93%, var(--navy) 7%);
+        border-color: color-mix(in srgb, var(--border) 45%, var(--navy) 55%);
+        box-shadow: var(--shadow);
+      }
+
+      .ve-card--recessed {
+        background: var(--surface-2);
+        box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.08);
+      }
+
+      .ve-card h3,
+      .ve-card h4 {
+        margin: 0 0 7px;
+        line-height: 1.25;
+      }
+
+      .ve-card p {
+        margin: 0;
+        color: var(--text-dim);
+        font-size: 13px;
+      }
+
+      .summary-grid {
+        display: grid;
+        grid-template-columns: 1.25fr 0.75fr;
+        gap: 14px;
+      }
+
+      .promise {
+        display: grid;
+        grid-template-columns: auto 1fr;
+        gap: 12px;
+        align-items: start;
+        padding: 13px 0;
+        border-bottom: 1px solid var(--border);
+      }
+
+      .promise:last-child {
+        border-bottom: 0;
+      }
+
+      .promise-mark {
+        display: grid;
+        width: 26px;
+        height: 26px;
+        color: var(--green);
+        background: var(--green-soft);
+        border-radius: 50%;
+        place-items: center;
+        font-family: var(--font-mono);
+        font-size: 12px;
+        font-weight: 700;
+      }
+
+      .promise strong {
+        display: block;
+        margin-bottom: 2px;
+        font-size: 13px;
+      }
+
+      .promise span {
+        color: var(--text-dim);
+        font-size: 12px;
+      }
+
+      .architecture {
+        padding: 22px;
+        background: var(--surface-2);
+        border: 1px solid var(--border);
+        border-radius: 14px;
+        overflow: hidden;
+      }
+
+      .arch-row {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 30px;
+        position: relative;
+      }
+
+      .arch-row + .arch-row {
+        margin-top: 34px;
+      }
+
+      .arch-row + .arch-row::before {
+        content: "";
+        position: absolute;
+        top: -25px;
+        left: 50%;
+        width: 1px;
+        height: 16px;
+        background: var(--border-strong);
+      }
+
+      .arch-box {
+        min-width: 0;
+        position: relative;
+        padding: 16px;
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-top: 3px solid var(--navy);
+        border-radius: 8px;
+      }
+
+      .arch-box.gold {
+        border-top-color: var(--gold);
+      }
+
+      .arch-box.green {
+        border-top-color: var(--green);
+      }
+
+      .arch-box.red {
+        border-top-color: var(--red);
+      }
+
+      .arch-box:not(:last-child)::after {
+        content: "\2192";
+        position: absolute;
+        top: 50%;
+        right: -23px;
+        color: var(--text-dim);
+        font-family: var(--font-mono);
+        transform: translateY(-50%);
+      }
+
+      .arch-box strong {
+        display: block;
+        margin-bottom: 4px;
+        font-size: 13px;
+      }
+
+      .arch-box span {
+        display: block;
+        color: var(--text-dim);
+        font-size: 11px;
+        overflow-wrap: break-word;
+      }
+
+      .evidence-rail {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 9px;
+        margin-top: 16px;
+      }
+
+      .evidence-item {
+        padding: 10px 12px;
+        color: var(--text-dim);
+        background: var(--navy-soft);
+        border: 1px dashed color-mix(in srgb, var(--border) 40%, var(--navy) 60%);
+        border-radius: 6px;
+        font-family: var(--font-mono);
+        font-size: 10px;
+        overflow-wrap: anywhere;
+      }
+
+      .state-board {
+        display: grid;
+        grid-template-columns: 1fr 58px 1fr 58px 1fr;
+        gap: 8px;
+        align-items: center;
+      }
+
+      .state {
+        min-width: 0;
+        padding: 18px;
+        text-align: center;
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 9px;
+      }
+
+      .state.pending {
+        border-color: var(--blue);
+      }
+
+      .state.processing {
+        border-color: var(--gold);
+      }
+
+      .state.completed {
+        border-color: var(--green);
+      }
+
+      .state.dead {
+        border-color: var(--red);
+      }
+
+      .state strong {
+        display: block;
+        font-family: var(--font-mono);
+        font-size: 12px;
+        text-transform: uppercase;
+      }
+
+      .state small {
+        display: block;
+        margin-top: 4px;
+        color: var(--text-dim);
+        font-size: 10px;
+      }
+
+      .connector {
+        color: var(--text-dim);
+        font-family: var(--font-mono);
+        font-size: 20px;
+        text-align: center;
+      }
+
+      .branch-grid {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 12px;
+        margin-top: 12px;
+      }
+
+      .branch {
+        padding: 15px;
+        background: var(--surface-2);
+        border-left: 3px solid var(--gold);
+        border-radius: 7px;
+      }
+
+      .branch.success {
+        border-left-color: var(--green);
+      }
+
+      .branch.failure {
+        border-left-color: var(--red);
+      }
+
+      .branch strong {
+        display: block;
+        margin-bottom: 4px;
+        font-size: 12px;
+      }
+
+      .branch span {
+        color: var(--text-dim);
+        font-size: 11px;
+      }
+
+      .replay-lane {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 9px;
+        margin-top: 18px;
+        padding: 16px;
+        background: var(--gold-soft);
+        border: 1px solid color-mix(in srgb, var(--border) 45%, var(--gold) 55%);
+        border-radius: 9px;
+      }
+
+      .replay-step {
+        position: relative;
+        padding: 10px;
+        background: var(--surface);
+        border-radius: 6px;
+        font-size: 11px;
+      }
+
+      .replay-step:not(:last-child)::after {
+        content: "\2192";
+        position: absolute;
+        top: 50%;
+        right: -8px;
+        color: var(--gold);
+        transform: translate(50%, -50%);
+      }
+
+      .replay-step b {
+        display: block;
+        margin-bottom: 2px;
+        color: var(--gold);
+        font-family: var(--font-mono);
+        font-size: 9px;
+        text-transform: uppercase;
+      }
+
+      .table-wrap {
+        overflow-x: auto;
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 11px;
+      }
+
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 12px;
+      }
+
+      caption {
+        padding: 13px 16px;
+        color: var(--text-dim);
+        border-bottom: 1px solid var(--border);
+        font-family: var(--font-mono);
+        font-size: 10px;
+        text-align: left;
+      }
+
+      th,
+      td {
+        padding: 11px 13px;
+        border-bottom: 1px solid var(--border);
+        text-align: left;
+        vertical-align: top;
+      }
+
+      th {
+        color: var(--text-dim);
+        background: var(--surface-2);
+        font-family: var(--font-mono);
+        font-size: 9px;
+        letter-spacing: 0.75px;
+        text-transform: uppercase;
+        white-space: nowrap;
+      }
+
+      tr:last-child td {
+        border-bottom: 0;
+      }
+
+      td:first-child {
+        font-family: var(--font-mono);
+        font-size: 10px;
+        white-space: nowrap;
+      }
+
+      .budget {
+        display: inline-block;
+        min-width: 55px;
+        padding: 3px 6px;
+        color: var(--navy);
+        background: var(--navy-soft);
+        border-radius: 4px;
+        font-family: var(--font-mono);
+        font-size: 10px;
+        text-align: center;
+      }
+
+      .fail-closed {
+        color: var(--red);
+        font-weight: 700;
+      }
+
+      .security-grid {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 12px;
+      }
+
+      .security-layer {
+        min-width: 0;
+        padding: 17px;
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-bottom: 3px solid var(--navy);
+        border-radius: 9px;
+      }
+
+      .security-layer:nth-child(2) {
+        border-bottom-color: var(--gold);
+      }
+
+      .security-layer:nth-child(3) {
+        border-bottom-color: var(--green);
+      }
+
+      .security-layer:nth-child(4) {
+        border-bottom-color: var(--red);
+      }
+
+      .security-layer b {
+        display: block;
+        margin-bottom: 5px;
+        font-size: 12px;
+      }
+
+      .security-layer span {
+        color: var(--text-dim);
+        font-size: 11px;
+      }
+
+      .yes,
+      .no,
+      .guarded {
+        font-family: var(--font-mono);
+        font-size: 9px;
+        font-weight: 700;
+        text-transform: uppercase;
+      }
+
+      .yes {
+        color: var(--green);
+      }
+
+      .no {
+        color: var(--red);
+      }
+
+      .guarded {
+        color: var(--gold);
+      }
+
+      .timeline {
+        position: relative;
+        display: grid;
+        grid-template-columns: repeat(5, minmax(0, 1fr));
+        gap: 12px;
+      }
+
+      .timeline::before {
+        content: "";
+        position: absolute;
+        top: 18px;
+        right: 8%;
+        left: 8%;
+        height: 1px;
+        background: var(--border-strong);
+      }
+
+      .commit {
+        min-width: 0;
+        position: relative;
+        padding-top: 38px;
+      }
+
+      .commit::before {
+        content: "";
+        position: absolute;
+        top: 12px;
+        left: 18px;
+        width: 12px;
+        height: 12px;
+        background: var(--bg);
+        border: 3px solid var(--gold);
+        border-radius: 50%;
+        z-index: 1;
+      }
+
+      .commit-box {
+        height: 100%;
+        padding: 14px;
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 8px;
+      }
+
+      .commit code {
+        font-size: 9px;
+      }
+
+      .commit strong {
+        display: block;
+        margin: 7px 0 4px;
+        font-size: 12px;
+        line-height: 1.3;
+      }
+
+      .commit span {
+        color: var(--text-dim);
+        font-size: 10px;
+      }
+
+      .delivery-grid {
+        display: grid;
+        grid-template-columns: 1.25fr 0.75fr;
+        gap: 14px;
+      }
+
+      .check-grid {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 9px;
+        margin-top: 13px;
+      }
+
+      .check {
+        min-width: 0;
+        padding: 12px;
+        background: var(--green-soft);
+        border: 1px solid color-mix(in srgb, var(--border) 55%, var(--green) 45%);
+        border-radius: 7px;
+      }
+
+      .check b {
+        display: block;
+        color: var(--green);
+        font-family: var(--font-mono);
+        font-size: 10px;
+      }
+
+      .check span {
+        color: var(--text-dim);
+        font-size: 10px;
+      }
+
+      .boundary-list {
+        margin: 12px 0 0;
+        padding-left: 19px;
+        color: var(--text-dim);
+        font-size: 12px;
+      }
+
+      .boundary-list li {
+        margin-bottom: 6px;
+      }
+
+      .review-note {
+        margin-top: 14px;
+        padding: 14px 16px;
+        background: var(--gold-soft);
+        border: 1px solid color-mix(in srgb, var(--border) 50%, var(--gold) 50%);
+        border-radius: 8px;
+        font-size: 12px;
+      }
+
+      details {
+        margin-top: 14px;
+        background: var(--surface-2);
+        border: 1px solid var(--border);
+        border-radius: 8px;
+      }
+
+      summary {
+        padding: 12px 14px;
+        cursor: pointer;
+        font-family: var(--font-mono);
+        font-size: 10px;
+        font-weight: 700;
+      }
+
+      .details-body {
+        padding: 0 14px 14px;
+        color: var(--text-dim);
+        font-size: 12px;
+      }
+
+      .details-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 8px;
+      }
+
+      .details-grid div {
+        padding: 8px 10px;
+        background: var(--surface);
+        border-radius: 5px;
+      }
+
+      footer {
+        margin-top: 58px;
+        padding-top: 18px;
+        color: var(--text-dim);
+        border-top: 1px solid var(--border);
+        font-family: var(--font-mono);
+        font-size: 10px;
+      }
+
+      @keyframes fade-up {
+        from {
+          opacity: 0;
+          transform: translateY(8px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      .hero,
+      .kpis,
+      section {
+        animation: fade-up 420ms ease-out both;
+      }
+
+      section:nth-of-type(2) {
+        animation-delay: 50ms;
+      }
+
+      section:nth-of-type(3) {
+        animation-delay: 100ms;
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+        *,
+        *::before,
+        *::after {
+          scroll-behavior: auto !important;
+          animation-duration: 0.01ms !important;
+          animation-delay: 0ms !important;
+          transition-duration: 0.01ms !important;
+        }
+      }
+
+      @media (max-width: 1100px) {
+        .wrap {
+          grid-template-columns: 1fr;
+          padding-top: 0;
+        }
+
+        .toc {
+          position: sticky;
+          top: 0;
+          z-index: 100;
+          grid-row: auto;
+          display: flex;
+          align-items: center;
+          gap: 4px;
+          max-height: none;
+          margin: 0 -36px;
+          padding: 10px 36px;
+          overflow-x: auto;
+          background: color-mix(in srgb, var(--bg) 92%, transparent);
+          border-bottom: 1px solid var(--border);
+          backdrop-filter: blur(12px);
+        }
+
+        .toc-title,
+        .theme-toggle {
+          display: none;
+        }
+
+        .toc a {
+          flex-shrink: 0;
+          margin: 0;
+          padding: 6px 10px;
+          border-left: 0;
+          border-bottom: 2px solid transparent;
+          white-space: nowrap;
+        }
+
+        .toc a:hover,
+        .toc a.active {
+          border-left: 0;
+          border-bottom-color: var(--gold);
+        }
+
+        .main {
+          padding-top: 22px;
+        }
+
+        .sec-head {
+          scroll-margin-top: 62px;
+        }
+
+        .kpis {
+          grid-template-columns: repeat(3, minmax(0, 1fr));
+        }
+
+        .security-grid,
+        .timeline {
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+
+        .timeline::before {
+          display: none;
+        }
+      }
+
+      @media (max-width: 760px) {
+        .wrap {
+          padding-right: 18px;
+          padding-left: 18px;
+        }
+
+        .toc {
+          margin: 0 -18px;
+          padding-right: 18px;
+          padding-left: 18px;
+        }
+
+        .hero {
+          padding: 27px 22px;
+        }
+
+        .hero::after {
+          display: none;
+        }
+
+        .hero h1 {
+          font-size: 43px;
+        }
+
+        .kpis,
+        .summary-grid,
+        .delivery-grid,
+        .security-grid,
+        .timeline,
+        .check-grid,
+        .details-grid {
+          grid-template-columns: 1fr;
+        }
+
+        .arch-row {
+          grid-template-columns: 1fr;
+          gap: 10px;
+        }
+
+        .arch-box:not(:last-child)::after {
+          content: "\2193";
+          top: auto;
+          right: 50%;
+          bottom: -13px;
+          transform: translateX(50%);
+        }
+
+        .evidence-rail,
+        .branch-grid,
+        .replay-lane {
+          grid-template-columns: 1fr 1fr;
+        }
+
+        .replay-step:nth-child(2)::after {
+          display: none;
+        }
+
+        .state-board {
+          grid-template-columns: 1fr;
+        }
+
+        .connector {
+          transform: rotate(90deg);
+        }
+
+        .section-intro {
+          margin-left: 0;
+        }
+      }
+
+      @media (max-width: 480px) {
+        .kpis,
+        .evidence-rail,
+        .branch-grid,
+        .replay-lane {
+          grid-template-columns: 1fr;
+        }
+
+        .replay-step:not(:last-child)::after {
+          display: none;
+        }
+      }
+
+      @media print {
+        :root,
+        html[data-theme="dark"] {
+          --bg: #ffffff;
+          --surface: #ffffff;
+          --surface-2: #f3f1ea;
+          --surface-3: #e7e3d7;
+          --text: #111111;
+          --text-dim: #555555;
+          --border: rgba(0, 0, 0, 0.15);
+          --border-strong: rgba(0, 0, 0, 0.3);
+        }
+
+        .toc,
+        .theme-toggle {
+          display: none;
+        }
+
+        .wrap {
+          display: block;
+          padding: 0;
+        }
+
+        .hero,
+        .ve-card {
+          box-shadow: none;
+        }
+
+        section,
+        .hero,
+        .kpis {
+          animation: none;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="wrap">
+      <nav class="toc" id="toc" aria-label="Explainer sections">
+        <div class="toc-title">PR #13 map</div>
+        <a href="#overview" class="active">Overview</a>
+        <a href="#architecture">Architecture</a>
+        <a href="#lifecycle">Job lifecycle</a>
+        <a href="#policy">Policy matrix</a>
+        <a href="#security">Security</a>
+        <a href="#delivery">Delivery</a>
+        <button class="theme-toggle" id="themeToggle" type="button">Switch theme</button>
+      </nav>
+
+      <main class="main">
+        <header class="hero">
+          <div class="eyebrow">Studio Repertorio / PR #13 / RPRT-52</div>
+          <h1>Reliability becomes database law.</h1>
+          <p class="hero-lede">
+            This pull request builds the protected M1 boundary for durable outbox work, immutable audit
+            evidence, provider-call accounting, safe retry, dead-letter handling, and one-proof protected
+            replay.
+          </p>
+          <div class="status-row">
+            <span class="pill">Ready for review</span>
+            <span class="pill">12 / 12 acceptance criteria</span>
+            <span class="pill">232 database assertions</span>
+            <span class="pill warn">Vercel deployment blocked by project access</span>
+          </div>
+        </header>
+
+        <div class="kpis" aria-label="Pull request metrics">
+          <div class="kpi"><strong>5</strong><span>ordered migrations</span></div>
+          <div class="kpi"><strong>8</strong><span>protected evidence tables</span></div>
+          <div class="kpi"><strong>10</strong><span>narrow database RPCs</span></div>
+          <div class="kpi"><strong>16</strong><span>changed files</span></div>
+          <div class="kpi"><strong>4,834</strong><span>lines added</span></div>
+        </div>
+
+        <section aria-labelledby="overview">
+          <div class="sec-head" id="overview">
+            <span class="sec-num">01</span>
+            <h2>What changed</h2>
+          </div>
+          <p class="section-intro">
+            Before this PR, provider work had no complete durable execution contract. After this PR, the
+            database owns identity, policy, leases, call budgets, outcomes, alerts, and replay proof.
+          </p>
+
+          <div class="summary-grid">
+            <article class="ve-card ve-card--hero">
+              <div class="ve-card__label">Core guarantee</div>
+              <h3>One job. One immutable history. No budget reset.</h3>
+              <p>
+                Every provider call is reserved before dispatch and counted for the full lifetime of the
+                original job. Retry and replay keep the same job, business key, payload version, policy
+                snapshot, request fingerprint, counters, and transition history.
+              </p>
+              <details>
+                <summary>Protected schema inventory</summary>
+                <div class="details-body details-grid">
+                  <div><code>webhook_events</code> - provider event deduplication</div>
+                  <div><code>domain_transitions</code> - append-only state audit</div>
+                  <div><code>operational_alerts</code> - independent dead-letter alert</div>
+                  <div><code>outbox_jobs</code> - durable job and policy snapshot</div>
+                  <div><code>outbox_provider_calls</code> - pre-dispatch reservations</div>
+                  <div><code>outbox_provider_call_results</code> - one classified outcome</div>
+                  <div><code>outbox_replay_authorizations</code> - administrator proof</div>
+                  <div><code>outbox_replay_consumptions</code> - single-use proof evidence</div>
+                </div>
+              </details>
+            </article>
+
+            <article class="ve-card">
+              <div class="ve-card__label">Contract outcomes</div>
+              <div class="promise">
+                <div class="promise-mark">1</div>
+                <div><strong>Deduplicate effects</strong><span>Provider event and business-key uniqueness.</span></div>
+              </div>
+              <div class="promise">
+                <div class="promise-mark">2</div>
+                <div><strong>Count before dispatch</strong><span>A claim does not consume a provider call.</span></div>
+              </div>
+              <div class="promise">
+                <div class="promise-mark">3</div>
+                <div><strong>Fail closed</strong><span>Unsafe or ambiguous writes move to dead letter.</span></div>
+              </div>
+              <div class="promise">
+                <div class="promise-mark">4</div>
+                <div><strong>Replay with proof</strong><span>One administrator proof permits one extra call.</span></div>
+              </div>
+            </article>
+          </div>
+        </section>
+
+        <section aria-labelledby="architecture">
+          <div class="sec-head" id="architecture">
+            <span class="sec-num">02</span>
+            <h2>Reliability architecture</h2>
+          </div>
+          <p class="section-intro">
+            Commands enter through narrow RPCs. PostgreSQL serializes ownership, reserves each call, and
+            writes evidence in the same transaction as every accepted state change.
+          </p>
+
+          <div class="architecture">
+            <div class="section-kicker">Intake and durable identity</div>
+            <div class="arch-row">
+              <div class="arch-box">
+                <strong>Domain command or webhook</strong>
+                <span>Stable IDs only. No secret or raw provider payload is stored.</span>
+              </div>
+              <div class="arch-box gold">
+                <strong>Enqueue / record RPC</strong>
+                <span>Validate exact payload shape and global business key.</span>
+              </div>
+              <div class="arch-box green">
+                <strong>Durable evidence</strong>
+                <span>Job starts pending with an immutable RPRT-43 policy snapshot.</span>
+              </div>
+            </div>
+
+            <div class="arch-row">
+              <div class="arch-box">
+                <strong>Claim batch</strong>
+                <span><code>FOR UPDATE SKIP LOCKED</code> creates one bounded lease.</span>
+              </div>
+              <div class="arch-box gold">
+                <strong>Reserve provider call</strong>
+                <span>Verify lease, fingerprint, automatic/replay/lifetime ceilings.</span>
+              </div>
+              <div class="arch-box green">
+                <strong>Dispatch outside database</strong>
+                <span>History is already reserved, so a lost response still remains counted.</span>
+              </div>
+            </div>
+
+            <div class="arch-row">
+              <div class="arch-box green">
+                <strong>Complete</strong>
+                <span>Store success once and make <code>completed</code> terminal.</span>
+              </div>
+              <div class="arch-box gold">
+                <strong>Reschedule</strong>
+                <span>Retry safe work with bounded equal jitter and the same fingerprint.</span>
+              </div>
+              <div class="arch-box red">
+                <strong>Dead letter</strong>
+                <span>Store failure, immutable transition, and independent operations alert.</span>
+              </div>
+            </div>
+
+            <div class="evidence-rail" aria-label="Evidence written across the pipeline">
+              <div class="evidence-item">domain_transitions</div>
+              <div class="evidence-item">provider_call + result</div>
+              <div class="evidence-item">policy + counters</div>
+              <div class="evidence-item">operational_alerts</div>
+            </div>
+          </div>
+        </section>
+
+        <section aria-labelledby="lifecycle">
+          <div class="sec-head" id="lifecycle">
+            <span class="sec-num">03</span>
+            <h2>Job lifecycle and replay</h2>
+          </div>
+          <p class="section-intro">
+            The normal lane is automatic and bounded. The replay lane starts only from dead letter and
+            requires authenticated administrator proof.
+          </p>
+
+          <div class="ve-card">
+            <div class="state-board" aria-label="Primary outbox state flow">
+              <div class="state pending"><strong>pending</strong><small>Available for claim</small></div>
+              <div class="connector">&#8594;</div>
+              <div class="state processing"><strong>processing</strong><small>Lease owner + token</small></div>
+              <div class="connector">&#8594;</div>
+              <div class="state completed"><strong>completed</strong><small>Terminal success</small></div>
+            </div>
+
+            <div class="branch-grid">
+              <div class="branch success">
+                <strong>Safe transient result</strong>
+                <span>Return to pending with equal jitter if the automatic budget and provider window remain.</span>
+              </div>
+              <div class="branch">
+                <strong>Expired lease</strong>
+                <span>Recover pre-dispatch work for free; repeat only when provider semantics make it safe.</span>
+              </div>
+              <div class="branch failure">
+                <strong>Unsafe, permanent, or exhausted</strong>
+                <span>Move to dead letter and emit an independent alert in the same transaction.</span>
+              </div>
+            </div>
+
+            <div class="replay-lane" aria-label="Protected replay flow">
+              <div class="replay-step"><b>Dead letter</b>Original job and all prior evidence stay intact.</div>
+              <div class="replay-step"><b>Admin proof</b><code>public.is_admin()</code> and immutable safety evidence.</div>
+              <div class="replay-step"><b>Consume once</b>Composite constraints bind proof, job, and replay ordinal.</div>
+              <div class="replay-step"><b>One replay call</b>Failure returns to dead letter; success completes.</div>
+            </div>
+
+            <div class="review-note">
+              <strong>Permanent safety rail:</strong> a <code>payment-session-create</code> job can never move
+              from <code>dead_letter</code> back to <code>pending</code>. A proven-absent checkout requires a
+              new payment attempt and a new business key.
+            </div>
+          </div>
+        </section>
+
+        <section aria-labelledby="policy">
+          <div class="sec-head" id="policy">
+            <span class="sec-num">04</span>
+            <h2>Approved operation policy</h2>
+          </div>
+          <p class="section-intro">
+            Each job copies these limits at creation time. Later policy changes affect new jobs only.
+            Budgets are shown as automatic / replay / lifetime provider calls.
+          </p>
+
+          <div class="table-wrap">
+            <table>
+              <caption>RPRT-43 policy snapshot implemented by PR #13</caption>
+              <thead>
+                <tr>
+                  <th>Job type</th>
+                  <th>Call budget</th>
+                  <th>Timeout</th>
+                  <th>Backoff</th>
+                  <th>Safety rule</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>payment-session-create</td>
+                  <td><span class="budget">1 / 0 / 1</span></td>
+                  <td>3s / 15s</td>
+                  <td>None</td>
+                  <td class="fail-closed">Any ambiguous dispatched call dead-letters. Never replay.</td>
+                </tr>
+                <tr>
+                  <td>assisted-order-issued-email</td>
+                  <td><span class="budget">5 / 1 / 6</span></td>
+                  <td>3s / 15s</td>
+                  <td>30s - 15m</td>
+                  <td>Same Resend key and fingerprint inside the 24-hour provider window.</td>
+                </tr>
+                <tr>
+                  <td>order-confirmation-email</td>
+                  <td><span class="budget">5 / 1 / 6</span></td>
+                  <td>3s / 15s</td>
+                  <td>30s - 15m</td>
+                  <td>Retry-safe with stable business key and immutable fingerprint.</td>
+                </tr>
+                <tr>
+                  <td>payment-approved-email</td>
+                  <td><span class="budget">5 / 1 / 6</span></td>
+                  <td>3s / 15s</td>
+                  <td>30s - 15m</td>
+                  <td>Created only when settlement is first assigned.</td>
+                </tr>
+                <tr>
+                  <td>tracking-update-email</td>
+                  <td><span class="budget">5 / 1 / 6</span></td>
+                  <td>3s / 15s</td>
+                  <td>30s - 15m</td>
+                  <td>One job for the in-transit transition; no replacement job.</td>
+                </tr>
+                <tr>
+                  <td>full-refund</td>
+                  <td><span class="budget">1 / 0 / 1</span></td>
+                  <td>3s / 15s</td>
+                  <td>None</td>
+                  <td class="fail-closed">Fail closed until provider idempotency or reconciliation is proven.</td>
+                </tr>
+                <tr>
+                  <td>shipping-label-create</td>
+                  <td><span class="budget">1 / 0 / 1</span></td>
+                  <td>3s / 15s</td>
+                  <td>None</td>
+                  <td class="fail-closed">Fail closed until label idempotency or lookup is proven.</td>
+                </tr>
+                <tr>
+                  <td>payment-recovery-required</td>
+                  <td><span class="budget">6 / 1 / 7</span></td>
+                  <td>3s / 20s</td>
+                  <td>1m - 1h</td>
+                  <td>Read-only lookup or guarded recovery; ambiguous reads can retry.</td>
+                </tr>
+                <tr>
+                  <td>welcome-customer-email</td>
+                  <td><span class="budget">5 / 1 / 6</span></td>
+                  <td>3s / 15s</td>
+                  <td>30s - 15m</td>
+                  <td>Normalized profile timestamp is part of the stable business key.</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <section aria-labelledby="security">
+          <div class="sec-head" id="security">
+            <span class="sec-num">05</span>
+            <h2>Security boundary</h2>
+          </div>
+          <p class="section-intro">
+            Tables are evidence stores, not public APIs. All mutation enters through narrow functions with
+            exact role grants, fixed empty search paths, row locks, and database-owned time.
+          </p>
+
+          <div class="security-grid">
+            <div class="security-layer">
+              <b>Default-deny tables</b>
+              <span>RLS enabled. Direct privileges revoked from public, anon, authenticated, and service role.</span>
+            </div>
+            <div class="security-layer">
+              <b>Narrow RPC surface</b>
+              <span>Security-definer functions expose only approved commands and validate actor contracts.</span>
+            </div>
+            <div class="security-layer">
+              <b>Immutable evidence</b>
+              <span>Update and delete triggers reject changes to events, transitions, calls, results, and replay proof.</span>
+            </div>
+            <div class="security-layer">
+              <b>Relational invariants</b>
+              <span>Unique and composite foreign keys bind job, ordinal, lease, proof, consumption, and call history.</span>
+            </div>
+          </div>
+
+          <div class="table-wrap" style="margin-top: 14px">
+            <table>
+              <caption>Actor matrix at the database boundary</caption>
+              <thead>
+                <tr>
+                  <th>Actor</th>
+                  <th>Direct table access</th>
+                  <th>Worker commands</th>
+                  <th>Replay proof</th>
+                  <th>Protection</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>public / anon</td>
+                  <td><span class="no">Denied</span></td>
+                  <td><span class="no">Denied</span></td>
+                  <td><span class="no">Denied</span></td>
+                  <td>RLS + revoked grants</td>
+                </tr>
+                <tr>
+                  <td>authenticated</td>
+                  <td><span class="no">Denied</span></td>
+                  <td><span class="no">Denied</span></td>
+                  <td><span class="guarded">Admin only</span></td>
+                  <td><code>auth.uid()</code> + <code>public.is_admin()</code></td>
+                </tr>
+                <tr>
+                  <td>service_role</td>
+                  <td><span class="no">Denied</span></td>
+                  <td><span class="yes">Exact RPCs</span></td>
+                  <td><span class="no">Denied</span></td>
+                  <td>Lease owner + token + call identity</td>
+                </tr>
+                <tr>
+                  <td>migration owner</td>
+                  <td><span class="guarded">Operational only</span></td>
+                  <td><span class="guarded">Owns functions</span></td>
+                  <td><span class="guarded">No actor bypass</span></td>
+                  <td>Immutable triggers + reviewed migration workflow</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <section aria-labelledby="delivery">
+          <div class="sec-head" id="delivery">
+            <span class="sec-num">06</span>
+            <h2>Delivery story</h2>
+          </div>
+          <p class="section-intro">
+            Five vertical slices move from durable evidence to policy, worker execution, terminal handling,
+            and protected replay. Each slice has its own red-green evidence.
+          </p>
+
+          <div class="timeline" aria-label="Five commit implementation timeline">
+            <div class="commit">
+              <div class="commit-box">
+                <code>25c7146</code>
+                <strong>Immutable evidence</strong>
+                <span>Webhook deduplication, transition audit, and operations alerts.</span>
+              </div>
+            </div>
+            <div class="commit">
+              <div class="commit-box">
+                <code>9b86373</code>
+                <strong>Policy-based enqueue</strong>
+                <span>Nine exact job types, stable payloads, and immutable policy snapshots.</span>
+              </div>
+            </div>
+            <div class="commit">
+              <div class="commit-box">
+                <code>07ec42f</code>
+                <strong>Claim and reserve</strong>
+                <span>SKIP LOCKED leases, call history, ceilings, and request fingerprints.</span>
+              </div>
+            </div>
+            <div class="commit">
+              <div class="commit-box">
+                <code>1878314</code>
+                <strong>Complete or fail safely</strong>
+                <span>Completion, equal-jitter retry, dead letter, and lease recovery.</span>
+              </div>
+            </div>
+            <div class="commit">
+              <div class="commit-box">
+                <code>b461036</code>
+                <strong>Protected replay</strong>
+                <span>Admin proof, one-time consumption, replay races, and lint hygiene.</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="delivery-grid" style="margin-top: 18px">
+            <article class="ve-card ve-card--hero">
+              <div class="ve-card__label">Verification scorecard</div>
+              <h3>Clean from migration zero to production build</h3>
+              <div class="check-grid">
+                <div class="check"><b>232 passed</b><span>pgTAP database assertions</span></div>
+                <div class="check"><b>36 passed</b><span>Vitest unit tests</span></div>
+                <div class="check"><b>Clean</b><span>Database lint</span></div>
+                <div class="check"><b>Clean</b><span>ESLint + Prettier</span></div>
+                <div class="check"><b>Clean</b><span>TypeScript</span></div>
+                <div class="check"><b>Passed</b><span>Next.js production build</span></div>
+              </div>
+            </article>
+
+            <article class="ve-card ve-card--recessed">
+              <div class="ve-card__label">Deliberate boundaries</div>
+              <h3>What this PR does not do</h3>
+              <ul class="boundary-list">
+                <li>No provider adapter or scheduler route.</li>
+                <li>No seed data or generated database type change.</li>
+                <li>No staging migration promotion.</li>
+                <li>No deployment or production resource change.</li>
+              </ul>
+              <div class="review-note">
+                <strong>Review status:</strong> PR #13 is ready for review. Vercel Preview Comments passes;
+                deployment is blocked by project-access policy, not by the local build.
+              </div>
+            </article>
+          </div>
+        </section>
+
+        <footer>
+          Generated for
+          <a href="https://github.com/guisaliba/repertorio/pull/13">guisaliba/repertorio PR #13</a>
+          &middot; Linear
+          <a href="https://linear.app/guisaliba/issue/RPRT-52/implement-reliability-and-audit-schema-security">RPRT-52</a>
+          &middot; Head <code>b461036</code>
+        </footer>
+      </main>
+    </div>
+
+    <script>
+      (function () {
+        const root = document.documentElement;
+        const toggle = document.getElementById("themeToggle");
+        const toc = document.getElementById("toc");
+        const links = Array.from(toc.querySelectorAll("a"));
+
+        toggle.addEventListener("click", function () {
+          root.dataset.theme = root.dataset.theme === "dark" ? "light" : "dark";
+        });
+
+        links.forEach(function (link) {
+          link.addEventListener("click", function (event) {
+            event.preventDefault();
+            const target = document.querySelector(link.getAttribute("href"));
+            if (target) {
+              target.scrollIntoView({ behavior: "smooth", block: "start" });
+              history.replaceState(null, "", link.getAttribute("href"));
+            }
+          });
+        });
+
+        const observer = new IntersectionObserver(
+          function (entries) {
+            entries.forEach(function (entry) {
+              if (!entry.isIntersecting) return;
+              links.forEach(function (link) {
+                const active = link.getAttribute("href") === "#" + entry.target.id;
+                link.classList.toggle("active", active);
+                if (active && window.innerWidth <= 1100) {
+                  link.scrollIntoView({ behavior: "smooth", block: "nearest", inline: "center" });
+                }
+              });
+            });
+          },
+          { rootMargin: "-12% 0px -76% 0px" },
+        );
+
+        links.forEach(function (link) {
+          const section = document.querySelector(link.getAttribute("href"));
+          if (section) observer.observe(section);
+        });
+      })();
+    </script>
+  </body>
+</html>

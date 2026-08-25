@@ -1,0 +1,615 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="plannotator-theme" content="host">
+  <title>Studio Repertorio Lifecycle Explorer</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&family=Newsreader:opsz,wght@6..72,500;6..72,600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --background: oklch(0.97 0.005 260);
+      --foreground: oklch(0.18 0.02 260);
+      --card: oklch(1 0 0);
+      --card-foreground: oklch(0.18 0.02 260);
+      --muted: oklch(0.92 0.01 260);
+      --muted-foreground: oklch(0.40 0.02 260);
+      --primary: oklch(0.50 0.25 280);
+      --primary-foreground: oklch(1 0 0);
+      --secondary: oklch(0.50 0.18 180);
+      --accent: oklch(0.60 0.22 50);
+      --destructive: oklch(0.50 0.25 25);
+      --success: oklch(0.45 0.20 150);
+      --warning: oklch(0.55 0.18 85);
+      --border: oklch(0.88 0.01 260);
+      --code-bg: oklch(0.92 0.01 260);
+      --radius: 0.7rem;
+      --font-sans: 'IBM Plex Sans', system-ui, sans-serif;
+      --font-mono: 'IBM Plex Mono', ui-monospace, monospace;
+      --font-display: 'Newsreader', Georgia, serif;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --background: oklch(0.15 0.02 260);
+        --foreground: oklch(0.90 0.01 260);
+        --card: oklch(0.22 0.02 260);
+        --card-foreground: oklch(0.90 0.01 260);
+        --muted: oklch(0.26 0.02 260);
+        --muted-foreground: oklch(0.72 0.02 260);
+        --primary: oklch(0.75 0.18 280);
+        --primary-foreground: oklch(0.15 0.02 260);
+        --accent: oklch(0.70 0.20 60);
+        --border: oklch(0.35 0.02 260);
+        --code-bg: oklch(0.26 0.02 260);
+        --destructive: oklch(0.65 0.20 25);
+        --success: oklch(0.72 0.17 150);
+        --warning: oklch(0.75 0.15 85);
+      }
+    }
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      background-color: var(--background);
+      background-image: radial-gradient(circle, color-mix(in oklab, var(--border) 65%, transparent) 1px, transparent 1px);
+      background-size: 26px 26px;
+      color: var(--foreground);
+      font-family: var(--font-sans);
+      line-height: 1.6;
+      overflow-wrap: break-word;
+    }
+    a { color: var(--primary); text-underline-offset: 3px; }
+    code {
+      font-family: var(--font-mono);
+      font-size: 0.88em;
+      padding: 0.12em 0.35em;
+      border-radius: 0.3rem;
+      background: var(--code-bg);
+    }
+    .wrap {
+      width: min(1500px, calc(100% - 40px));
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: 205px minmax(0, 1fr);
+      gap: 46px;
+      padding: 28px 0 80px;
+    }
+    .main { min-width: 0; }
+    .toc {
+      position: sticky;
+      top: 24px;
+      align-self: start;
+      max-height: calc(100dvh - 48px);
+      overflow-y: auto;
+      padding: 14px 0;
+    }
+    .toc-title {
+      font: 600 0.68rem/1.2 var(--font-mono);
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--muted-foreground);
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 12px;
+      margin-bottom: 10px;
+    }
+    .toc a {
+      display: block;
+      color: var(--muted-foreground);
+      text-decoration: none;
+      font-size: 0.78rem;
+      padding: 6px 10px;
+      border-left: 2px solid transparent;
+      border-radius: 0 6px 6px 0;
+    }
+    .toc a:hover, .toc a.active {
+      color: var(--foreground);
+      background: var(--muted);
+      border-left-color: var(--primary);
+    }
+    .hero {
+      padding: 50px clamp(26px, 5vw, 70px);
+      border: 1px solid var(--border);
+      border-radius: calc(var(--radius) * 1.5);
+      background: color-mix(in oklab, var(--card) 94%, var(--primary) 6%);
+      box-shadow: 0 14px 48px color-mix(in oklab, var(--foreground) 8%, transparent);
+    }
+    .eyebrow {
+      font: 600 0.72rem/1.2 var(--font-mono);
+      letter-spacing: 0.13em;
+      text-transform: uppercase;
+      color: var(--primary);
+    }
+    h1, h2, h3 { font-family: var(--font-display); line-height: 1.12; }
+    h1 { font-size: clamp(2.4rem, 6vw, 5.2rem); max-width: 930px; margin: 16px 0 18px; font-weight: 600; }
+    h2 { font-size: clamp(1.8rem, 3vw, 2.7rem); margin: 0; font-weight: 600; }
+    h3 { font-size: 1.2rem; margin: 0 0 8px; }
+    .lede { max-width: 760px; font-size: 1.05rem; color: var(--muted-foreground); }
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 12px;
+      margin-top: 32px;
+    }
+    .stat {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 16px;
+    }
+    .stat strong { display: block; font: 600 1.8rem/1 var(--font-display); }
+    .stat span { display: block; margin-top: 7px; color: var(--muted-foreground); font: 500 0.68rem/1.3 var(--font-mono); text-transform: uppercase; letter-spacing: 0.08em; }
+    section { margin-top: 76px; scroll-margin-top: 20px; }
+    .section-head { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 18px; align-items: start; margin-bottom: 24px; }
+    .section-number { font: 600 0.72rem/1 var(--font-mono); color: var(--primary); padding-top: 8px; }
+    .section-copy { max-width: 780px; color: var(--muted-foreground); margin-top: 8px; }
+    .legend {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 12px;
+      margin-top: 22px;
+    }
+    .legend-item { border: 1px solid var(--border); background: var(--card); border-radius: var(--radius); padding: 14px; }
+    .legend-item b { display: block; font-size: 0.8rem; }
+    .legend-item span { color: var(--muted-foreground); font-size: 0.75rem; }
+    .swatch { width: 9px; height: 9px; border-radius: 50%; display: inline-block; margin-right: 7px; }
+    .swatch.blue { background: #3b82f6; }
+    .swatch.green { background: #22c55e; }
+    .swatch.amber { background: #f59e0b; }
+    .swatch.red { background: #ef4444; }
+    .convergence {
+      display: grid;
+      grid-template-columns: 1fr auto 1fr;
+      gap: 18px;
+      align-items: stretch;
+    }
+    .source-card, .shared-card, .rules-card {
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      background: var(--card);
+      padding: 22px;
+      min-width: 0;
+    }
+    .source-card.direct { border-top: 4px solid #3b82f6; }
+    .source-card.assisted { border-top: 4px solid #f59e0b; }
+    .source-card ul, .rules-card ul { padding-left: 1.25rem; margin: 12px 0 0; }
+    .source-card li, .rules-card li { margin: 6px 0; }
+    .converge-arrow { align-self: center; font-size: 2rem; color: var(--success); }
+    .shared-card { margin-top: 18px; border-left: 4px solid var(--success); }
+    .diagram-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 22px; }
+    .diagram-card {
+      border: 1px solid var(--border);
+      border-radius: calc(var(--radius) * 1.25);
+      background: var(--card);
+      overflow: hidden;
+      min-width: 0;
+    }
+    .diagram-card.wide { grid-column: 1 / -1; }
+    .diagram-header { padding: 22px 24px 16px; border-bottom: 1px solid var(--border); }
+    .diagram-header p { margin: 5px 0 0; color: var(--muted-foreground); font-size: 0.88rem; }
+    .diagram-shell { position: relative; padding: 18px; }
+    .diagram-hint { color: var(--muted-foreground); font: 500 0.68rem/1.4 var(--font-mono); margin: 0 0 8px; }
+    .mermaid-wrap { position: relative; height: 410px; border: 1px solid var(--border); border-radius: var(--radius); background: var(--muted); overflow: hidden; cursor: grab; }
+    .wide .mermaid-wrap { height: min(72dvh, 760px); min-height: 520px; }
+    .mermaid-wrap.is-panning { cursor: grabbing; user-select: none; }
+    .mermaid-viewport { position: relative; overflow: hidden; width: 100%; height: 100%; }
+    .mermaid-canvas { position: absolute; inset: 0 auto auto 0; }
+    .zoom-controls { position: absolute; top: 8px; right: 8px; z-index: 5; display: flex; gap: 3px; align-items: center; background: var(--card); border: 1px solid var(--border); border-radius: 7px; padding: 3px; }
+    .zoom-controls button { width: 29px; height: 29px; border: 0; border-radius: 5px; background: transparent; color: var(--muted-foreground); cursor: pointer; font: 600 0.76rem var(--font-mono); }
+    .zoom-controls button:hover { background: var(--muted); color: var(--foreground); }
+    .zoom-label { padding: 0 6px; color: var(--muted-foreground); font: 500 0.62rem var(--font-mono); white-space: nowrap; }
+    .rule-list { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; padding: 0 24px 24px; }
+    .rule { background: var(--muted); border-radius: 7px; padding: 10px 12px; font-size: 0.78rem; color: var(--muted-foreground); }
+    .rule strong { color: var(--foreground); }
+    .callout { margin-top: 24px; border-left: 4px solid var(--warning); background: var(--card); border-radius: 0 var(--radius) var(--radius) 0; padding: 18px 22px; color: var(--muted-foreground); }
+    .callout strong { color: var(--foreground); }
+    .mermaid .nodeLabel { font-family: var(--font-sans) !important; font-size: 15px !important; color: var(--foreground) !important; }
+    .mermaid .edgeLabel { font-family: var(--font-mono) !important; font-size: 11px !important; color: var(--muted-foreground) !important; }
+    .mermaid .edgeLabel rect { fill: var(--card) !important; }
+    .mermaid .node rect, .mermaid .node circle, .mermaid .node polygon { stroke-width: 1.6px !important; }
+    @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } * { transition: none !important; } }
+    @media (max-width: 1050px) {
+      .wrap { grid-template-columns: 1fr; width: min(100% - 24px, 1000px); padding-top: 0; }
+      .toc { position: sticky; top: 0; z-index: 20; display: flex; gap: 4px; overflow-x: auto; max-height: none; background: var(--background); border-bottom: 1px solid var(--border); padding: 9px 4px; }
+      .toc-title { display: none; }
+      .toc a { white-space: nowrap; flex: 0 0 auto; border-left: 0; border-bottom: 2px solid transparent; border-radius: 5px 5px 0 0; }
+      .toc a.active { border-left: 0; border-bottom-color: var(--primary); }
+      section { scroll-margin-top: 58px; }
+    }
+    @media (max-width: 800px) {
+      .hero { padding: 32px 22px; }
+      .stats, .legend, .diagram-grid, .rule-list { grid-template-columns: 1fr; }
+      .convergence { grid-template-columns: 1fr; }
+      .converge-arrow { transform: rotate(90deg); justify-self: center; }
+      .diagram-card.wide { grid-column: auto; }
+      .mermaid-wrap, .wide .mermaid-wrap { height: 520px; min-height: 0; }
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <nav class="toc" id="toc" aria-label="Lifecycle sections">
+      <div class="toc-title">Lifecycle map</div>
+      <a href="#overview">Overview</a>
+      <a href="#convergence">Convergence</a>
+      <a href="#core-states">Core states</a>
+      <a href="#support-states">Support states</a>
+      <a href="#normal-flow">Normal flow</a>
+      <a href="#recovery-flow">Recovery flow</a>
+    </nav>
+    <main class="main">
+      <header class="hero" id="overview">
+        <span class="eyebrow">Studio Repertorio · M0 lifecycle contract</span>
+        <h1>One order contract. Two sales modes. Guarded effects.</h1>
+        <p class="lede">A visual walkthrough of how storefront and assisted orders converge after placement, while payment, fulfillment, inventory, and external work remain separate state machines.</p>
+        <div class="stats" aria-label="Lifecycle summary">
+          <div class="stat"><strong>5</strong><span>state machines</span></div>
+          <div class="stat"><strong>2</strong><span>coordination views</span></div>
+          <div class="stat"><strong>4</strong><span>order states</span></div>
+          <div class="stat"><strong>1</strong><span>settlement authority</span></div>
+        </div>
+        <div class="legend" aria-label="Color legend">
+          <div class="legend-item"><b><i class="swatch blue"></i>Commands</b><span>Guarded operations and active work</span></div>
+          <div class="legend-item"><b><i class="swatch green"></i>Success</b><span>Settlement, fulfillment, completion</span></div>
+          <div class="legend-item"><b><i class="swatch amber"></i>Decision</b><span>Reconciliation and safety gates</span></div>
+          <div class="legend-item"><b><i class="swatch red"></i>Recovery</b><span>Refund, cancellation, dead letter</span></div>
+        </div>
+      </header>
+
+      <section id="convergence">
+        <div class="section-head"><span class="section-number">01</span><div><h2>Where the two sales modes converge</h2><p class="section-copy">They enter differently, but after <code>placed</code> they use the same order, payment-attempt, and fulfillment contracts.</p></div></div>
+        <div class="convergence">
+          <article class="source-card direct"><h3>Storefront</h3><ul><li>Starts from cart and checkout intent.</li><li><code>create_order</code> creates <code>placed</code>.</li><li>Direct-stocked inventory is reserved.</li></ul></article>
+          <div class="converge-arrow" aria-hidden="true">→</div>
+          <article class="source-card assisted"><h3>Assisted</h3><ul><li>Starts from a staff-owned <code>draft</code>.</li><li><code>issue_assisted_order</code> creates <code>placed</code>.</li><li>No stock reservation branch exists.</li></ul></article>
+        </div>
+        <div class="shared-card"><h3>Shared after placement</h3><p>Commercial snapshots are immutable. Both modes use the same payment-attempt lifecycle, settlement rule, and provider-independent fulfillment lifecycle. Delivery method and direct-stock inventory remain controlled branches, not separate order models.</p></div>
+      </section>
+
+      <section id="core-states">
+        <div class="section-head"><span class="section-number">02</span><div><h2>Core commerce state machines</h2><p class="section-copy">The order records the commercial contract. Payment attempts record provider truth. Fulfillment records operational progress.</p></div></div>
+        <div class="diagram-grid">
+          <article class="diagram-card">
+            <div class="diagram-header"><h3>Order lifecycle</h3><p>Storefront enters at <code>placed</code>; assisted enters at <code>draft</code>.</p></div>
+            <div class="diagram-shell"><p class="diagram-hint">Zoom, pan, double-click to fit, or open full size.</p><div class="mermaid-wrap"><div class="zoom-controls"><button data-action="zoom-in">+</button><button data-action="zoom-out">−</button><button data-action="zoom-fit">↻</button><button data-action="zoom-expand">⛶</button><span class="zoom-label">Loading</span></div><div class="mermaid-viewport"><div class="mermaid mermaid-canvas"></div></div></div><script type="text/plain" class="diagram-source">stateDiagram-v2
+direction LR
+[*] --> draft: create_assisted_draft
+[*] --> placed: create_order
+draft --> placed: issue_assisted_order
+draft --> cancelled: cancel_order
+placed --> cancelled: cancel_order
+placed --> completed: verified fulfillment
+cancelled --> [*]
+completed --> [*]
+note right of placed
+  Commercial snapshots are immutable.
+end note
+note right of completed
+  Completion requires verified fulfilled evidence.
+end note</script></div>
+            <div class="rule-list"><div class="rule"><strong>Separate:</strong> payment state never enters the order state.</div><div class="rule"><strong>Terminal:</strong> <code>cancelled</code> and <code>completed</code>.</div></div>
+          </article>
+
+          <article class="diagram-card">
+            <div class="diagram-header"><h3>Payment-attempt lifecycle</h3><p>Each retry creates a new row; verified provider truth is never ignored.</p></div>
+            <div class="diagram-shell"><p class="diagram-hint">Zoom, pan, double-click to fit, or open full size.</p><div class="mermaid-wrap"><div class="zoom-controls"><button data-action="zoom-in">+</button><button data-action="zoom-out">−</button><button data-action="zoom-fit">↻</button><button data-action="zoom-expand">⛶</button><span class="zoom-label">Loading</span></div><div class="mermaid-viewport"><div class="mermaid mermaid-canvas"></div></div></div><script type="text/plain" class="diagram-source">stateDiagram-v2
+direction LR
+[*] --> not_started
+not_started --> creating
+not_started --> failed: safe supersession
+creating --> pending
+creating --> creation_unknown
+creating --> failed
+creating --> paid: early verification
+creation_unknown --> pending: reconcile
+creation_unknown --> paid: reconcile
+creation_unknown --> failed: reconcile
+creation_unknown --> expired: reconcile
+pending --> paid
+pending --> failed
+pending --> expired
+failed --> paid: guarded late correction
+expired --> paid: guarded late correction
+paid --> refund_pending
+refund_pending --> refunded
+refunded --> [*]
+note right of creation_unknown
+  Reconcile before retry or acceptance.
+end note
+note right of paid
+  Record provider truth before recovery.
+end note</script></div>
+            <div class="rule-list"><div class="rule"><strong>Guard:</strong> <code>creation_unknown</code> blocks retry.</div><div class="rule"><strong>Authority:</strong> only the settlement attempt unlocks fulfillment.</div></div>
+          </article>
+
+          <article class="diagram-card wide">
+            <div class="diagram-header"><h3>Fulfillment lifecycle</h3><p>One generic model supports carrier delivery, custom delivery, pickup, and local handoff.</p></div>
+            <div class="diagram-shell"><p class="diagram-hint">Zoom, pan, double-click to fit, or open full size.</p><div class="mermaid-wrap"><div class="zoom-controls"><button data-action="zoom-in">+</button><button data-action="zoom-out">−</button><button data-action="zoom-fit">↻</button><button data-action="zoom-expand">⛶</button><span class="zoom-label">Loading</span></div><div class="mermaid-viewport"><div class="mermaid mermaid-canvas"></div></div></div><script type="text/plain" class="diagram-source">stateDiagram-v2
+direction LR
+[*] --> unfulfilled
+unfulfilled --> in_production
+unfulfilled --> ready_for_fulfillment
+unfulfilled --> cancelled
+in_production --> ready_for_fulfillment
+in_production --> cancelled
+ready_for_fulfillment --> in_transit: carrier handoff
+ready_for_fulfillment --> fulfilled: pickup or local handoff
+ready_for_fulfillment --> cancelled
+in_transit --> fulfilled: verified delivery
+in_transit --> exception
+exception --> in_transit: verified recovery
+exception --> fulfilled: verified completion
+fulfilled --> [*]
+cancelled --> [*]
+note right of in_transit
+  exception is valid only after handoff.
+end note
+note right of fulfilled
+  Evidence comes through a delivery adapter.
+end note</script></div>
+            <div class="rule-list"><div class="rule"><strong>Carrier:</strong> readiness → transit → fulfilled.</div><div class="rule"><strong>Pickup:</strong> readiness → fulfilled, with no false transit state.</div></div>
+          </article>
+        </div>
+      </section>
+
+      <section id="support-states">
+        <div class="section-head"><span class="section-number">03</span><div><h2>Supporting reliability state machines</h2><p class="section-copy">Inventory protects physical availability. The outbox protects required external effects after a database commit.</p></div></div>
+        <div class="diagram-grid">
+          <article class="diagram-card">
+            <div class="diagram-header"><h3>Stock reservation</h3><p>Only direct-stocked orders use this lifecycle.</p></div>
+            <div class="diagram-shell"><p class="diagram-hint">Zoom, pan, double-click to fit.</p><div class="mermaid-wrap"><div class="zoom-controls"><button data-action="zoom-in">+</button><button data-action="zoom-out">−</button><button data-action="zoom-fit">↻</button><button data-action="zoom-expand">⛶</button><span class="zoom-label">Loading</span></div><div class="mermaid-viewport"><div class="mermaid mermaid-canvas"></div></div></div><script type="text/plain" class="diagram-source">stateDiagram-v2
+direction LR
+[*] --> active: create_order or reserve_stock
+active --> consumed: verified payment
+active --> released: verified unpaid terminal result
+[*] --> consumed: atomic late-payment reacquisition
+consumed --> [*]
+released --> [*]
+note right of consumed
+  Late reacquisition is all-or-nothing.
+end note</script></div>
+            <div class="rule-list"><div class="rule"><strong>Paid:</strong> consume without another decrement.</div><div class="rule"><strong>Unpaid:</strong> release exactly once.</div></div>
+          </article>
+          <article class="diagram-card">
+            <div class="diagram-header"><h3>Outbox work</h3><p>Durable provider calls, retries, lease recovery, and dead letters.</p></div>
+            <div class="diagram-shell"><p class="diagram-hint">Zoom, pan, double-click to fit.</p><div class="mermaid-wrap"><div class="zoom-controls"><button data-action="zoom-in">+</button><button data-action="zoom-out">−</button><button data-action="zoom-fit">↻</button><button data-action="zoom-expand">⛶</button><span class="zoom-label">Loading</span></div><div class="mermaid-viewport"><div class="mermaid mermaid-canvas"></div></div></div><script type="text/plain" class="diagram-source">stateDiagram-v2
+direction LR
+[*] --> pending
+pending --> processing: claim lease
+processing --> completed: provider success
+processing --> pending: safe retry or lease recovery
+processing --> dead_letter: permanent, exhausted, or unsafe result
+dead_letter --> pending: protected replay
+completed --> [*]
+note right of processing
+  Lease recovery must not duplicate a completed effect.
+end note
+note right of dead_letter
+  Replay requires safety proof and audit.
+end note</script></div>
+            <div class="rule-list"><div class="rule"><strong>Retry:</strong> only when repetition is safe.</div><div class="rule"><strong>Replay:</strong> protected, audited, and never blind.</div></div>
+          </article>
+        </div>
+      </section>
+
+      <section id="normal-flow">
+        <div class="section-head"><span class="section-number">04</span><div><h2>Normal convergence and fulfillment</h2><p class="section-copy">This view isolates the safe path from order source to accepted settlement and verified completion.</p></div></div>
+        <article class="diagram-card wide">
+          <div class="diagram-header"><h3>Safe normal path</h3><p>Blue is active work, amber is a decision, and green is accepted progress.</p></div>
+          <div class="diagram-shell"><p class="diagram-hint">Use zoom and pan for details. Expand for a full-window view.</p><div class="mermaid-wrap"><div class="zoom-controls"><button data-action="zoom-in">+</button><button data-action="zoom-out">−</button><button data-action="zoom-fit">↻</button><button data-action="zoom-expand">⛶</button><span class="zoom-label">Loading</span></div><div class="mermaid-viewport"><div class="mermaid mermaid-canvas"></div></div></div><script type="text/plain" class="diagram-source">flowchart TD
+subgraph ENTRY[Order source and placement]
+  SF[Storefront cart] --> CO[create_order]
+  AD[Assisted draft] --> IA[issue_assisted_order]
+  CO --> OP[Order placed]
+  IA --> OP
+  CO --> FU[Fulfillment unfulfilled]
+  IA --> FU
+  CO --> RA[Direct reservation active]
+end
+subgraph PAYMENT[Payment and settlement]
+  OP --> PA[Payment-attempt lifecycle]
+  PA --> VP[Verified paid]
+  VP --> SAFE{Safe normal acceptance?}
+  SAFE -->|assisted, no competitor| SA[Atomically record paid and assign settlement]
+  SAFE -->|direct, active reservation, no competitor| SD[Atomically record paid, assign settlement, consume reservation]
+  SA --> SET[Settlement paid and fulfillment enabled]
+  SD --> SET
+end
+subgraph FULFILLMENT[Fulfillment and completion]
+  SET --> IP[in_production]
+  SET --> RF[ready_for_fulfillment]
+  IP --> RF
+  RF -->|carrier handoff| IT[in_transit]
+  RF -->|pickup or local handoff| FD[fulfilled]
+  IT -->|verified delivery| FD
+  IT --> EX[exception]
+  EX -->|verified recovery| IT
+  EX -->|verified completion| FD
+  FD --> OC[Order completed]
+end
+classDef active fill:#3b82f622,stroke:#3b82f6,stroke-width:2px
+classDef success fill:#22c55e22,stroke:#22c55e,stroke-width:2px
+classDef decision fill:#f59e0b22,stroke:#f59e0b,stroke-width:2px
+class CO,IA,PA,VP,SA,SD,IP,RF,IT active
+class SAFE decision
+class SET,FD,OC success</script></div>
+          <div class="rule-list"><div class="rule"><strong>Atomic placement:</strong> order and initial fulfillment commit together.</div><div class="rule"><strong>Atomic settlement:</strong> payment truth, settlement pointer, and stock effect commit together.</div></div>
+        </article>
+      </section>
+
+      <section id="recovery-flow">
+        <div class="section-head"><span class="section-number">05</span><div><h2>Failure, recovery, refund, and cancellation</h2><p class="section-copy">This view keeps the rare paths separate so late payment, duplicate payment, and stock recovery remain understandable.</p></div></div>
+        <article class="diagram-card wide">
+          <div class="diagram-header"><h3>Guarded recovery path</h3><p>Every branch records verified truth before settlement, inventory, refund, or cancellation decisions.</p></div>
+          <div class="diagram-shell"><p class="diagram-hint">Use zoom and pan for details. Expand for a full-window view.</p><div class="mermaid-wrap"><div class="zoom-controls"><button data-action="zoom-in">+</button><button data-action="zoom-out">−</button><button data-action="zoom-fit">↻</button><button data-action="zoom-expand">⛶</button><span class="zoom-label">Loading</span></div><div class="mermaid-viewport"><div class="mermaid mermaid-canvas"></div></div></div><script type="text/plain" class="diagram-source">flowchart TD
+subgraph RETRY[Failure and retry]
+  PA[Payment-attempt lifecycle] -->|failed or expired| REL[Release active reservation]
+  REL --> RET{Retry order mode}
+  RET -->|direct stocked| RS[create_payment_attempt atomically reserves stock and creates outbox work]
+  RET -->|assisted| NA[Create new attempt without stock]
+  RS --> PA
+  NA --> PA
+end
+subgraph GATING[Unsafe payment gate]
+  PA -->|verified paid| SAFE{Safe normal acceptance?}
+  SAFE -->|late, duplicate, cancelled, or competitor| GATE[Record paid truth and set recovery-required gate]
+  GATE --> OS{Order still placed?}
+  OS -->|no, cancelled| RFR[request_full_refund]
+  OS -->|yes| ES{Valid settlement already exists?}
+  ES -->|yes, duplicate payment| DFR[request_full_refund for duplicate only]
+  DFR --> DFP[Duplicate refund_pending]
+  DFP --> DFD[Duplicate refunded]
+  DFD --> KSF[Keep existing settlement and fulfillment authority]
+  ES -->|no| DUP{Another paid attempt?}
+  DUP -->|yes| DR[Select deterministic candidate and durably request duplicate refunds]
+  DUP -->|no| CP{Competing payable attempt?}
+  DR --> CP
+  CP -->|yes| REC[reconcile_payment_attempt]
+  REC -->|not_started superseded to failed| CP
+  REC -->|provider attempt still payable| CP
+  REC -->|another paid duplicate| DR
+end
+subgraph RECOVERY[Settlement and stock recovery]
+  CP -->|no| MODE{Recovery inventory branch}
+  MODE -->|assisted| AR[recover_late_paid_order atomically assigns settlement]
+  MODE -->|direct with active reservation| AC[recover_late_paid_order atomically consumes reservation and assigns settlement]
+  MODE -->|direct with released stock| LR[All-or-nothing stock reacquisition]
+  LR -->|all stock available| LC[Create consumed reservations and assign settlement]
+  LR -->|stock unavailable| RFR
+  AR --> SET[Settlement paid and fulfillment enabled]
+  AC --> SET
+  LC --> SET
+  SET --> CONT[Continue through normal fulfillment]
+end
+subgraph REFUND[Refund and cancellation]
+  SET -->|staff cancellation request before transit| RFR
+  RFR --> RFP[refund_pending]
+  RFP --> RD[refunded]
+  RD --> TERM{Order already cancelled?}
+  TERM -->|yes| KEEP[Keep order and fulfillment cancelled]
+  TERM -->|no, stored pre-transit cancellation intent| CX[cancel_order atomically cancels order and fulfillment]
+end
+classDef active fill:#3b82f622,stroke:#3b82f6,stroke-width:2px
+classDef success fill:#22c55e22,stroke:#22c55e,stroke-width:2px
+classDef decision fill:#f59e0b22,stroke:#f59e0b,stroke-width:2px
+classDef recovery fill:#ef444422,stroke:#ef4444,stroke-width:2px
+class RS,NA,GATE,REC,AR,AC,LC active
+class RET,SAFE,OS,ES,DUP,CP,MODE,TERM decision
+class SET,CONT,KSF success
+class RFR,DFR,DFP,DFD,RFP,RD,CX,KEEP recovery</script></div>
+          <div class="rule-list"><div class="rule"><strong>No partial stock:</strong> reacquire every item or refund.</div><div class="rule"><strong>No duplicate authority:</strong> an existing settlement remains authoritative.</div></div>
+        </article>
+        <div class="callout"><strong>Authority boundary.</strong> This explainer does not replace the contract. The transition tables, command ownership, guards, and tests in Linear Technical Architecture remain authoritative. Provider mappings stay deferred to <code>RPRT-23</code> and <code>RPRT-25</code>.</div>
+      </section>
+    </main>
+  </div>
+
+  <script type="module">
+    import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs';
+    import elkLayouts from 'https://cdn.jsdelivr.net/npm/@mermaid-js/layout-elk/dist/mermaid-layout-elk.esm.min.mjs';
+
+    const hostScheme = getComputedStyle(document.documentElement).colorScheme;
+    const isDark = hostScheme === 'dark' || (hostScheme === 'normal' && matchMedia('(prefers-color-scheme: dark)').matches);
+    mermaid.registerLayoutLoaders(elkLayouts);
+    mermaid.initialize({
+      startOnLoad: false,
+      theme: 'base',
+      look: 'classic',
+      layout: 'elk',
+      themeVariables: isDark ? {
+        darkMode: true,
+        primaryColor: '#9a9dff', primaryTextColor: '#070b14', primaryBorderColor: '#343b45',
+        lineColor: '#9da5b2', secondaryColor: '#1e242e', secondaryTextColor: '#dadee5',
+        tertiaryColor: '#1e242e', tertiaryTextColor: '#dadee5', background: '#070b14',
+        noteBkgColor: '#252b35', noteTextColor: '#dadee5', noteBorderColor: '#e5b94c',
+        fontFamily: "'IBM Plex Sans', sans-serif", fontSize: '15px'
+      } : {
+        primaryColor: '#5537eb', primaryTextColor: '#ffffff', primaryBorderColor: '#d4d8de',
+        lineColor: '#414853', secondaryColor: '#e1e5eb', secondaryTextColor: '#414853',
+        tertiaryColor: '#fff6d6', tertiaryTextColor: '#414853', background: '#f3f5f9',
+        noteBkgColor: '#fff8dc', noteTextColor: '#272b33', noteBorderColor: '#c78b16',
+        fontFamily: "'IBM Plex Sans', sans-serif", fontSize: '15px'
+      }
+    });
+
+    const clamp = (n, min, max) => Math.max(min, Math.min(max, n));
+    let activeDrag = null;
+    addEventListener('mousemove', event => activeDrag?.move(event));
+    addEventListener('mouseup', () => { activeDrag?.end(); activeDrag = null; });
+
+    async function initDiagram(shell, index) {
+      const wrap = shell.querySelector('.mermaid-wrap');
+      const viewport = shell.querySelector('.mermaid-viewport');
+      const canvas = shell.querySelector('.mermaid-canvas');
+      const source = shell.querySelector('.diagram-source');
+      const label = shell.querySelector('.zoom-label');
+      let zoom = 1, panX = 0, panY = 0, svgW = 0, svgH = 0;
+
+      const constrain = () => {
+        const pad = 24, rw = svgW * zoom, rh = svgH * zoom;
+        panX = rw + pad * 2 <= viewport.clientWidth ? (viewport.clientWidth - rw) / 2 : clamp(panX, viewport.clientWidth - rw - pad, pad);
+        panY = rh + pad * 2 <= viewport.clientHeight ? (viewport.clientHeight - rh) / 2 : clamp(panY, viewport.clientHeight - rh - pad, pad);
+      };
+      const apply = () => {
+        const svg = canvas.querySelector('svg'); if (!svg) return;
+        constrain();
+        svg.style.width = `${svgW * zoom}px`; svg.style.height = `${svgH * zoom}px`;
+        canvas.style.transform = `translate(${panX}px, ${panY}px)`;
+        label.textContent = `${Math.round(zoom * 100)}%`;
+      };
+      const fit = () => {
+        if (!svgW) return;
+        zoom = clamp(Math.min((viewport.clientWidth - 48) / svgW, (viewport.clientHeight - 48) / svgH), 0.08, 1.45);
+        panX = (viewport.clientWidth - svgW * zoom) / 2; panY = (viewport.clientHeight - svgH * zoom) / 2; apply();
+      };
+      const zoomAt = factor => { zoom = clamp(zoom * factor, 0.08, 6); apply(); };
+      const expand = () => {
+        const svg = canvas.querySelector('svg'); if (!svg) return;
+        const clone = svg.cloneNode(true); clone.removeAttribute('style');
+        const bg = isDark ? '#070b14' : '#f3f5f9';
+        const html = `<!doctype html><html><head><title>Lifecycle diagram</title><style>body{margin:0;padding:32px;background:${bg};display:grid;place-items:center;min-height:100vh}svg{max-width:100%;height:auto}</style></head><body>${clone.outerHTML}</body></html>`;
+        open(URL.createObjectURL(new Blob([html], {type:'text/html'})), '_blank');
+      };
+
+      try {
+        const { svg } = await mermaid.render(`lifecycle-${index}`, source.textContent.trim());
+        canvas.innerHTML = svg;
+        const rendered = canvas.querySelector('svg');
+        if (!rendered || rendered.getAttribute('aria-roledescription') === 'error') throw new Error('Invalid Mermaid output');
+        const viewBox = rendered.viewBox.baseVal;
+        svgW = viewBox.width || parseFloat(rendered.getAttribute('width')) || 900;
+        svgH = viewBox.height || parseFloat(rendered.getAttribute('height')) || 500;
+        rendered.removeAttribute('width'); rendered.removeAttribute('height'); rendered.style.maxWidth = 'none'; rendered.style.display = 'block';
+        fit();
+      } catch (error) {
+        console.error(error); label.textContent = 'Render error';
+      }
+
+      wrap.querySelector('[data-action="zoom-in"]').addEventListener('click', () => zoomAt(1.16));
+      wrap.querySelector('[data-action="zoom-out"]').addEventListener('click', () => zoomAt(1 / 1.16));
+      wrap.querySelector('[data-action="zoom-fit"]').addEventListener('click', fit);
+      wrap.querySelector('[data-action="zoom-expand"]').addEventListener('click', expand);
+      viewport.addEventListener('dblclick', fit);
+      viewport.addEventListener('wheel', event => { if (event.ctrlKey || event.metaKey) { event.preventDefault(); zoomAt(event.deltaY < 0 ? 1.16 : 1 / 1.16); } }, {passive:false});
+      viewport.addEventListener('mousedown', event => {
+        const startX = event.clientX, startY = event.clientY, originalX = panX, originalY = panY;
+        wrap.classList.add('is-panning'); event.preventDefault();
+        activeDrag = { move: moveEvent => { panX = originalX + moveEvent.clientX - startX; panY = originalY + moveEvent.clientY - startY; apply(); }, end: () => wrap.classList.remove('is-panning') };
+      });
+      new ResizeObserver(fit).observe(viewport);
+    }
+
+    document.querySelectorAll('.diagram-shell').forEach((shell, index) => initDiagram(shell, index));
+
+    const navLinks = [...document.querySelectorAll('.toc a')];
+    const sections = navLinks.map(link => ({link, section: document.querySelector(link.getAttribute('href'))})).filter(item => item.section);
+    const observer = new IntersectionObserver(entries => entries.forEach(entry => {
+      if (!entry.isIntersecting) return;
+      navLinks.forEach(link => link.classList.remove('active'));
+      sections.find(item => item.section === entry.target)?.link.classList.add('active');
+    }), {rootMargin:'-12% 0px -76% 0px'});
+    sections.forEach(item => observer.observe(item.section));
+  </script>
+</body>
+</html>

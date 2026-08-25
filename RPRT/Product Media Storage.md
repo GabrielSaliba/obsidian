@@ -182,6 +182,6 @@ The loopback API test refuses non-loopback hosts, does not print local keys, use
 
 - [RPRT-10](https://linear.app/guisaliba/issue/RPRT-10/implement-supabase-storage-security-contracts)
 - [PR #20](https://github.com/guisaliba/repertorio/pull/20)
-- [Dark-theme PR visual explainer](https://uploads.linear.app/445023d5-264c-47cb-a70c-e4a15a58da5c/ffec53f6-2bd7-498e-89ec-8a42fcfe26d6/3fa8941c-4e77-4de0-9c11-3ea88f86b8d7)
+- [[Visual Explainers/RPRT-10 Product Media Storage Visual Explainer.html|Product media storage visual explainer]]
 - [`20260821061509_add_product_media_storage_security.sql`](https://github.com/guisaliba/repertorio/blob/feat/rprt-10-storage-security/supabase/migrations/20260821061509_add_product_media_storage_security.sql)
 - [`docs/database.md`](https://github.com/guisaliba/repertorio/blob/feat/rprt-10-storage-security/docs/database.md)

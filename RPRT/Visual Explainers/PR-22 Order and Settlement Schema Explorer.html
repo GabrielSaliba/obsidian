@@ -1,0 +1,1850 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta
+      name="description"
+      content="Interactive ERD and schema explorer for PR #22, the RPRT-46 order and settlement database boundary."
+    />
+    <title>PR #22 Order and Settlement Schema Explorer</title>
+    <style>
+      :root {
+        --paper: #f4f0e6;
+        --paper-deep: #e9e1d2;
+        --ink: #18262e;
+        --ink-soft: #52636b;
+        --navy: #173f4f;
+        --navy-2: #235e70;
+        --cyan: #1b8195;
+        --cyan-soft: #d9edf0;
+        --coral: #bd5543;
+        --coral-soft: #f3ddd7;
+        --gold: #a87819;
+        --gold-soft: #f3e6bd;
+        --green: #31705c;
+        --green-soft: #dce9df;
+        --card: #fffdf8;
+        --context: #ece8df;
+        --line: #9bafa9;
+        --line-strong: #31705c;
+        --line-weak: #a87819;
+        --line-poly: #bd5543;
+        --border: #b8c0ba;
+        --focus: #0d7188;
+        --shadow: 0 8px 22px rgba(23, 63, 79, 0.09);
+        --radius: 8px;
+        --font-display: Georgia, "Times New Roman", serif;
+        --font-sans: "Arial Narrow", "Aptos Narrow", "Segoe UI", sans-serif;
+        --font-mono: "Cascadia Code", "SFMono-Regular", Consolas, monospace;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      html {
+        scroll-behavior: smooth;
+      }
+
+      body {
+        margin: 0;
+        background:
+          linear-gradient(rgba(23, 63, 79, 0.035) 1px, transparent 1px),
+          linear-gradient(90deg, rgba(23, 63, 79, 0.035) 1px, transparent 1px),
+          var(--paper);
+        background-size: 24px 24px;
+        color: var(--ink);
+        font-family: var(--font-sans);
+        font-size: 15px;
+        line-height: 1.5;
+      }
+
+      button,
+      input {
+        font: inherit;
+      }
+
+      button:focus-visible,
+      input:focus-visible,
+      a:focus-visible {
+        outline: 3px solid var(--focus);
+        outline-offset: 3px;
+      }
+
+      a {
+        color: var(--navy-2);
+        text-underline-offset: 3px;
+      }
+
+      code {
+        font-family: var(--font-mono);
+      }
+
+      .sr-only {
+        clip: rect(0, 0, 0, 0);
+        clip-path: inset(50%);
+        height: 1px;
+        overflow: hidden;
+        position: absolute;
+        white-space: nowrap;
+        width: 1px;
+      }
+
+      .shell {
+        margin: 0 auto;
+        max-width: 1760px;
+        padding: 34px 28px 70px;
+      }
+
+      .masthead {
+        border-bottom: 2px solid var(--navy);
+        display: grid;
+        gap: 28px;
+        grid-template-columns: minmax(0, 1.6fr) minmax(340px, 0.8fr);
+        padding: 34px 0 30px;
+      }
+
+      .eyebrow,
+      .metric-label,
+      .section-kicker,
+      .domain-label,
+      .badge,
+      .marker,
+      .legend-key,
+      .footer-meta {
+        font-family: var(--font-mono);
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+      }
+
+      .eyebrow {
+        color: var(--coral);
+        font-size: 0.72rem;
+        font-weight: 800;
+      }
+
+      h1,
+      h2,
+      h3 {
+        font-family: var(--font-display);
+        font-weight: 500;
+        line-height: 1.08;
+        margin: 0;
+      }
+
+      h1 {
+        font-size: clamp(2.6rem, 6vw, 5.4rem);
+        letter-spacing: -0.04em;
+        margin-top: 10px;
+        max-width: 950px;
+        overflow-wrap: anywhere;
+      }
+
+      .lede {
+        color: var(--ink-soft);
+        font-size: 1.08rem;
+        margin: 20px 0 0;
+        max-width: 78ch;
+      }
+
+      .meta-line {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px 18px;
+        margin-top: 22px;
+      }
+
+      .meta-line span,
+      .meta-line a {
+        font-family: var(--font-mono);
+        font-size: 0.74rem;
+        overflow-wrap: anywhere;
+      }
+
+      .masthead > *,
+      .section-head > * {
+        min-width: 0;
+      }
+
+      .metric-grid {
+        align-self: end;
+        display: grid;
+        gap: 10px;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      .metric {
+        background: var(--card);
+        border: 1px solid var(--border);
+        border-top: 4px solid var(--navy-2);
+        box-shadow: var(--shadow);
+        padding: 15px 16px;
+      }
+
+      .metric:nth-child(2) {
+        border-top-color: var(--coral);
+      }
+
+      .metric:nth-child(3) {
+        border-top-color: var(--green);
+      }
+
+      .metric:nth-child(4) {
+        border-top-color: var(--gold);
+      }
+
+      .metric-value {
+        display: block;
+        font-family: var(--font-display);
+        font-size: 2rem;
+        line-height: 1;
+      }
+
+      .metric-label {
+        color: var(--ink-soft);
+        display: block;
+        font-size: 0.64rem;
+        margin-top: 7px;
+      }
+
+      .explorer {
+        margin-top: 42px;
+      }
+
+      .section-head {
+        align-items: end;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 14px 24px;
+        justify-content: space-between;
+        margin-bottom: 16px;
+      }
+
+      .section-kicker {
+        color: var(--cyan);
+        display: block;
+        font-size: 0.68rem;
+        font-weight: 800;
+        margin-bottom: 6px;
+      }
+
+      .section-head h2 {
+        font-size: clamp(1.8rem, 4vw, 2.8rem);
+      }
+
+      .section-copy {
+        color: var(--ink-soft);
+        margin: 7px 0 0;
+        max-width: 82ch;
+      }
+
+      .toolbar {
+        align-items: center;
+        background: var(--navy);
+        border: 1px solid var(--navy);
+        border-radius: var(--radius) var(--radius) 0 0;
+        color: #f7f4ec;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 9px;
+        padding: 12px;
+        position: sticky;
+        top: 0;
+        z-index: 20;
+      }
+
+      .view-tabs {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 7px;
+      }
+
+      .tool-button,
+      .view-button {
+        background: transparent;
+        border: 1px solid rgba(255, 255, 255, 0.38);
+        border-radius: 4px;
+        color: #f7f4ec;
+        cursor: pointer;
+        font-family: var(--font-mono);
+        font-size: 0.7rem;
+        padding: 8px 10px;
+      }
+
+      .view-button[aria-pressed="true"] {
+        background: #f7f4ec;
+        color: var(--navy);
+        font-weight: 800;
+      }
+
+      .toolbar-spacer {
+        flex: 1;
+      }
+
+      .search-wrap {
+        min-width: min(260px, 100%);
+        position: relative;
+      }
+
+      .search-wrap input {
+        background: #fffdf8;
+        border: 0;
+        border-radius: 4px;
+        color: var(--ink);
+        min-height: 36px;
+        padding: 7px 10px;
+        width: 100%;
+      }
+
+      .board-wrap {
+        background: rgba(255, 253, 248, 0.66);
+        border: 1px solid var(--border);
+        border-top: 0;
+        min-height: 720px;
+        overflow: auto;
+        padding: 24px;
+      }
+
+      .board {
+        display: grid;
+        gap: 34px 46px;
+        grid-auto-rows: minmax(190px, auto);
+        grid-template-columns: repeat(4, minmax(280px, 1fr));
+        min-width: 1280px;
+        position: relative;
+      }
+
+      .edges {
+        height: 100%;
+        inset: 0;
+        overflow: visible;
+        pointer-events: none;
+        position: absolute;
+        width: 100%;
+        z-index: 1;
+      }
+
+      .table-card {
+        align-self: start;
+        background: var(--card);
+        border: 1.5px solid var(--border);
+        border-radius: var(--radius);
+        box-shadow: var(--shadow);
+        min-width: 0;
+        position: relative;
+        transition: opacity 160ms ease, transform 160ms ease, border-color 160ms ease;
+        z-index: 3;
+      }
+
+      .table-card.context {
+        background: var(--context);
+        border-style: dashed;
+      }
+
+      .table-card.private {
+        border-color: var(--coral);
+      }
+
+      .table-card.selected {
+        border-color: var(--focus);
+        box-shadow: 0 0 0 3px rgba(13, 113, 136, 0.2), var(--shadow);
+        transform: translateY(-2px);
+      }
+
+      .table-card.dimmed,
+      .table-card.search-miss {
+        opacity: 0.18;
+      }
+
+      .table-card.related {
+        border-color: var(--line-strong);
+      }
+
+      .table-head {
+        align-items: stretch;
+        border-bottom: 1px solid var(--border);
+        display: flex;
+      }
+
+      .table-toggle {
+        background: transparent;
+        border: 0;
+        color: inherit;
+        cursor: pointer;
+        flex: 1;
+        min-width: 0;
+        padding: 14px 15px 12px;
+        text-align: left;
+      }
+
+      .domain-label {
+        color: var(--cyan);
+        display: block;
+        font-size: 0.58rem;
+        font-weight: 800;
+      }
+
+      .context .domain-label {
+        color: var(--ink-soft);
+      }
+
+      .table-name {
+        display: block;
+        font-family: var(--font-mono);
+        font-size: 0.88rem;
+        font-weight: 800;
+        margin-top: 4px;
+        overflow-wrap: anywhere;
+      }
+
+      .table-role {
+        color: var(--ink-soft);
+        display: block;
+        font-size: 0.72rem;
+        margin-top: 4px;
+      }
+
+      .expand-mark {
+        align-items: center;
+        border-left: 1px solid var(--border);
+        color: var(--ink-soft);
+        display: flex;
+        font-family: var(--font-mono);
+        font-size: 1rem;
+        padding: 0 12px;
+      }
+
+      .columns {
+        list-style: none;
+        margin: 0;
+        padding: 6px 0;
+      }
+
+      .column-row {
+        align-items: baseline;
+        border-bottom: 1px solid rgba(184, 192, 186, 0.55);
+        display: grid;
+        font-family: var(--font-mono);
+        font-size: 0.68rem;
+        gap: 8px;
+        grid-template-columns: 42px minmax(105px, 1.2fr) minmax(74px, 0.8fr) auto;
+        padding: 6px 12px;
+      }
+
+      .column-row:last-child {
+        border-bottom: 0;
+      }
+
+      .column-row.extra {
+        display: none;
+      }
+
+      .table-card.expanded .column-row.extra {
+        display: grid;
+      }
+
+      .column-row.fk-row {
+        cursor: crosshair;
+      }
+
+      .column-row.fk-row:hover,
+      .column-row.fk-row:focus-within {
+        background: var(--cyan-soft);
+      }
+
+      .marker {
+        color: var(--ink-soft);
+        font-size: 0.55rem;
+        white-space: nowrap;
+      }
+
+      .marker.pk {
+        color: var(--coral);
+        font-weight: 900;
+      }
+
+      .marker.fk {
+        color: var(--cyan);
+        font-weight: 900;
+      }
+
+      .column-name {
+        font-weight: 700;
+        overflow-wrap: anywhere;
+      }
+
+      .column-type,
+      .column-flags {
+        color: var(--ink-soft);
+        overflow-wrap: anywhere;
+      }
+
+      .column-flags {
+        font-size: 0.59rem;
+        text-align: right;
+      }
+
+      .table-notes {
+        border-top: 1px solid var(--border);
+        color: var(--ink-soft);
+        display: none;
+        font-family: var(--font-mono);
+        font-size: 0.61rem;
+        padding: 9px 12px 11px;
+      }
+
+      .table-card.expanded .table-notes {
+        display: block;
+      }
+
+      .edge {
+        fill: none;
+        stroke: var(--line-strong);
+        stroke-width: 2;
+        transition: opacity 140ms ease, stroke-width 140ms ease;
+      }
+
+      .edge.weak {
+        stroke: var(--line-weak);
+        stroke-dasharray: 7 5;
+      }
+
+      .edge.poly {
+        stroke: var(--line-poly);
+        stroke-dasharray: 3 5;
+      }
+
+      .edge.dimmed {
+        opacity: 0.08;
+      }
+
+      .edge.highlighted {
+        opacity: 1;
+        stroke-width: 4;
+      }
+
+      .edge-label {
+        fill: var(--ink-soft);
+        font-family: var(--font-mono);
+        font-size: 11px;
+        paint-order: stroke;
+        stroke: var(--paper);
+        stroke-width: 4px;
+      }
+
+      .legend {
+        background: var(--card);
+        border: 1px solid var(--border);
+        display: grid;
+        gap: 10px 20px;
+        grid-template-columns: repeat(5, minmax(0, 1fr));
+        margin-top: 16px;
+        padding: 15px;
+      }
+
+      .legend-item {
+        align-items: center;
+        color: var(--ink-soft);
+        display: flex;
+        font-size: 0.76rem;
+        gap: 8px;
+      }
+
+      .legend-key {
+        color: var(--ink);
+        font-size: 0.62rem;
+        font-weight: 900;
+        white-space: nowrap;
+      }
+
+      .line-swatch {
+        border-top: 3px solid var(--line-strong);
+        display: inline-block;
+        width: 30px;
+      }
+
+      .line-swatch.weak {
+        border-color: var(--line-weak);
+        border-top-style: dashed;
+      }
+
+      .line-swatch.poly {
+        border-color: var(--line-poly);
+        border-top-style: dotted;
+      }
+
+      .detail-panel {
+        background: var(--navy);
+        color: #f7f4ec;
+        display: grid;
+        gap: 22px;
+        grid-template-columns: minmax(220px, 0.8fr) minmax(0, 2fr);
+        margin-top: 16px;
+        padding: 18px 20px;
+      }
+
+      .detail-panel h3 {
+        font-size: 1.35rem;
+      }
+
+      .detail-panel p {
+        color: #cad8d7;
+        margin: 6px 0 0;
+      }
+
+      .relationship-list {
+        display: grid;
+        gap: 6px;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      .relationship-item {
+        border-left: 3px solid var(--cyan-soft);
+        color: #e9efec;
+        font-family: var(--font-mono);
+        font-size: 0.67rem;
+        padding: 4px 9px;
+      }
+
+      .implementation-grid {
+        display: grid;
+        gap: 18px;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        margin-top: 70px;
+      }
+
+      .implementation-card {
+        background: var(--card);
+        border: 1px solid var(--border);
+        border-top: 5px solid var(--cyan);
+        box-shadow: var(--shadow);
+        padding: 20px;
+      }
+
+      .implementation-card:nth-child(2) {
+        border-top-color: var(--coral);
+      }
+
+      .implementation-card:nth-child(3) {
+        border-top-color: var(--green);
+      }
+
+      .implementation-card h3 {
+        font-size: 1.4rem;
+      }
+
+      .implementation-card ul {
+        color: var(--ink-soft);
+        margin: 13px 0 0;
+        padding-left: 1.15rem;
+      }
+
+      .implementation-card li + li {
+        margin-top: 6px;
+      }
+
+      .evidence-section,
+      .caveat-section {
+        margin-top: 70px;
+      }
+
+      .evidence-layout {
+        display: grid;
+        gap: 18px;
+        grid-template-columns: minmax(0, 1.2fr) minmax(320px, 0.8fr);
+        margin-top: 20px;
+      }
+
+      .test-table-wrap,
+      .migration-list,
+      .caveat-list {
+        background: var(--card);
+        border: 1px solid var(--border);
+        box-shadow: var(--shadow);
+      }
+
+      .test-table-wrap {
+        overflow-x: auto;
+      }
+
+      table {
+        border-collapse: collapse;
+        width: 100%;
+      }
+
+      th,
+      td {
+        border-bottom: 1px solid var(--border);
+        padding: 10px 13px;
+        text-align: left;
+      }
+
+      th {
+        background: var(--paper-deep);
+        font-family: var(--font-mono);
+        font-size: 0.65rem;
+        letter-spacing: 0.05em;
+        text-transform: uppercase;
+      }
+
+      td {
+        font-size: 0.79rem;
+      }
+
+      td:last-child,
+      th:last-child {
+        text-align: right;
+      }
+
+      tfoot td {
+        background: var(--green-soft);
+        font-family: var(--font-mono);
+        font-weight: 900;
+      }
+
+      .migration-list,
+      .caveat-list {
+        padding: 18px 20px;
+      }
+
+      .migration-list ol,
+      .caveat-list ol {
+        margin: 12px 0 0;
+        padding-left: 1.3rem;
+      }
+
+      .migration-list li,
+      .caveat-list li {
+        color: var(--ink-soft);
+        margin-top: 8px;
+      }
+
+      .migration-list code {
+        color: var(--navy-2);
+        font-size: 0.74rem;
+        overflow-wrap: anywhere;
+      }
+
+      .caveat-list {
+        columns: 2;
+        column-gap: 42px;
+        margin-top: 18px;
+      }
+
+      .caveat-list li {
+        break-inside: avoid;
+        padding-right: 14px;
+      }
+
+      footer {
+        border-top: 2px solid var(--navy);
+        color: var(--ink-soft);
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px 24px;
+        justify-content: space-between;
+        margin-top: 70px;
+        padding-top: 18px;
+      }
+
+      .footer-meta {
+        font-size: 0.65rem;
+      }
+
+      @media (max-width: 900px) {
+        .shell {
+          padding: 18px 14px 52px;
+        }
+
+        .masthead,
+        .detail-panel,
+        .evidence-layout {
+          grid-template-columns: 1fr;
+        }
+
+        .implementation-grid {
+          grid-template-columns: 1fr;
+        }
+
+        .legend {
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+
+        .toolbar {
+          position: static;
+        }
+
+        .toolbar-spacer {
+          display: none;
+        }
+
+        .search-wrap {
+          flex-basis: 100%;
+        }
+
+        .caveat-list {
+          columns: 1;
+        }
+      }
+
+      @media (max-width: 700px) {
+        .board-wrap {
+          padding: 12px;
+        }
+
+        .board {
+          display: flex;
+          flex-direction: column;
+          min-width: 0;
+        }
+
+        .edges {
+          display: none;
+        }
+
+        .metric-grid,
+        .relationship-list {
+          grid-template-columns: 1fr;
+        }
+
+        .legend {
+          grid-template-columns: 1fr;
+        }
+
+        .column-row {
+          grid-template-columns: 34px minmax(0, 1fr) 68px minmax(0, 0.8fr);
+        }
+      }
+
+      @media print {
+        @page {
+          margin: 10mm;
+          size: A4 landscape;
+        }
+
+        :root {
+          --paper: #ffffff;
+          --card: #ffffff;
+          --context: #f3f3f3;
+          --ink: #111111;
+          --ink-soft: #3d3d3d;
+          --border: #777777;
+          --shadow: none;
+        }
+
+        body {
+          background: #ffffff;
+          font-size: 10pt;
+        }
+
+        .shell {
+          max-width: none;
+          padding: 0;
+        }
+
+        .toolbar,
+        .detail-panel,
+        .edges {
+          display: none;
+        }
+
+        .board-wrap {
+          border-top: 1px solid var(--border);
+          overflow: visible;
+          padding: 12px;
+        }
+
+        .board {
+          gap: 18px;
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+          min-width: 0;
+        }
+
+        .table-card {
+          break-inside: avoid;
+          grid-column: auto !important;
+          grid-row: auto !important;
+        }
+
+        .table-card .column-row.extra,
+        .table-card .table-notes {
+          display: none;
+        }
+
+        .implementation-grid,
+        .evidence-section,
+        .caveat-section {
+          break-before: page;
+        }
+
+        .caveat-list {
+          columns: 2;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <main class="shell">
+      <header class="masthead">
+        <div>
+          <span class="eyebrow">PR #22 / RPRT-46 / PostgreSQL authority map</span>
+          <h1>Order truth, settlement authority, and recovery evidence.</h1>
+          <p class="lede">
+            An interactive schema explorer for the database boundary implemented by PR #22.
+            Use the three diagrams to trace normal commerce, verified payment evidence, and
+            cancellation or post-handoff recovery without hiding composite same-order rules.
+          </p>
+          <div class="meta-line">
+            <span>Head: 7b27013</span>
+            <span>Base: origin/dev</span>
+            <span>Branch: feat/rprt-46-order-settlement-security</span>
+            <a href="https://github.com/guisaliba/repertorio/pull/22">Open PR #22</a>
+            <a href="https://linear.app/guisaliba/issue/RPRT-46/implement-order-and-settlement-schema-security">Open RPRT-46</a>
+          </div>
+        </div>
+        <div class="metric-grid" aria-label="Implementation summary">
+          <div class="metric"><span class="metric-value">13</span><span class="metric-label">new evidence tables</span></div>
+          <div class="metric"><span class="metric-value">26</span><span class="metric-label">protected public commands</span></div>
+          <div class="metric"><span class="metric-value">10</span><span class="metric-label">ordered migrations</span></div>
+          <div class="metric"><span class="metric-value">731</span><span class="metric-label">declared pgTAP assertions</span></div>
+        </div>
+      </header>
+
+      <section class="explorer" aria-labelledby="explorer-title">
+        <div class="section-head">
+          <div>
+            <span class="section-kicker">Interactive ERD</span>
+            <h2 id="explorer-title">Three views, one authority boundary</h2>
+            <p class="section-copy" id="view-description">
+              Orders sit at the center of immutable snapshots, retries, capabilities, and stock.
+            </p>
+          </div>
+        </div>
+
+        <div class="toolbar" aria-label="Schema explorer controls">
+          <div class="view-tabs" role="group" aria-label="Diagram view">
+            <button class="view-button" type="button" data-view="core" aria-pressed="true">1. Commerce core</button>
+            <button class="view-button" type="button" data-view="evidence" aria-pressed="false">2. Payment evidence</button>
+            <button class="view-button" type="button" data-view="cancellation" aria-pressed="false">3. Cancellation recovery</button>
+          </div>
+          <div class="toolbar-spacer"></div>
+          <button class="tool-button" id="related-toggle" type="button" aria-pressed="false">Related only</button>
+          <button class="tool-button" id="expand-toggle" type="button" aria-pressed="false">Expand all</button>
+          <button class="tool-button" id="reset-button" type="button">Reset</button>
+          <label class="search-wrap">
+            <span class="sr-only">Search tables</span>
+            <input id="table-search" type="search" placeholder="Find a table..." autocomplete="off" />
+          </label>
+        </div>
+
+        <div class="board-wrap">
+          <div class="board" id="board" aria-live="polite">
+            <svg class="edges" id="edges" aria-hidden="true">
+              <defs>
+                <marker id="crow" markerWidth="12" markerHeight="12" refX="2" refY="6" orient="auto-start-reverse">
+                  <path d="M 10 1 L 2 6 L 10 11 M 10 6 L 2 6" fill="none" stroke="context-stroke" stroke-width="1.6" />
+                </marker>
+                <marker id="one" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto">
+                  <path d="M 7 1 L 7 11 M 10 1 L 10 11" fill="none" stroke="context-stroke" stroke-width="1.6" />
+                </marker>
+                <marker id="optional" markerWidth="14" markerHeight="14" refX="11" refY="7" orient="auto">
+                  <circle cx="5" cy="7" r="3" fill="var(--paper)" stroke="context-stroke" stroke-width="1.5" />
+                  <path d="M 10 2 L 10 12" fill="none" stroke="context-stroke" stroke-width="1.5" />
+                </marker>
+                <marker id="arrow" markerWidth="10" markerHeight="10" refX="9" refY="5" orient="auto">
+                  <path d="M 0 0 L 10 5 L 0 10 z" fill="context-stroke" />
+                </marker>
+              </defs>
+              <g id="edge-layer"></g>
+              <g id="edge-label-layer"></g>
+            </svg>
+          </div>
+        </div>
+
+        <div class="legend" aria-label="ERD legend">
+          <div class="legend-item"><span class="legend-key">PK</span><span>Primary key</span></div>
+          <div class="legend-item"><span class="legend-key">FK</span><span>Foreign key</span></div>
+          <div class="legend-item"><span class="legend-key">UQ / IX</span><span>Unique key or index</span></div>
+          <div class="legend-item"><span class="legend-key">?</span><span>Nullable column</span></div>
+          <div class="legend-item"><span class="legend-key">1 / crow</span><span>One-to-many cardinality</span></div>
+          <div class="legend-item"><span class="line-swatch"></span><span>Restricting foreign key</span></div>
+          <div class="legend-item"><span class="line-swatch weak"></span><span>Optional or SET NULL edge</span></div>
+          <div class="legend-item"><span class="line-swatch poly"></span><span>Guarded polymorphic reference</span></div>
+          <div class="legend-item"><span class="badge">context</span><span>Pre-existing table</span></div>
+          <div class="legend-item"><span class="legend-key">Composite</span><span>Same-order or same-product binding</span></div>
+        </div>
+
+        <aside class="detail-panel" aria-live="polite">
+          <div>
+            <span class="section-kicker">Selection</span>
+            <h3 id="selection-title">Select a table</h3>
+            <p id="selection-copy">Click a table header to expand it and focus its direct relationships. Hover an FK row to emphasize its exact edge.</p>
+          </div>
+          <div class="relationship-list" id="relationship-list"></div>
+        </aside>
+      </section>
+
+      <section class="implementation-grid" aria-label="Implemented command groups">
+        <article class="implementation-card">
+          <span class="section-kicker">Identity and creation</span>
+          <h3>Capability-safe entry</h3>
+          <ul>
+            <li>Four hash-only guest capability commands.</li>
+            <li>Storefront order creation from locked cart and quote evidence.</li>
+            <li>Administrator-owned assisted draft and issue paths.</li>
+            <li>Immutable contact, delivery, item, package, coupon, and money snapshots.</li>
+          </ul>
+        </article>
+        <article class="implementation-card">
+          <span class="section-kicker">Payment and recovery</span>
+          <h3>Truth before authority</h3>
+          <ul>
+            <li>Provider-neutral attempts retain every retry and ambiguous result.</li>
+            <li>Webhook events bind to one guarded commerce subject.</li>
+            <li>Normalized payment facts keep deterministic recorded order.</li>
+            <li>Only the permanent settlement pointer can authorize fulfillment.</li>
+          </ul>
+        </article>
+        <article class="implementation-card">
+          <span class="section-kicker">Stock and fulfillment</span>
+          <h3>Exactly-once physical effects</h3>
+          <ul>
+            <li>Reservations bind order, item, product, and payment attempt.</li>
+            <li>Blocking recovery cases stop unsafe settlement and handoff.</li>
+            <li>Paid cancellation restores stock through immutable facts.</li>
+            <li>Post-handoff refunds preserve delivery truth and open recovery.</li>
+          </ul>
+        </article>
+      </section>
+
+      <section class="evidence-section" aria-labelledby="evidence-title">
+        <div class="section-head">
+          <div>
+            <span class="section-kicker">Delivery evidence</span>
+            <h2 id="evidence-title">Migrations and declared proof</h2>
+            <p class="section-copy">The assertion counts below are the committed pgTAP plans for the 13 PR test files.</p>
+          </div>
+        </div>
+        <div class="evidence-layout">
+          <div class="test-table-wrap">
+            <table>
+              <thead><tr><th>Test file</th><th>Focus</th><th>Plan</th></tr></thead>
+              <tbody>
+                <tr><td><code>order_settlement_schema.test.sql</code></td><td>Order and snapshot shape</td><td>25</td></tr>
+                <tr><td><code>order_creation_commands.test.sql</code></td><td>Storefront and assisted creation</td><td>81</td></tr>
+                <tr><td><code>guest_order_access.test.sql</code></td><td>Capability schema and RLS</td><td>16</td></tr>
+                <tr><td><code>guest_order_access_commands.test.sql</code></td><td>Issue, exchange, revoke, replace</td><td>71</td></tr>
+                <tr><td><code>payment_attempt_schema.test.sql</code></td><td>Attempt identities and states</td><td>30</td></tr>
+                <tr><td><code>payment_recovery_schema.test.sql</code></td><td>Cases, gates, resolutions</td><td>19</td></tr>
+                <tr><td><code>payment_settlement_commands.test.sql</code></td><td>Payment and settlement commands</td><td>118</td></tr>
+                <tr><td><code>commerce_webhook_subject_binding.test.sql</code></td><td>Exact provider subject binding</td><td>32</td></tr>
+                <tr><td><code>stock_reservation_schema.test.sql</code></td><td>Reservation constraints</td><td>14</td></tr>
+                <tr><td><code>order_cancellation_recovery_schema.test.sql</code></td><td>Cancellation recovery evidence</td><td>15</td></tr>
+                <tr><td><code>cancellation_fulfillment_commands.test.sql</code></td><td>Cancellation and fulfillment</td><td>232</td></tr>
+                <tr><td><code>order_settlement_concurrency.test.sql</code></td><td>Committed-session races</td><td>72</td></tr>
+                <tr><td><code>cancellation_label_concurrency.test.sql</code></td><td>Label and intent races</td><td>6</td></tr>
+              </tbody>
+              <tfoot><tr><td colspan="2">Declared pgTAP assertions</td><td>731</td></tr></tfoot>
+            </table>
+          </div>
+          <div class="migration-list">
+            <span class="section-kicker">Ordered migration set</span>
+            <h3>Ten database steps</h3>
+            <ol>
+              <li><code>add_order_snapshot_schema</code></li>
+              <li><code>add_guest_order_access_schema</code></li>
+              <li><code>add_payment_attempt_schema</code></li>
+              <li><code>add_stock_reservation_schema</code></li>
+              <li><code>add_payment_recovery_schema</code></li>
+              <li><code>add_cancellation_recovery_schema</code></li>
+              <li><code>add_guest_order_access_commands</code></li>
+              <li><code>add_payment_settlement_commands</code></li>
+              <li><code>add_order_creation_commands</code></li>
+              <li><code>add_cancellation_fulfillment_commands</code></li>
+            </ol>
+          </div>
+        </div>
+      </section>
+
+      <section class="caveat-section" aria-labelledby="caveat-title">
+        <div class="section-head">
+          <div>
+            <span class="section-kicker">Read the lines correctly</span>
+            <h2 id="caveat-title">Important structural caveats</h2>
+          </div>
+        </div>
+        <div class="caveat-list">
+          <ol>
+            <li><code>webhook_event_subjects.subject_id</code> is polymorphic. Dashed edges are command-validated, not database foreign keys.</li>
+            <li><code>domain_transitions.aggregate_id</code> is polymorphic and is not drawn as a normal FK.</li>
+            <li>Orders and payment attempts form a deliberate cycle: attempts belong to an order; the order keeps optional current and settlement pointers.</li>
+            <li>Composite foreign keys enforce same-order and same-product identity. A single-column drawing would hide an important safety rule.</li>
+            <li>Partial unique indexes enforce one active payable attempt, one non-revoked guest capability, and one active or consumed reservation per item.</li>
+            <li>Recovery, cancellation, subject, and payment-fact records are append-only through triggers. Cardinality alone does not show this protection.</li>
+            <li>A shipping quote is consumed once by command logic, but <code>orders.shipping_quote_id</code> is not structurally unique.</li>
+            <li>Staff columns reference <code>auth.users</code>. Guarded triggers and commands prove administrator membership when evidence is inserted.</li>
+            <li><code>private.payment_evidence_facts</code> is not part of generated public application types.</li>
+            <li>The PR implements the database authority boundary, not provider adapters, webhook signature routes, browser UI, guest JWT minting, or scheduler runtime.</li>
+          </ol>
+        </div>
+      </section>
+
+      <footer>
+        <span>PR #22 schema source: migrations <code>20260823204718</code> through <code>20260823210935</code></span>
+        <span class="footer-meta">Last updated: 2026-08-25</span>
+      </footer>
+    </main>
+
+    <script>
+      "use strict";
+
+      const tables = {
+        "auth.users": {
+          domain: "Identity context",
+          role: "Supabase Auth principal",
+          context: true,
+          columns: [
+            ["id", "uuid", "PK", false, ""],
+            ["email", "text", "UQ", true, ""],
+            ["created_at", "timestamptz", "", true, ""]
+          ],
+          notes: "Context table. Staff and account references use the Auth UUID."
+        },
+        "public.products": {
+          domain: "Catalog context",
+          role: "Current product and stock authority",
+          context: true,
+          columns: [
+            ["id", "uuid", "PK", false, ""],
+            ["category_id", "uuid", "FK", false, ""],
+            ["sales_mode", "text", "IX", false, ""],
+            ["status", "text", "IX", false, ""],
+            ["price_cents", "integer", "", true, ""],
+            ["stock_quantity", "integer", "", true, ""],
+            ["archived_at", "timestamptz", "", true, "?"]
+          ],
+          notes: "Context table. Order items freeze product facts; reservations change available stock."
+        },
+        "public.shipping_quotes": {
+          domain: "Checkout context",
+          role: "Protected one-use shipping evidence",
+          context: true,
+          columns: [
+            ["id", "uuid", "PK", false, ""],
+            ["cart_id", "uuid", "FK", true, "?"],
+            ["actor_kind", "text", "IX", false, ""],
+            ["amount_cents", "integer", "", false, ""],
+            ["expires_at", "timestamptz", "IX", false, ""],
+            ["consumed_at", "timestamptz", "", true, "?"]
+          ],
+          notes: "Context table. One-use behavior is command-controlled; the order FK is not unique."
+        },
+        "public.coupons": {
+          domain: "Promotion context",
+          role: "Coupon campaign authority",
+          context: true,
+          columns: [
+            ["id", "uuid", "PK", false, ""],
+            ["code", "text", "UQ", false, ""],
+            ["discount_kind", "text", "", false, ""],
+            ["discount_value", "integer", "", false, ""],
+            ["redemption_limit", "integer", "", true, "?"],
+            ["redemption_count", "integer", "", false, ""]
+          ],
+          notes: "Context table. Coupon limits are guarded by command locks, not order-FK uniqueness."
+        },
+        "public.webhook_events": {
+          domain: "Reliability context",
+          role: "Deduplicated provider event",
+          context: true,
+          columns: [
+            ["id", "uuid", "PK", false, ""],
+            ["provider", "text", "UQ", false, ""],
+            ["external_event_id", "text", "UQ", false, ""],
+            ["event_type", "text", "IX", false, ""],
+            ["payload_fingerprint", "bytea", "", false, ""],
+            ["received_at", "timestamptz", "", false, ""]
+          ],
+          notes: "Context table. Provider and external event ID form the deduplication identity."
+        },
+        "public.domain_transitions": {
+          domain: "Audit context / extended",
+          role: "Immutable transition evidence",
+          context: true,
+          columns: [
+            ["id", "uuid", "PK", false, ""],
+            ["aggregate_type", "text", "IX", false, ""],
+            ["aggregate_id", "uuid", "", false, "poly"],
+            ["from_state", "text", "", true, "?"],
+            ["to_state", "text", "", false, ""],
+            ["actor_type", "text", "", false, ""],
+            ["actor_id", "uuid", "", true, "?"],
+            ["provider_event_id", "uuid", "FK", true, "?"],
+            ["operation_reference", "text", "IX", true, "?"],
+            ["administrator_authorized", "boolean", "PR22", false, "false"],
+            ["created_at", "timestamptz", "", false, ""]
+          ],
+          notes: "PR #22 adds administrator_authorized and checks that it agrees with actor_type."
+        },
+        "public.orders": {
+          domain: "Order ledger",
+          role: "Immutable commercial and delivery snapshot",
+          columns: [
+            ["id", "uuid", "PK", false, "gen_random_uuid"],
+            ["order_number", "text", "UQ", false, ""],
+            ["order_source", "text", "IX", false, "storefront | assisted"],
+            ["customer_kind", "text", "", false, "account | guest"],
+            ["user_id", "uuid", "FK", true, "? SET NULL"],
+            ["state", "text", "IX", false, "draft | placed | cancelled | completed"],
+            ["fulfillment_state", "text", "IX", true, "?"],
+            ["current_payment_attempt_id", "uuid", "FK", true, "? same-order"],
+            ["settlement_payment_attempt_id", "uuid", "FK", true, "? same-order"],
+            ["contact_name", "text", "", false, "snapshot"],
+            ["contact_email", "text", "", false, "snapshot"],
+            ["contact_phone", "text", "", false, "snapshot"],
+            ["shipping_recipient_name", "text", "", false, "snapshot"],
+            ["shipping_phone", "text", "", false, "snapshot"],
+            ["shipping_postal_code", "text", "", false, "snapshot"],
+            ["shipping_street", "text", "", false, "snapshot"],
+            ["shipping_number", "text", "", false, "snapshot"],
+            ["shipping_complement", "text", "", true, "? snapshot"],
+            ["shipping_district", "text", "", false, "snapshot"],
+            ["shipping_city", "text", "", false, "snapshot"],
+            ["shipping_state_code", "text", "", false, "snapshot"],
+            ["shipping_country_code", "text", "", false, "BR"],
+            ["shipping_quote_id", "uuid", "FK", true, "?"],
+            ["shipping_provider", "text", "", false, "snapshot"],
+            ["shipping_service_code", "text", "", false, "snapshot"],
+            ["shipping_service_name", "text", "", false, "snapshot"],
+            ["shipping_provider_reference", "text", "", true, "?"],
+            ["shipping_package_inputs", "jsonb", "", true, "?"],
+            ["shipping_package_inputs_hash", "bytea", "", true, "? sha256"],
+            ["shipping_packed_parcels", "jsonb", "", true, "?"],
+            ["shipping_packed_parcels_hash", "bytea", "", true, "? sha256"],
+            ["coupon_id", "uuid", "FK", true, "?"],
+            ["coupon_code", "text", "", true, "? snapshot"],
+            ["coupon_discount_kind", "text", "", true, "? snapshot"],
+            ["coupon_discount_value", "integer", "", true, "? snapshot"],
+            ["subtotal_cents", "integer", "", false, ""],
+            ["shipping_cents", "integer", "", false, ""],
+            ["discount_cents", "integer", "", false, "0"],
+            ["total_cents", "integer", "", false, "derived invariant"],
+            ["currency_code", "text", "", false, "BRL"],
+            ["operational_notes", "text", "", true, "?"],
+            ["placed_at", "timestamptz", "", true, "?"],
+            ["cancelled_at", "timestamptz", "", true, "?"],
+            ["completed_at", "timestamptz", "", true, "?"],
+            ["created_at", "timestamptz", "", false, "db time"],
+            ["updated_at", "timestamptz", "", false, "db time"]
+          ],
+          notes: "Indexes: owner history, state work, fulfillment work, quote, coupon, current attempt, settlement attempt."
+        },
+        "public.order_items": {
+          domain: "Order ledger",
+          role: "Immutable product and price snapshot",
+          columns: [
+            ["id", "uuid", "PK", false, "gen_random_uuid"],
+            ["order_id", "uuid", "FK UQ", false, "same-order key"],
+            ["product_id", "uuid", "FK UQ", false, "same-product key"],
+            ["sales_mode", "text", "", false, "direct_stocked | assisted"],
+            ["product_name", "text", "", false, "snapshot"],
+            ["product_description_markdown", "text", "", false, "snapshot"],
+            ["image_bucket_id", "text", "", true, "?"],
+            ["image_object_path", "text", "", true, "?"],
+            ["image_alt_text", "text", "", true, "?"],
+            ["quantity", "integer", "", false, "> 0"],
+            ["unit_price_cents", "integer", "", false, ""],
+            ["line_total_cents", "integer", "", false, "unit x qty"],
+            ["weight_grams", "integer", "", true, "? direct only"],
+            ["height_mm", "integer", "", true, "? direct only"],
+            ["width_mm", "integer", "", true, "? direct only"],
+            ["length_mm", "integer", "", true, "? direct only"],
+            ["created_at", "timestamptz", "", false, "db time"],
+            ["updated_at", "timestamptz", "", false, "db time"]
+          ],
+          notes: "Unique (order_id, product_id) and composite unique (id, order_id, product_id)."
+        },
+        "public.guest_order_access": {
+          domain: "Guest capability",
+          role: "Hash-only one-order access",
+          columns: [
+            ["id", "uuid", "PK", false, "gen_random_uuid"],
+            ["order_id", "uuid", "FK IX", false, ""],
+            ["token_hash", "bytea", "UQ", false, "sha256"],
+            ["exchange_key_hash", "bytea", "", true, "? sha256"],
+            ["expires_at", "timestamptz", "IX", false, ""],
+            ["exchanged_at", "timestamptz", "", true, "?"],
+            ["revoked_at", "timestamptz", "UQ", true, "? partial current"],
+            ["replaces_access_id", "uuid", "FK IX", true, "? same-order"],
+            ["created_at", "timestamptz", "", false, "db time"]
+          ],
+          notes: "Partial unique order_id WHERE revoked_at IS NULL. Expiry is checked by commands and RLS."
+        },
+        "public.payment_attempts": {
+          domain: "Payment ledger",
+          role: "Provider-neutral retry and truth record",
+          columns: [
+            ["id", "uuid", "PK", false, "gen_random_uuid"],
+            ["order_id", "uuid", "FK UQ", false, "same-order key"],
+            ["attempt_sequence", "integer", "UQ", false, "> 0"],
+            ["operation_key", "text", "UQ", false, ""],
+            ["provider", "text", "UQ", false, "normalized"],
+            ["offered_methods", "text[]", "", false, "unique values"],
+            ["provider_checkout_id", "text", "UQ", true, "?"],
+            ["provider_payment_id", "text", "UQ", true, "?"],
+            ["provider_external_id", "text", "UQ", false, ""],
+            ["amount_cents", "integer", "", false, "> 0"],
+            ["currency_code", "text", "", false, "BRL"],
+            ["state", "text", "UQ IX", false, "partial active-payable"],
+            ["safe_provider_status", "text", "", true, "?"],
+            ["provider_expires_at", "timestamptz", "", true, "?"],
+            ["created_at", "timestamptz", "IX", false, "db time"],
+            ["updated_at", "timestamptz", "IX", false, "db time"]
+          ],
+          notes: "One active payable attempt per order through a partial unique index."
+        },
+        "public.stock_reservations": {
+          domain: "Stock ledger",
+          role: "Exactly-once reserve, consume, or release",
+          columns: [
+            ["id", "uuid", "PK UQ", false, "gen_random_uuid"],
+            ["order_id", "uuid", "FK UQ", false, "same-order key"],
+            ["order_item_id", "uuid", "FK UQ", false, "same-item key"],
+            ["product_id", "uuid", "FK UQ", false, "same-product key"],
+            ["creating_payment_attempt_id", "uuid", "FK IX", false, "same-order"],
+            ["consuming_payment_attempt_id", "uuid", "FK IX", true, "? same-order"],
+            ["reservation_sequence", "integer", "UQ", false, "> 0"],
+            ["quantity", "integer", "", false, "> 0"],
+            ["state", "text", "UQ IX", false, "active | consumed | released"],
+            ["expires_at", "timestamptz", "IX", false, ""],
+            ["created_at", "timestamptz", "", false, "db time"],
+            ["updated_at", "timestamptz", "", false, "db time"]
+          ],
+          notes: "Partial unique indexes allow one active and one consumed historical reservation per item."
+        },
+        "public.payment_recovery_cases": {
+          domain: "Payment recovery",
+          role: "Unsafe verified-paid classification",
+          columns: [
+            ["id", "uuid", "PK UQ", false, "gen_random_uuid"],
+            ["order_id", "uuid", "FK UQ IX", false, "same-order key"],
+            ["triggering_payment_attempt_id", "uuid", "FK IX", false, "same-order"],
+            ["triggering_transition_id", "uuid", "FK UQ", false, ""],
+            ["recovery_kind", "text", "", false, "3 kinds"],
+            ["blocks_fulfillment", "boolean", "IX", false, "kind-derived"],
+            ["opened_at", "timestamptz", "IX", false, "db time"]
+          ],
+          notes: "Append-only. Only settlement_recovery blocks fulfillment."
+        },
+        "public.payment_recovery_resolutions": {
+          domain: "Payment recovery",
+          role: "One authoritative case resolution",
+          columns: [
+            ["case_id", "uuid", "PK FK", false, "same-order"],
+            ["order_id", "uuid", "FK IX", false, "same-order key"],
+            ["resolution_kind", "text", "", false, "3 kinds"],
+            ["resolving_transition_id", "uuid", "FK UQ", false, ""],
+            ["accepted_settlement_payment_attempt_id", "uuid", "FK IX", true, "? same-order"],
+            ["resolved_at", "timestamptz", "IX", false, "db time"]
+          ],
+          notes: "Append-only. Case ID is the PK, so each case has at most one resolution."
+        },
+        "public.order_cancellation_intents": {
+          domain: "Paid cancellation",
+          role: "Immutable refund-first cancellation intent",
+          columns: [
+            ["id", "uuid", "PK", false, "gen_random_uuid"],
+            ["order_id", "uuid", "FK UQ", false, "one intent/order"],
+            ["intent_kind", "text", "", false, "full_refund_then_cancel"],
+            ["settlement_payment_attempt_id", "uuid", "FK IX", false, "same-order"],
+            ["refund_request_transition_id", "uuid", "FK UQ", false, ""],
+            ["requested_by_staff_id", "uuid", "FK IX", false, ""],
+            ["reason", "text", "", false, ""],
+            ["idempotency_key", "text", "UQ", false, ""],
+            ["requested_at", "timestamptz", "", false, "db time"]
+          ],
+          notes: "Append-only. Intent cannot be withdrawn after refund work commits."
+        },
+        "public.paid_cancellation_stock_restorations": {
+          domain: "Paid cancellation",
+          role: "Exactly-once available-stock restoration",
+          columns: [
+            ["reservation_id", "uuid", "PK FK", false, "same-order/product"],
+            ["order_id", "uuid", "FK IX", false, "composite binding"],
+            ["product_id", "uuid", "FK IX", false, "composite binding"],
+            ["quantity", "integer", "", false, "> 0"],
+            ["refund_transition_id", "uuid", "FK IX", false, ""],
+            ["cancellation_transition_id", "uuid", "FK IX", false, ""],
+            ["restored_at", "timestamptz", "IX", false, "db time"]
+          ],
+          notes: "Append-only. Consumed reservation state is never rewritten."
+        },
+        "public.post_handoff_refund_cases": {
+          domain: "Handoff recovery",
+          role: "Refund conflict after physical handoff",
+          columns: [
+            ["id", "uuid", "PK", false, "gen_random_uuid"],
+            ["order_id", "uuid", "FK IX", false, ""],
+            ["settlement_payment_attempt_id", "uuid", "FK IX", false, "same-order"],
+            ["verified_refund_transition_id", "uuid", "FK UQ", false, ""],
+            ["handoff_transition_id", "uuid", "FK IX", false, ""],
+            ["fulfillment_state_snapshot", "text", "", false, "post-handoff only"],
+            ["opened_at", "timestamptz", "IX", false, "db time"]
+          ],
+          notes: "Append-only and non-blocking for post-handoff tracking."
+        },
+        "public.post_handoff_refund_resolutions": {
+          domain: "Handoff recovery",
+          role: "Guarded administrative outcome",
+          columns: [
+            ["case_id", "uuid", "PK FK", false, "one resolution/case"],
+            ["resolving_transition_id", "uuid", "FK UQ", false, ""],
+            ["resolved_by_staff_id", "uuid", "FK IX", false, ""],
+            ["reason", "text", "", false, ""],
+            ["proof_reference", "text", "", false, "append-only proof"],
+            ["resolved_at", "timestamptz", "IX", false, "db time"]
+          ],
+          notes: "Append-only. Resolution cannot rewrite payment, fulfillment, settlement, or stock truth."
+        },
+        "public.webhook_event_subjects": {
+          domain: "Provider evidence",
+          role: "One exact commerce subject per event",
+          columns: [
+            ["webhook_event_id", "uuid", "PK FK", false, ""],
+            ["subject_type", "text", "IX", false, "attempt | fulfillment"],
+            ["subject_id", "uuid", "IX", false, "guarded polymorphic"],
+            ["provider_subject_reference", "text", "", false, ""],
+            ["created_at", "timestamptz", "", false, "db time"]
+          ],
+          notes: "Append-only. subject_id is command-validated and intentionally has no polymorphic FK."
+        },
+        "private.payment_evidence_facts": {
+          domain: "Private provider evidence",
+          role: "Normalized verified payment fact",
+          private: true,
+          columns: [
+            ["webhook_event_id", "uuid", "PK FK", false, ""],
+            ["payment_attempt_id", "uuid", "FK IX", false, ""],
+            ["verified_state", "text", "", false, "5 verified states"],
+            ["safe_provider_status", "text", "", false, ""],
+            ["provider_checkout_id", "text", "", false, ""],
+            ["provider_payment_id", "text", "", true, "?"],
+            ["verified_amount_cents", "integer", "", false, "> 0"],
+            ["verified_currency_code", "text", "", false, ""],
+            ["source", "text", "", false, ""],
+            ["recorded_sequence", "bigint", "UQ", false, "monotonic"],
+            ["recorded_at", "timestamptz", "", false, "db time"]
+          ],
+          notes: "Private and append-only. Deterministic recorded sequence selects paid precedence."
+        }
+      };
+
+      const views = {
+        core: {
+          title: "Commerce core",
+          description: "Orders sit at the center of immutable snapshots, retries, capabilities, and exactly-once stock reservations.",
+          tables: [
+            ["auth.users", 1, 1], ["public.orders", 2, 1], ["public.shipping_quotes", 3, 1], ["public.coupons", 4, 1],
+            ["public.products", 1, 2], ["public.order_items", 2, 2], ["public.payment_attempts", 3, 2], ["public.guest_order_access", 4, 2],
+            ["public.stock_reservations", 2, 3]
+          ],
+          relationships: [
+            ["core-user", "public.orders", "user_id", "auth.users", "id", "weak", "0..*", "0..1", "SET NULL"],
+            ["core-quote", "public.orders", "shipping_quote_id", "public.shipping_quotes", "id", "weak", "0..*", "0..1", "RESTRICT"],
+            ["core-coupon", "public.orders", "coupon_id", "public.coupons", "id", "weak", "0..*", "0..1", "RESTRICT"],
+            ["core-items-order", "public.order_items", "order_id", "public.orders", "id", "strong", "0..*", "1", "RESTRICT"],
+            ["core-items-product", "public.order_items", "product_id", "public.products", "id", "strong", "0..*", "1", "RESTRICT"],
+            ["core-attempt-order", "public.payment_attempts", "order_id", "public.orders", "id", "strong", "0..*", "1", "RESTRICT"],
+            ["core-current", "public.orders", "current_payment_attempt_id", "public.payment_attempts", "id", "weak", "0..1", "1", "COMPOSITE same-order"],
+            ["core-settlement", "public.orders", "settlement_payment_attempt_id", "public.payment_attempts", "id", "weak", "0..1", "1", "COMPOSITE same-order"],
+            ["core-guest-order", "public.guest_order_access", "order_id", "public.orders", "id", "strong", "0..*", "1", "RESTRICT"],
+            ["core-guest-self", "public.guest_order_access", "replaces_access_id", "public.guest_order_access", "id", "weak", "0..*", "0..1", "COMPOSITE same-order"],
+            ["core-stock-order", "public.stock_reservations", "order_id", "public.orders", "id", "strong", "0..*", "1", "RESTRICT"],
+            ["core-stock-item", "public.stock_reservations", "order_item_id", "public.order_items", "id", "strong", "0..*", "1", "COMPOSITE order + product"],
+            ["core-stock-product", "public.stock_reservations", "product_id", "public.products", "id", "strong", "0..*", "1", "RESTRICT"],
+            ["core-stock-create", "public.stock_reservations", "creating_payment_attempt_id", "public.payment_attempts", "id", "strong", "0..*", "1", "COMPOSITE same-order"],
+            ["core-stock-consume", "public.stock_reservations", "consuming_payment_attempt_id", "public.payment_attempts", "id", "weak", "0..*", "0..1", "COMPOSITE same-order"]
+          ]
+        },
+        evidence: {
+          title: "Payment evidence and recovery",
+          description: "Verified provider facts are deduplicated, normalized, bound to one attempt, and classified before settlement authority changes.",
+          tables: [
+            ["public.webhook_events", 1, 1], ["public.webhook_event_subjects", 2, 1], ["private.payment_evidence_facts", 3, 1], ["public.domain_transitions", 4, 1],
+            ["public.orders", 1, 2], ["public.payment_attempts", 2, 2], ["public.payment_recovery_cases", 3, 2], ["public.payment_recovery_resolutions", 4, 2]
+          ],
+          relationships: [
+            ["ev-subject-event", "public.webhook_event_subjects", "webhook_event_id", "public.webhook_events", "id", "strong", "0..1", "1", "RESTRICT"],
+            ["ev-subject-attempt", "public.webhook_event_subjects", "subject_id", "public.payment_attempts", "id", "poly", "0..*", "0..1", "subject_type = payment_attempt"],
+            ["ev-subject-order", "public.webhook_event_subjects", "subject_id", "public.orders", "id", "poly", "0..*", "0..1", "subject_type = fulfillment_order"],
+            ["ev-fact-event", "private.payment_evidence_facts", "webhook_event_id", "public.webhook_events", "id", "strong", "0..1", "1", "RESTRICT"],
+            ["ev-fact-attempt", "private.payment_evidence_facts", "payment_attempt_id", "public.payment_attempts", "id", "strong", "0..*", "1", "RESTRICT"],
+            ["ev-attempt-order", "public.payment_attempts", "order_id", "public.orders", "id", "strong", "0..*", "1", "RESTRICT"],
+            ["ev-case-order", "public.payment_recovery_cases", "order_id", "public.orders", "id", "strong", "0..*", "1", "RESTRICT"],
+            ["ev-case-attempt", "public.payment_recovery_cases", "triggering_payment_attempt_id", "public.payment_attempts", "id", "strong", "0..*", "1", "COMPOSITE same-order"],
+            ["ev-case-transition", "public.payment_recovery_cases", "triggering_transition_id", "public.domain_transitions", "id", "strong", "0..1", "1", "UNIQUE"],
+            ["ev-resolution-case", "public.payment_recovery_resolutions", "case_id", "public.payment_recovery_cases", "id", "strong", "0..1", "1", "COMPOSITE same-order"],
+            ["ev-resolution-transition", "public.payment_recovery_resolutions", "resolving_transition_id", "public.domain_transitions", "id", "strong", "0..1", "1", "UNIQUE"],
+            ["ev-resolution-attempt", "public.payment_recovery_resolutions", "accepted_settlement_payment_attempt_id", "public.payment_attempts", "id", "weak", "0..*", "0..1", "COMPOSITE same-order"]
+          ]
+        },
+        cancellation: {
+          title: "Cancellation and handoff recovery",
+          description: "Refund-first intent, immutable stock restoration, and post-handoff cases preserve both payment truth and physical delivery history.",
+          tables: [
+            ["auth.users", 1, 1], ["public.domain_transitions", 2, 1], ["public.orders", 3, 1], ["public.payment_attempts", 4, 1],
+            ["public.stock_reservations", 1, 2], ["public.order_cancellation_intents", 2, 2], ["public.paid_cancellation_stock_restorations", 3, 2], ["public.post_handoff_refund_cases", 4, 2],
+            ["public.post_handoff_refund_resolutions", 4, 3]
+          ],
+          relationships: [
+            ["can-attempt-order", "public.payment_attempts", "order_id", "public.orders", "id", "strong", "0..*", "1", "RESTRICT"],
+            ["can-stock-order", "public.stock_reservations", "order_id", "public.orders", "id", "strong", "0..*", "1", "RESTRICT"],
+            ["can-intent-order", "public.order_cancellation_intents", "order_id", "public.orders", "id", "strong", "0..1", "1", "UNIQUE"],
+            ["can-intent-attempt", "public.order_cancellation_intents", "settlement_payment_attempt_id", "public.payment_attempts", "id", "strong", "0..*", "1", "COMPOSITE same-order"],
+            ["can-intent-refund-transition", "public.order_cancellation_intents", "refund_request_transition_id", "public.domain_transitions", "id", "strong", "0..1", "1", "UNIQUE"],
+            ["can-intent-staff", "public.order_cancellation_intents", "requested_by_staff_id", "auth.users", "id", "strong", "0..*", "1", "administrator checked"],
+            ["can-restore-reservation", "public.paid_cancellation_stock_restorations", "reservation_id", "public.stock_reservations", "id", "strong", "0..1", "1", "COMPOSITE order + product"],
+            ["can-restore-refund", "public.paid_cancellation_stock_restorations", "refund_transition_id", "public.domain_transitions", "id", "strong", "0..*", "1", "RESTRICT"],
+            ["can-restore-cancel", "public.paid_cancellation_stock_restorations", "cancellation_transition_id", "public.domain_transitions", "id", "strong", "0..*", "1", "RESTRICT"],
+            ["can-post-order", "public.post_handoff_refund_cases", "order_id", "public.orders", "id", "strong", "0..*", "1", "RESTRICT"],
+            ["can-post-attempt", "public.post_handoff_refund_cases", "settlement_payment_attempt_id", "public.payment_attempts", "id", "strong", "0..*", "1", "COMPOSITE same-order"],
+            ["can-post-refund", "public.post_handoff_refund_cases", "verified_refund_transition_id", "public.domain_transitions", "id", "strong", "0..1", "1", "UNIQUE"],
+            ["can-post-handoff", "public.post_handoff_refund_cases", "handoff_transition_id", "public.domain_transitions", "id", "strong", "0..*", "1", "RESTRICT"],
+            ["can-post-resolution", "public.post_handoff_refund_resolutions", "case_id", "public.post_handoff_refund_cases", "id", "strong", "0..1", "1", "PK / FK"],
+            ["can-post-resolution-transition", "public.post_handoff_refund_resolutions", "resolving_transition_id", "public.domain_transitions", "id", "strong", "0..1", "1", "UNIQUE"],
+            ["can-post-resolution-staff", "public.post_handoff_refund_resolutions", "resolved_by_staff_id", "auth.users", "id", "strong", "0..*", "1", "administrator checked"]
+          ]
+        }
+      };
+
+      const board = document.getElementById("board");
+      const edgeLayer = document.getElementById("edge-layer");
+      const edgeLabelLayer = document.getElementById("edge-label-layer");
+      const selectionTitle = document.getElementById("selection-title");
+      const selectionCopy = document.getElementById("selection-copy");
+      const relationshipList = document.getElementById("relationship-list");
+      const searchInput = document.getElementById("table-search");
+      const relatedToggle = document.getElementById("related-toggle");
+      const expandToggle = document.getElementById("expand-toggle");
+      const viewDescription = document.getElementById("view-description");
+
+      let activeView = "core";
+      let selectedTable = null;
+      let relatedOnly = false;
+      let expandAll = false;
+      let hoveredField = null;
+      let resizeFrame = null;
+
+      function markerClass(marker) {
+        if (marker.includes("PK")) return "pk";
+        if (marker.includes("FK")) return "fk";
+        return "";
+      }
+
+      function isImportant(column, index) {
+        const marker = column[2];
+        return index < 3 || marker.includes("PK") || marker.includes("FK") || column[0] === "state" || column[0].includes("kind") || column[0].includes("blocks_");
+      }
+
+      function createCard(tableId, column, row) {
+        const table = tables[tableId];
+        const card = document.createElement("article");
+        card.className = "table-card";
+        if (table.context) card.classList.add("context");
+        if (table.private) card.classList.add("private");
+        if (expandAll) card.classList.add("expanded");
+        card.dataset.table = tableId;
+        card.style.gridColumn = String(column);
+        card.style.gridRow = String(row);
+
+        const head = document.createElement("div");
+        head.className = "table-head";
+        const toggle = document.createElement("button");
+        toggle.type = "button";
+        toggle.className = "table-toggle";
+        toggle.setAttribute("aria-expanded", expandAll ? "true" : "false");
+        toggle.setAttribute("aria-label", `Focus and expand ${tableId}`);
+
+        const domain = document.createElement("span");
+        domain.className = "domain-label";
+        domain.textContent = table.domain;
+        const name = document.createElement("span");
+        name.className = "table-name";
+        name.textContent = tableId;
+        const role = document.createElement("span");
+        role.className = "table-role";
+        role.textContent = table.role;
+        toggle.append(domain, name, role);
+
+        const expandMark = document.createElement("span");
+        expandMark.className = "expand-mark";
+        expandMark.setAttribute("aria-hidden", "true");
+        expandMark.textContent = expandAll ? "-" : "+";
+        head.append(toggle, expandMark);
+
+        const list = document.createElement("ul");
+        list.className = "columns";
+        table.columns.forEach((columnData, index) => {
+          const item = document.createElement("li");
+          item.className = "column-row";
+          if (!isImportant(columnData, index)) item.classList.add("extra");
+          const fieldName = columnData[0];
+          const hasRelationship = views[activeView].relationships.some((rel) => rel[1] === tableId && rel[2] === fieldName);
+          if (hasRelationship) {
+            item.classList.add("fk-row");
+            item.tabIndex = 0;
+            item.addEventListener("mouseenter", () => setHoveredField(tableId, fieldName));
+            item.addEventListener("mouseleave", () => setHoveredField(null, null));
+            item.addEventListener("focus", () => setHoveredField(tableId, fieldName));
+            item.addEventListener("blur", () => setHoveredField(null, null));
+          }
+
+          const marker = document.createElement("span");
+          marker.className = `marker ${markerClass(columnData[2])}`;
+          marker.textContent = columnData[2] || "--";
+          const columnName = document.createElement("span");
+          columnName.className = "column-name";
+          columnName.textContent = fieldName;
+          const type = document.createElement("span");
+          type.className = "column-type";
+          type.textContent = columnData[1];
+          const flags = document.createElement("span");
+          flags.className = "column-flags";
+          flags.textContent = columnData[4] || (columnData[3] ? "?" : "NOT NULL");
+          item.append(marker, columnName, type, flags);
+          list.appendChild(item);
+        });
+
+        const notes = document.createElement("div");
+        notes.className = "table-notes";
+        notes.textContent = table.notes;
+        card.append(head, list, notes);
+
+        toggle.addEventListener("click", () => {
+          const willExpand = !card.classList.contains("expanded");
+          card.classList.toggle("expanded", willExpand);
+          toggle.setAttribute("aria-expanded", willExpand ? "true" : "false");
+          expandMark.textContent = willExpand ? "-" : "+";
+          selectedTable = selectedTable === tableId && !willExpand ? null : tableId;
+          updateFocus();
+          scheduleEdges();
+        });
+        return card;
+      }
+
+      function renderView(viewId) {
+        activeView = viewId;
+        selectedTable = null;
+        hoveredField = null;
+        searchInput.value = "";
+        document.querySelectorAll(".view-button").forEach((button) => {
+          button.setAttribute("aria-pressed", button.dataset.view === viewId ? "true" : "false");
+        });
+        const oldCards = board.querySelectorAll(".table-card");
+        oldCards.forEach((card) => card.remove());
+        views[viewId].tables.forEach(([tableId, column, row]) => board.appendChild(createCard(tableId, column, row)));
+        viewDescription.textContent = views[viewId].description;
+        updateFocus();
+        scheduleEdges();
+      }
+
+      function relatedTables(tableId) {
+        const related = new Set([tableId]);
+        views[activeView].relationships.forEach((rel) => {
+          if (rel[1] === tableId) related.add(rel[3]);
+          if (rel[3] === tableId) related.add(rel[1]);
+        });
+        return related;
+      }
+
+      function updateFocus() {
+        const cards = board.querySelectorAll(".table-card");
+        const related = selectedTable ? relatedTables(selectedTable) : new Set();
+        cards.forEach((card) => {
+          const id = card.dataset.table;
+          card.classList.toggle("selected", id === selectedTable);
+          card.classList.toggle("related", Boolean(selectedTable && related.has(id) && id !== selectedTable));
+          card.classList.toggle("dimmed", Boolean(selectedTable && !related.has(id)));
+          card.hidden = Boolean(relatedOnly && selectedTable && !related.has(id));
+        });
+        updateDetailPanel();
+        updateEdgeFocus();
+      }
+
+      function updateDetailPanel() {
+        relationshipList.replaceChildren();
+        if (!selectedTable) {
+          selectionTitle.textContent = views[activeView].title;
+          selectionCopy.textContent = "Click a table header to expand it and focus its direct relationships. Hover an FK row to emphasize its exact edge.";
+          return;
+        }
+        const table = tables[selectedTable];
+        selectionTitle.textContent = selectedTable;
+        selectionCopy.textContent = table.role;
+        const matching = views[activeView].relationships.filter((rel) => rel[1] === selectedTable || rel[3] === selectedTable);
+        matching.forEach((rel) => {
+          const item = document.createElement("div");
+          item.className = "relationship-item";
+          item.textContent = `${rel[1]}.${rel[2]} -> ${rel[3]}.${rel[4]} | ${rel[6]} : ${rel[7]} | ${rel[8]}`;
+          relationshipList.appendChild(item);
+        });
+      }
+
+      function setHoveredField(tableId, fieldName) {
+        hoveredField = tableId && fieldName ? `${tableId}.${fieldName}` : null;
+        updateEdgeFocus();
+      }
+
+      function edgePoints(fromCard, toCard) {
+        const boardRect = board.getBoundingClientRect();
+        const from = fromCard.getBoundingClientRect();
+        const to = toCard.getBoundingClientRect();
+        const fromCenter = { x: from.left - boardRect.left + from.width / 2, y: from.top - boardRect.top + from.height / 2 };
+        const toCenter = { x: to.left - boardRect.left + to.width / 2, y: to.top - boardRect.top + to.height / 2 };
+        const horizontal = Math.abs(toCenter.x - fromCenter.x) >= Math.abs(toCenter.y - fromCenter.y);
+        if (horizontal) {
+          const direction = toCenter.x > fromCenter.x ? 1 : -1;
+          return {
+            x1: fromCenter.x + direction * from.width / 2,
+            y1: fromCenter.y,
+            x2: toCenter.x - direction * to.width / 2,
+            y2: toCenter.y,
+            horizontal: true
+          };
+        }
+        const direction = toCenter.y > fromCenter.y ? 1 : -1;
+        return {
+          x1: fromCenter.x,
+          y1: fromCenter.y + direction * from.height / 2,
+          x2: toCenter.x,
+          y2: toCenter.y - direction * to.height / 2,
+          horizontal: false
+        };
+      }
+
+      function pathData(points, selfEdge) {
+        if (selfEdge) {
+          const loop = 42;
+          return `M ${points.x1} ${points.y1} C ${points.x1 + loop} ${points.y1 - loop}, ${points.x1 + loop} ${points.y1 + loop}, ${points.x1} ${points.y1 + 10}`;
+        }
+        if (points.horizontal) {
+          const mid = (points.x1 + points.x2) / 2;
+          return `M ${points.x1} ${points.y1} C ${mid} ${points.y1}, ${mid} ${points.y2}, ${points.x2} ${points.y2}`;
+        }
+        const mid = (points.y1 + points.y2) / 2;
+        return `M ${points.x1} ${points.y1} C ${points.x1} ${mid}, ${points.x2} ${mid}, ${points.x2} ${points.y2}`;
+      }
+
+      function drawEdges() {
+        edgeLayer.replaceChildren();
+        edgeLabelLayer.replaceChildren();
+        const view = views[activeView];
+        view.relationships.forEach((rel) => {
+          const fromCard = board.querySelector(`[data-table="${CSS.escape(rel[1])}"]`);
+          const toCard = board.querySelector(`[data-table="${CSS.escape(rel[3])}"]`);
+          if (!fromCard || !toCard || fromCard.hidden || toCard.hidden) return;
+          const selfEdge = rel[1] === rel[3];
+          const points = edgePoints(fromCard, toCard);
+          const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
+          path.setAttribute("d", pathData(points, selfEdge));
+          path.setAttribute("class", `edge ${rel[5] === "weak" ? "weak" : ""} ${rel[5] === "poly" ? "poly" : ""}`.trim());
+          path.dataset.relation = rel[0];
+          path.dataset.from = rel[1];
+          path.dataset.to = rel[3];
+          path.dataset.field = `${rel[1]}.${rel[2]}`;
+          path.setAttribute("marker-start", rel[6].includes("*") ? "url(#crow)" : rel[6].includes("0..1") ? "url(#optional)" : "url(#one)");
+          path.setAttribute("marker-end", rel[5] === "poly" ? "url(#arrow)" : rel[7].includes("0..1") ? "url(#optional)" : "url(#one)");
+          edgeLayer.appendChild(path);
+
+          if (!selfEdge) {
+            const label = document.createElementNS("http://www.w3.org/2000/svg", "text");
+            label.setAttribute("class", "edge-label");
+            label.setAttribute("x", String((points.x1 + points.x2) / 2));
+            label.setAttribute("y", String((points.y1 + points.y2) / 2 - 5));
+            label.setAttribute("text-anchor", "middle");
+            label.textContent = `${rel[6]} -> ${rel[7]}`;
+            label.dataset.relation = rel[0];
+            edgeLabelLayer.appendChild(label);
+          }
+        });
+        updateEdgeFocus();
+      }
+
+      function updateEdgeFocus() {
+        edgeLayer.querySelectorAll(".edge").forEach((edge) => {
+          const selectedMatch = !selectedTable || edge.dataset.from === selectedTable || edge.dataset.to === selectedTable;
+          const hoverMatch = !hoveredField || edge.dataset.field === hoveredField;
+          edge.classList.toggle("dimmed", !selectedMatch || !hoverMatch);
+          edge.classList.toggle("highlighted", Boolean((selectedTable && selectedMatch) || (hoveredField && hoverMatch)));
+        });
+        edgeLabelLayer.querySelectorAll(".edge-label").forEach((label) => {
+          const edge = edgeLayer.querySelector(`[data-relation="${CSS.escape(label.dataset.relation)}"]`);
+          label.style.opacity = edge && edge.classList.contains("dimmed") ? "0.08" : "1";
+        });
+      }
+
+      function scheduleEdges() {
+        if (resizeFrame) cancelAnimationFrame(resizeFrame);
+        resizeFrame = requestAnimationFrame(() => {
+          drawEdges();
+          resizeFrame = null;
+        });
+      }
+
+      document.querySelectorAll(".view-button").forEach((button) => {
+        button.addEventListener("click", () => renderView(button.dataset.view));
+      });
+
+      relatedToggle.addEventListener("click", () => {
+        relatedOnly = !relatedOnly;
+        relatedToggle.setAttribute("aria-pressed", relatedOnly ? "true" : "false");
+        relatedToggle.textContent = relatedOnly ? "Show all tables" : "Related only";
+        updateFocus();
+        scheduleEdges();
+      });
+
+      expandToggle.addEventListener("click", () => {
+        expandAll = !expandAll;
+        expandToggle.setAttribute("aria-pressed", expandAll ? "true" : "false");
+        expandToggle.textContent = expandAll ? "Collapse all" : "Expand all";
+        board.querySelectorAll(".table-card").forEach((card) => {
+          card.classList.toggle("expanded", expandAll);
+          const toggle = card.querySelector(".table-toggle");
+          const mark = card.querySelector(".expand-mark");
+          toggle.setAttribute("aria-expanded", expandAll ? "true" : "false");
+          mark.textContent = expandAll ? "-" : "+";
+        });
+        scheduleEdges();
+      });
+
+      document.getElementById("reset-button").addEventListener("click", () => {
+        selectedTable = null;
+        relatedOnly = false;
+        relatedToggle.setAttribute("aria-pressed", "false");
+        relatedToggle.textContent = "Related only";
+        searchInput.value = "";
+        board.querySelectorAll(".table-card").forEach((card) => {
+          card.hidden = false;
+          card.classList.remove("search-miss");
+        });
+        updateFocus();
+        scheduleEdges();
+      });
+
+      searchInput.addEventListener("input", () => {
+        const query = searchInput.value.trim().toLowerCase();
+        board.querySelectorAll(".table-card").forEach((card) => {
+          const match = !query || card.dataset.table.toLowerCase().includes(query) || tables[card.dataset.table].role.toLowerCase().includes(query);
+          card.classList.toggle("search-miss", !match);
+        });
+        updateEdgeFocus();
+      });
+
+      window.addEventListener("resize", scheduleEdges);
+      window.addEventListener("afterprint", () => renderView(activeView));
+
+      renderView("core");
+    </script>
+  </body>
+</html>

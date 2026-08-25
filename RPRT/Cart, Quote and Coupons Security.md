@@ -25,6 +25,7 @@ type: schema-reference
 
 > [!example] Visual Explainer
 > [[Visual Explainers/RPRT-49 Cart Quote Coupon Visual Explainer.html|Open the local commerce schema visual explainer]]
+> [[Visual Explainers/Account and Guest Order Journey Visual Explainer.html|Compare account and guest cart, quote, and order flows]]
 
 ## <span style="color:rgb(112, 48, 160)">Schema Boundary</span>
 

@@ -2,6 +2,9 @@
 [[Studio Repertório]]
 [[Auth Users and Profiles]]
 
+> [!example] Visual Explainer
+> [[Visual Explainers/Account and Guest Order Journey Visual Explainer.html|Open the account and guest order journey visual explainer]]
+
 > [!abstract] Definition
 
 > An opaque token is a random secret with *no business information inside it*. The application cannot obtain meaning by decoding it. It is only a secret lookup credential.

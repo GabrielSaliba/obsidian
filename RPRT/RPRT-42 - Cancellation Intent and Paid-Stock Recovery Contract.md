@@ -5,7 +5,7 @@
 |---|---|
 | Linear issue | [RPRT-42](https://linear.app/guisaliba/issue/RPRT-42/define-cancellation-intent-and-paid-stock-recovery-rules) |
 | Normative contract | [Cancellation Intent and Paid-Stock Recovery Contract](https://linear.app/guisaliba/document/rprt-42-cancellation-intent-and-paid-stock-recovery-contract-862263dca56a) |
-| Visual explainer | [RPRT-42 visual explainer](https://uploads.linear.app/445023d5-264c-47cb-a70c-e4a15a58da5c/642159b2-cf20-4f11-874f-4f706450cb9a/b44a084d-a1ca-4d90-a11b-c869b9211829) |
+| Visual explainer | [[Visual Explainers/RPRT-42 Cancellation Contract Visual Explainer.html|RPRT-42 visual explainer]] |
 
 ## <span style="color:rgb(0, 112, 192)">Purpose</span>
 

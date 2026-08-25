@@ -1,0 +1,2999 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta
+      name="description"
+      content="Detailed reviewer guide for PR #22, the RPRT-46 order and settlement PostgreSQL authority boundary."
+    />
+    <title>PR #22 Detailed Guide - Order and Settlement Security</title>
+    <style>
+      :root {
+        --background: oklch(0.97 0.005 260);
+        --foreground: oklch(0.18 0.02 260);
+        --card: oklch(1 0 0);
+        --card-foreground: oklch(0.18 0.02 260);
+        --primary: oklch(0.5 0.25 280);
+        --primary-foreground: oklch(1 0 0);
+        --secondary: oklch(0.5 0.18 180);
+        --secondary-foreground: oklch(1 0 0);
+        --muted: oklch(0.92 0.01 260);
+        --muted-foreground: oklch(0.4 0.02 260);
+        --accent: oklch(0.6 0.22 50);
+        --accent-foreground: oklch(0.18 0.02 260);
+        --destructive: oklch(0.5 0.25 25);
+        --destructive-foreground: oklch(1 0 0);
+        --success: oklch(0.45 0.2 150);
+        --success-foreground: oklch(1 0 0);
+        --warning: oklch(0.55 0.18 85);
+        --warning-foreground: oklch(0.18 0.02 260);
+        --border: oklch(0.88 0.01 260);
+        --code-bg: oklch(0.2 0.02 260);
+        --code-fg: oklch(0.94 0.01 260);
+        --font-sans:
+          Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+          sans-serif;
+        --font-mono:
+          "JetBrains Mono", "Fira Code", Consolas, ui-monospace, monospace;
+        --font-display: Georgia, "Times New Roman", serif;
+        --radius: 0.625rem;
+      }
+
+      @media (prefers-color-scheme: dark) {
+        :root {
+          --background: oklch(0.17 0.018 260);
+          --foreground: oklch(0.93 0.01 260);
+          --card: oklch(0.22 0.02 260);
+          --card-foreground: oklch(0.93 0.01 260);
+          --muted: oklch(0.27 0.018 260);
+          --muted-foreground: oklch(0.72 0.02 260);
+          --border: oklch(0.34 0.02 260);
+          --code-bg: oklch(0.12 0.015 260);
+        }
+      }
+
+      *,
+      *::before,
+      *::after {
+        box-sizing: border-box;
+      }
+
+      * {
+        margin: 0;
+      }
+
+      html {
+        scroll-behavior: smooth;
+      }
+
+      body {
+        background: var(--background);
+        color: var(--foreground);
+        font-family: var(--font-sans);
+        font-size: 15px;
+        line-height: 1.65;
+        -webkit-font-smoothing: antialiased;
+      }
+
+      a {
+        color: var(--primary);
+        text-underline-offset: 3px;
+      }
+
+      code {
+        background: var(--muted);
+        border-radius: 4px;
+        font-family: var(--font-mono);
+        font-size: 0.86em;
+        padding: 1px 5px;
+      }
+
+      .container {
+        margin: 0 auto;
+        max-width: 1160px;
+        padding: 64px 24px 104px;
+      }
+
+      .eyebrow,
+      .meta,
+      .section-number,
+      .stat-label,
+      .label,
+      .badge,
+      .file-path,
+      .kicker,
+      .table-caption {
+        font-family: var(--font-mono);
+      }
+
+      h1,
+      h2,
+      h3,
+      h4 {
+        font-family: var(--font-display);
+        font-weight: 500;
+        line-height: 1.2;
+      }
+
+      h1 {
+        font-size: clamp(2.6rem, 7vw, 5.25rem);
+        letter-spacing: -0.045em;
+        margin-top: 14px;
+        max-width: 900px;
+      }
+
+      .eyebrow {
+        color: var(--muted-foreground);
+        font-size: 0.72rem;
+        font-weight: 700;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+      }
+
+      .dek {
+        color: var(--muted-foreground);
+        font-size: 1.08rem;
+        margin-top: 24px;
+        max-width: 760px;
+      }
+
+      .meta {
+        color: var(--muted-foreground);
+        display: flex;
+        flex-wrap: wrap;
+        font-size: 0.76rem;
+        gap: 9px 20px;
+        margin-top: 28px;
+      }
+
+      .meta .plus,
+      .positive {
+        color: var(--success);
+      }
+
+      .meta .minus,
+      .negative {
+        color: var(--destructive);
+      }
+
+      .header-links {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin-top: 24px;
+      }
+
+      .header-links a {
+        border: 1.5px solid var(--border);
+        border-radius: 999px;
+        color: var(--foreground);
+        font-family: var(--font-mono);
+        font-size: 0.72rem;
+        padding: 7px 12px;
+        text-decoration: none;
+      }
+
+      .header-links a:hover {
+        border-color: var(--primary);
+        color: var(--primary);
+      }
+
+      .summary-strip {
+        display: grid;
+        gap: 12px;
+        grid-template-columns: repeat(5, 1fr);
+        margin: 44px 0 26px;
+      }
+
+      .stat-card,
+      .card,
+      .tldr,
+      .flow-card,
+      .focus-item,
+      .test-item,
+      .scope-card,
+      details,
+      .diagram-panel,
+      .table-wrap {
+        background: var(--card);
+        border: 1.5px solid var(--border);
+        border-radius: var(--radius);
+      }
+
+      .stat-card {
+        padding: 18px 19px;
+      }
+
+      .stat-value {
+        display: block;
+        font-family: var(--font-display);
+        font-size: 2rem;
+        line-height: 1;
+      }
+
+      .stat-label {
+        color: var(--muted-foreground);
+        display: block;
+        font-size: 0.66rem;
+        letter-spacing: 0.06em;
+        margin-top: 8px;
+        text-transform: uppercase;
+      }
+
+      .tldr {
+        border-left: 5px solid var(--primary);
+        margin-top: 22px;
+        max-width: 920px;
+        padding: 23px 27px;
+      }
+
+      .tldr h2 {
+        color: var(--primary);
+        font-family: var(--font-mono);
+        font-size: 0.72rem;
+        font-weight: 700;
+        letter-spacing: 0.08em;
+        margin-bottom: 8px;
+        text-transform: uppercase;
+      }
+
+      .tldr p {
+        color: var(--muted-foreground);
+        max-width: 82ch;
+      }
+
+      section {
+        margin-top: 82px;
+      }
+
+      .section-header {
+        align-items: baseline;
+        border-bottom: 1.5px solid var(--border);
+        display: flex;
+        gap: 16px;
+        margin-bottom: 28px;
+        padding-bottom: 10px;
+      }
+
+      .section-number {
+        color: var(--primary);
+        font-size: 0.75rem;
+        font-weight: 700;
+      }
+
+      .section-header h2 {
+        font-size: 1.55rem;
+      }
+
+      .intro {
+        color: var(--muted-foreground);
+        margin: -8px 0 24px;
+        max-width: 78ch;
+      }
+
+      .two-col,
+      .three-col,
+      .four-col,
+      .flow-grid,
+      .scope-grid {
+        display: grid;
+        gap: 16px;
+      }
+
+      .two-col,
+      .scope-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      .three-col {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+      }
+
+      .four-col {
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+      }
+
+      .flow-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      .card,
+      .scope-card {
+        padding: 21px 22px;
+      }
+
+      .card .label,
+      .scope-card .label,
+      .flow-card .label {
+        color: var(--primary);
+        display: block;
+        font-size: 0.68rem;
+        font-weight: 700;
+        letter-spacing: 0.06em;
+        margin-bottom: 8px;
+        text-transform: uppercase;
+      }
+
+      .card h3,
+      .scope-card h3,
+      .flow-card h3 {
+        font-size: 1.08rem;
+        margin-bottom: 8px;
+      }
+
+      .card p,
+      .scope-card p,
+      .flow-card p {
+        color: var(--muted-foreground);
+        font-size: 0.89rem;
+      }
+
+      .scope-card.complete {
+        border-top: 4px solid var(--success);
+      }
+
+      .scope-card.deferred {
+        border-top: 4px solid var(--warning);
+      }
+
+      .scope-card ul,
+      .card ul,
+      .flow-card ul {
+        color: var(--muted-foreground);
+        font-size: 0.88rem;
+        margin-top: 12px;
+        padding-left: 19px;
+      }
+
+      li + li {
+        margin-top: 7px;
+      }
+
+      .diagram-panel {
+        overflow-x: auto;
+        padding: 26px;
+      }
+
+      .diagram-panel svg {
+        display: block;
+        min-width: 900px;
+        width: 100%;
+      }
+
+      .diagram-caption {
+        color: var(--muted-foreground);
+        display: block;
+        font-family: var(--font-mono);
+        font-size: 0.7rem;
+        margin-top: 16px;
+        text-align: center;
+      }
+
+      .table-wrap {
+        overflow-x: auto;
+      }
+
+      table {
+        border-collapse: collapse;
+        min-width: 760px;
+        width: 100%;
+      }
+
+      th,
+      td {
+        border-bottom: 1px solid var(--border);
+        padding: 13px 16px;
+        text-align: left;
+        vertical-align: top;
+      }
+
+      tr:last-child td {
+        border-bottom: 0;
+      }
+
+      th {
+        background: var(--muted);
+        color: var(--muted-foreground);
+        font-family: var(--font-mono);
+        font-size: 0.68rem;
+        font-weight: 700;
+        letter-spacing: 0.05em;
+        text-transform: uppercase;
+      }
+
+      td {
+        font-size: 0.86rem;
+      }
+
+      td strong,
+      .object-name {
+        color: var(--foreground);
+        font-family: var(--font-mono);
+        font-size: 0.8rem;
+      }
+
+      td small {
+        color: var(--muted-foreground);
+        display: block;
+        line-height: 1.5;
+        margin-top: 3px;
+      }
+
+      .table-caption {
+        color: var(--muted-foreground);
+        display: block;
+        font-size: 0.7rem;
+        margin: 10px 2px 0;
+      }
+
+      .state-line {
+        align-items: center;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin-top: 15px;
+      }
+
+      .state {
+        background: var(--muted);
+        border: 1px solid var(--border);
+        border-radius: 5px;
+        font-family: var(--font-mono);
+        font-size: 0.69rem;
+        padding: 5px 8px;
+      }
+
+      .arrow {
+        color: var(--muted-foreground);
+        font-family: var(--font-mono);
+      }
+
+      .flow-card {
+        overflow: hidden;
+      }
+
+      .flow-head {
+        border-bottom: 1px solid var(--border);
+        padding: 19px 21px 15px;
+      }
+
+      .flow-body {
+        padding: 17px 21px 21px;
+      }
+
+      .steps {
+        display: grid;
+        gap: 0;
+      }
+
+      .step {
+        display: grid;
+        grid-template-columns: 29px 1fr;
+        min-height: 54px;
+      }
+
+      .step-mark {
+        align-items: center;
+        display: flex;
+        flex-direction: column;
+      }
+
+      .step-dot {
+        align-items: center;
+        background: var(--primary);
+        border-radius: 50%;
+        color: var(--primary-foreground);
+        display: flex;
+        flex: 0 0 22px;
+        font-family: var(--font-mono);
+        font-size: 0.63rem;
+        font-weight: 700;
+        height: 22px;
+        justify-content: center;
+        width: 22px;
+      }
+
+      .step-line {
+        background: var(--border);
+        flex: 1;
+        margin: 4px 0;
+        width: 2px;
+      }
+
+      .step:last-child .step-line {
+        display: none;
+      }
+
+      .step-copy {
+        padding: 0 0 17px 11px;
+      }
+
+      .step-copy strong {
+        display: block;
+        font-size: 0.87rem;
+      }
+
+      .step-copy span {
+        color: var(--muted-foreground);
+        display: block;
+        font-size: 0.82rem;
+        margin-top: 2px;
+      }
+
+      .decision-tree {
+        display: grid;
+        gap: 12px;
+      }
+
+      .decision-row {
+        align-items: stretch;
+        display: grid;
+        gap: 12px;
+        grid-template-columns: 190px 34px 1fr;
+      }
+
+      .decision-question,
+      .decision-result {
+        background: var(--card);
+        border: 1.5px solid var(--border);
+        border-radius: var(--radius);
+        padding: 15px 17px;
+      }
+
+      .decision-question {
+        font-family: var(--font-mono);
+        font-size: 0.8rem;
+        font-weight: 700;
+      }
+
+      .decision-connector {
+        align-items: center;
+        color: var(--muted-foreground);
+        display: flex;
+        font-family: var(--font-mono);
+        justify-content: center;
+      }
+
+      .decision-result strong {
+        display: block;
+        font-family: var(--font-mono);
+        font-size: 0.77rem;
+      }
+
+      .decision-result span {
+        color: var(--muted-foreground);
+        display: block;
+        font-size: 0.83rem;
+        margin-top: 4px;
+      }
+
+      .decision-row.safe .decision-result {
+        border-color: color-mix(in oklab, var(--success) 60%, var(--border));
+      }
+
+      .decision-row.warn .decision-result {
+        border-color: color-mix(in oklab, var(--warning) 60%, var(--border));
+      }
+
+      .lock-strip {
+        display: flex;
+        gap: 0;
+        overflow-x: auto;
+        padding-bottom: 8px;
+      }
+
+      .lock-step {
+        background: var(--card);
+        border: 1.5px solid var(--border);
+        flex: 1 0 128px;
+        min-height: 108px;
+        padding: 15px 14px;
+        position: relative;
+      }
+
+      .lock-step:first-child {
+        border-radius: var(--radius) 0 0 var(--radius);
+      }
+
+      .lock-step:last-child {
+        border-radius: 0 var(--radius) var(--radius) 0;
+      }
+
+      .lock-step + .lock-step {
+        border-left: 0;
+      }
+
+      .lock-number {
+        color: var(--primary);
+        font-family: var(--font-mono);
+        font-size: 0.67rem;
+        font-weight: 700;
+      }
+
+      .lock-step strong {
+        display: block;
+        font-family: var(--font-mono);
+        font-size: 0.73rem;
+        margin-top: 7px;
+      }
+
+      .lock-step span:last-child {
+        color: var(--muted-foreground);
+        display: block;
+        font-size: 0.74rem;
+        margin-top: 5px;
+      }
+
+      .callout {
+        background: color-mix(in oklab, var(--warning) 9%, var(--card));
+        border: 1.5px solid
+          color-mix(in oklab, var(--warning) 35%, var(--border));
+        border-left: 4px solid var(--warning);
+        border-radius: var(--radius);
+        margin-top: 18px;
+        padding: 18px 21px;
+      }
+
+      .callout strong {
+        color: var(--warning);
+        display: block;
+        font-family: var(--font-mono);
+        font-size: 0.71rem;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+      }
+
+      .callout p {
+        color: var(--muted-foreground);
+        margin-top: 6px;
+      }
+
+      .code-panel {
+        background: var(--code-bg);
+        border: 1.5px solid var(--border);
+        border-radius: var(--radius);
+        color: var(--code-fg);
+        overflow-x: auto;
+        padding: 22px 23px;
+      }
+
+      .code-panel pre,
+      .code-panel code {
+        background: transparent;
+        font-family: var(--font-mono);
+        font-size: 0.79rem;
+        line-height: 1.7;
+        padding: 0;
+      }
+
+      .code-panel .comment {
+        color: oklch(0.68 0.02 260);
+      }
+
+      .code-panel .keyword {
+        color: oklch(0.75 0.18 280);
+      }
+
+      .code-panel .string {
+        color: oklch(0.74 0.17 150);
+      }
+
+      .risk-map {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin-bottom: 22px;
+      }
+
+      .risk-chip,
+      .badge {
+        align-items: center;
+        border-radius: 999px;
+        display: inline-flex;
+        font-size: 0.66rem;
+        font-weight: 700;
+        gap: 7px;
+        letter-spacing: 0.04em;
+        padding: 5px 9px;
+        text-transform: uppercase;
+      }
+
+      .risk-chip {
+        border: 1px solid var(--border);
+      }
+
+      .risk-chip::before {
+        border-radius: 50%;
+        content: "";
+        height: 8px;
+        width: 8px;
+      }
+
+      .attention::before,
+      .badge.attention {
+        background: color-mix(in oklab, var(--destructive) 14%, transparent);
+        color: var(--destructive);
+      }
+
+      .risk-chip.attention::before {
+        background: var(--destructive);
+      }
+
+      .medium::before,
+      .badge.medium {
+        background: color-mix(in oklab, var(--warning) 14%, transparent);
+        color: var(--warning);
+      }
+
+      .risk-chip.medium::before {
+        background: var(--warning);
+      }
+
+      .safe::before,
+      .badge.safe {
+        background: color-mix(in oklab, var(--success) 14%, transparent);
+        color: var(--success);
+      }
+
+      .risk-chip.safe::before {
+        background: var(--success);
+      }
+
+      details {
+        margin-top: 11px;
+        overflow: hidden;
+      }
+
+      summary {
+        align-items: center;
+        cursor: pointer;
+        display: flex;
+        gap: 11px;
+        list-style: none;
+        padding: 15px 18px;
+      }
+
+      summary::-webkit-details-marker {
+        display: none;
+      }
+
+      summary::after {
+        color: var(--muted-foreground);
+        content: "+";
+        font-family: var(--font-mono);
+        margin-left: auto;
+      }
+
+      details[open] summary::after {
+        content: "-";
+      }
+
+      .file-path {
+        font-size: 0.78rem;
+        font-weight: 700;
+      }
+
+      .file-stats {
+        color: var(--muted-foreground);
+        font-family: var(--font-mono);
+        font-size: 0.7rem;
+      }
+
+      .details-body {
+        border-top: 1px solid var(--border);
+        padding: 6px 18px 18px;
+      }
+
+      .file-list {
+        display: grid;
+        gap: 0;
+      }
+
+      .file-row {
+        border-bottom: 1px solid var(--border);
+        display: grid;
+        gap: 14px;
+        grid-template-columns: minmax(260px, 0.9fr) 90px 1.4fr;
+        padding: 13px 0;
+      }
+
+      .file-row:last-child {
+        border-bottom: 0;
+      }
+
+      .file-row code {
+        background: transparent;
+        padding: 0;
+      }
+
+      .file-row .why {
+        color: var(--muted-foreground);
+        font-size: 0.83rem;
+      }
+
+      .focus-list,
+      .test-list {
+        display: grid;
+        gap: 11px;
+      }
+
+      .focus-item {
+        align-items: flex-start;
+        display: flex;
+        gap: 15px;
+        padding: 17px 19px;
+      }
+
+      .focus-number {
+        align-items: center;
+        background: var(--primary);
+        border-radius: 50%;
+        color: var(--primary-foreground);
+        display: flex;
+        flex: 0 0 27px;
+        font-family: var(--font-mono);
+        font-size: 0.72rem;
+        font-weight: 700;
+        height: 27px;
+        justify-content: center;
+      }
+
+      .focus-item strong {
+        display: block;
+        font-family: var(--font-mono);
+        font-size: 0.78rem;
+        margin-bottom: 4px;
+      }
+
+      .focus-item p {
+        color: var(--muted-foreground);
+        font-size: 0.86rem;
+      }
+
+      .test-list {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      .test-item {
+        align-items: flex-start;
+        display: flex;
+        gap: 12px;
+        padding: 14px 16px;
+      }
+
+      .check {
+        background: var(--success);
+        border-radius: 5px;
+        flex: 0 0 18px;
+        height: 18px;
+        margin-top: 2px;
+        position: relative;
+      }
+
+      .check::after {
+        border-bottom: 2px solid white;
+        border-right: 2px solid white;
+        content: "";
+        height: 8px;
+        left: 6px;
+        position: absolute;
+        top: 3px;
+        transform: rotate(40deg);
+        width: 4px;
+      }
+
+      .test-item span:last-child {
+        font-size: 0.85rem;
+      }
+
+      footer {
+        border-top: 1.5px solid var(--border);
+        color: var(--muted-foreground);
+        font-family: var(--font-mono);
+        font-size: 0.7rem;
+        margin-top: 82px;
+        padding-top: 22px;
+      }
+
+      @media (max-width: 900px) {
+        .summary-strip {
+          grid-template-columns: repeat(3, 1fr);
+        }
+
+        .three-col,
+        .four-col {
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+
+        .file-row {
+          grid-template-columns: 1fr auto;
+        }
+
+        .file-row .why {
+          grid-column: 1 / -1;
+        }
+      }
+
+      @media (max-width: 700px) {
+        .container {
+          padding: 42px 17px 74px;
+        }
+
+        .summary-strip,
+        .two-col,
+        .three-col,
+        .four-col,
+        .flow-grid,
+        .scope-grid,
+        .test-list {
+          grid-template-columns: 1fr;
+        }
+
+        .decision-row {
+          grid-template-columns: 1fr;
+        }
+
+        .decision-connector {
+          transform: rotate(90deg);
+        }
+
+        section {
+          margin-top: 60px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <main class="container">
+      <header>
+        <span class="eyebrow"
+          >Detailed pull request explainer · PR #22 · RPRT-46</span
+        >
+        <h1>Order truth becomes database authority.</h1>
+        <p class="dek">
+          PR #22 builds the PostgreSQL boundary for order creation, immutable
+          commercial facts, guest access, payment attempts, settlement, stock,
+          recovery, cancellation, and fulfillment. This guide explains what was
+          implemented, how each path works, and where reviewers must focus.
+        </p>
+        <div class="meta">
+          <span>feat/rprt-46-order-settlement-security → dev</span>
+          <span>30 files</span>
+          <span class="plus">+19,688</span>
+          <span class="minus">-50</span>
+          <span>3 commits</span>
+          <span>head 7b27013</span>
+        </div>
+        <nav class="header-links" aria-label="Related work">
+          <a href="https://github.com/guisaliba/repertorio/pull/22"
+            >Open PR #22</a
+          >
+          <a
+            href="https://linear.app/guisaliba/issue/RPRT-46/implement-order-and-settlement-schema-security"
+            >Open RPRT-46</a
+          >
+        </nav>
+      </header>
+
+      <div class="summary-strip" aria-label="Pull request summary">
+        <div class="stat-card">
+          <span class="stat-value">10</span>
+          <span class="stat-label">Ordered migrations</span>
+        </div>
+        <div class="stat-card">
+          <span class="stat-value">13</span>
+          <span class="stat-label">New evidence tables</span>
+        </div>
+        <div class="stat-card">
+          <span class="stat-value">26</span>
+          <span class="stat-label">Protected public commands</span>
+        </div>
+        <div class="stat-card">
+          <span class="stat-value">13</span>
+          <span class="stat-label">Focused test files</span>
+        </div>
+        <div class="stat-card">
+          <span class="stat-value">731</span>
+          <span class="stat-label">Passing assertions</span>
+        </div>
+      </div>
+
+      <div class="tldr">
+        <h2>TL;DR</h2>
+        <p>
+          PostgreSQL now owns every commercial decision that can change money,
+          stock, or delivery authority. Verified provider payment is stored as
+          permanent evidence, but it cannot authorize fulfillment by itself.
+          Only one same-order settlement pointer can grant that authority, and
+          only after payment, stock, cancellation, and recovery guards pass
+          under a stable lock order. Unsafe outcomes stay visible and move to
+          explicit recovery instead of being overwritten.
+        </p>
+      </div>
+
+      <section id="scope">
+        <div class="section-header">
+          <span class="section-number">01</span>
+          <h2>What PR #22 delivers</h2>
+        </div>
+        <div class="scope-grid">
+          <article class="scope-card complete">
+            <span class="label">Implemented in this PR</span>
+            <h3>The database authority boundary</h3>
+            <ul>
+              <li>
+                Immutable order, customer, delivery, item, package, price, and
+                total snapshots.
+              </li>
+              <li>
+                Storefront and assisted order creation with serialized
+                idempotency.
+              </li>
+              <li>
+                Hash-only, one-order guest access with protected exchange and
+                replacement.
+              </li>
+              <li>
+                Provider-neutral payment attempts, webhook subject binding, and
+                normalized facts.
+              </li>
+              <li>
+                Deterministic settlement, stock reservation, duplicate payment,
+                and late recovery.
+              </li>
+              <li>
+                Unpaid and paid cancellation, refund convergence, fulfillment,
+                and handoff guards.
+              </li>
+              <li>
+                RLS, narrow grants, fixed search paths, audit evidence, and
+                durable outbox work.
+              </li>
+              <li>
+                Committed-session race proof and generated application types.
+              </li>
+            </ul>
+          </article>
+          <article class="scope-card deferred">
+            <span class="label">Not implemented here</span>
+            <h3>The trusted application runtime</h3>
+            <ul>
+              <li>AbacatePay, Jadlog, and email provider adapters.</li>
+              <li>HTTP webhook routes and signature verification.</li>
+              <li>Customer checkout and staff operations interfaces.</li>
+              <li>Scheduler and provider worker execution.</li>
+              <li>The guest session exchange route and secure cookie.</li>
+              <li>Asymmetric Supabase guest JWT signing.</li>
+              <li>Recovery operations user interface.</li>
+            </ul>
+          </article>
+        </div>
+      </section>
+
+      <section id="architecture">
+        <div class="section-header">
+          <span class="section-number">02</span>
+          <h2>How authority moves through the system</h2>
+        </div>
+        <p class="intro">
+          Callers do not write commercial tables directly. They call narrow
+          security-definer commands. Those commands derive the actor, lock the
+          required rows, validate current evidence, commit business truth, and
+          create durable work in one transaction.
+        </p>
+        <div class="diagram-panel">
+          <svg
+            viewBox="0 0 1080 560"
+            role="img"
+            aria-labelledby="architecture-title architecture-description"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <title id="architecture-title">
+              PR #22 database authority architecture
+            </title>
+            <desc id="architecture-description">
+              Four actor classes call protected commands. Commands update the
+              order ledger, payment and stock ledgers, recovery evidence, audit
+              transitions, and durable outbox.
+            </desc>
+            <defs>
+              <marker
+                id="arrow"
+                markerWidth="10"
+                markerHeight="10"
+                refX="8"
+                refY="3"
+                orient="auto"
+              >
+                <path d="M0,0 L0,6 L9,3 z" fill="var(--muted-foreground)" />
+              </marker>
+              <marker
+                id="good-arrow"
+                markerWidth="10"
+                markerHeight="10"
+                refX="8"
+                refY="3"
+                orient="auto"
+              >
+                <path d="M0,0 L0,6 L9,3 z" fill="var(--success)" />
+              </marker>
+            </defs>
+            <style>
+              .layer {
+                fill: var(--card);
+                stroke: var(--border);
+                stroke-width: 2;
+                rx: 12;
+              }
+              .command {
+                fill: color-mix(in oklab, var(--primary) 8%, var(--card));
+                stroke: var(--primary);
+                stroke-width: 2.5;
+                rx: 12;
+              }
+              .authority {
+                fill: color-mix(in oklab, var(--success) 8%, var(--card));
+                stroke: var(--success);
+                stroke-width: 2.5;
+                rx: 12;
+              }
+              .evidence {
+                fill: color-mix(in oklab, var(--warning) 9%, var(--card));
+                stroke: var(--warning);
+                stroke-width: 2;
+                rx: 12;
+              }
+              .title {
+                fill: var(--foreground);
+                font: 600 14px var(--font-sans);
+              }
+              .copy {
+                fill: var(--muted-foreground);
+                font: 12px var(--font-sans);
+              }
+              .mono {
+                fill: var(--primary);
+                font: 700 10px var(--font-mono);
+                letter-spacing: 0.07em;
+              }
+              .line {
+                fill: none;
+                stroke: var(--muted-foreground);
+                stroke-width: 2;
+                marker-end: url(#arrow);
+              }
+              .good-line {
+                fill: none;
+                stroke: var(--success);
+                stroke-width: 2.5;
+                marker-end: url(#good-arrow);
+              }
+            </style>
+
+            <rect class="layer" x="18" y="60" width="190" height="105" />
+            <text class="mono" x="38" y="86">ACTORS</text>
+            <text class="title" x="38" y="111">Account customer</text>
+            <text class="copy" x="38" y="133">Owned storefront checkout</text>
+            <text class="copy" x="38" y="151">Read own safe order view</text>
+
+            <rect class="layer" x="18" y="185" width="190" height="105" />
+            <text class="mono" x="38" y="211">ACTORS</text>
+            <text class="title" x="38" y="236">Administrator</text>
+            <text class="copy" x="38" y="258">
+              Assisted sales, cancellation
+            </text>
+            <text class="copy" x="38" y="276">Fulfillment and recovery</text>
+
+            <rect class="layer" x="18" y="310" width="190" height="105" />
+            <text class="mono" x="38" y="336">ACTORS</text>
+            <text class="title" x="38" y="361">Trusted service</text>
+            <text class="copy" x="38" y="383">Provider facts and workers</text>
+            <text class="copy" x="38" y="401">Guest issue and exchange</text>
+
+            <rect class="layer" x="18" y="435" width="190" height="105" />
+            <text class="mono" x="38" y="461">READ-ONLY ROLE</text>
+            <text class="title" x="38" y="486">guest_order JWT</text>
+            <text class="copy" x="38" y="508">One exchanged access row</text>
+            <text class="copy" x="38" y="526">One order through RLS</text>
+
+            <rect class="command" x="278" y="82" width="230" height="430" />
+            <text class="mono" x="300" y="111">26 PROTECTED COMMANDS</text>
+            <text class="title" x="300" y="141">Derive caller authority</text>
+            <text class="copy" x="300" y="165">
+              Never trust caller-selected actor IDs
+            </text>
+            <text class="title" x="300" y="205">Lock in one order</text>
+            <text class="copy" x="300" y="229">
+              Recheck all guards after locks
+            </text>
+            <text class="title" x="300" y="269">Validate exact evidence</text>
+            <text class="copy" x="300" y="293">
+              Order, attempt, transition, subject
+            </text>
+            <text class="title" x="300" y="333">Commit one outcome</text>
+            <text class="copy" x="300" y="357">
+              Business facts and audit together
+            </text>
+            <text class="title" x="300" y="397">Create durable work</text>
+            <text class="copy" x="300" y="421">
+              Outbox in the same transaction
+            </text>
+            <text class="title" x="300" y="461">
+              Return stable retry result
+            </text>
+            <text class="copy" x="300" y="485">
+              Conflicting idempotency fails
+            </text>
+
+            <rect class="authority" x="578" y="60" width="225" height="205" />
+            <text class="mono" x="600" y="88">COMMERCIAL LEDGER</text>
+            <text class="title" x="600" y="118">Orders and items</text>
+            <text class="copy" x="600" y="141">
+              Immutable commercial snapshots
+            </text>
+            <text class="title" x="600" y="177">Payment attempts</text>
+            <text class="copy" x="600" y="200">
+              Provider truth stays separate
+            </text>
+            <text class="title" x="600" y="236">Settlement pointer</text>
+            <text class="copy" x="600" y="253">Only fulfillment authority</text>
+
+            <rect class="layer" x="578" y="285" width="225" height="205" />
+            <text class="mono" x="600" y="313">OPERATIONS LEDGER</text>
+            <text class="title" x="600" y="343">Stock reservations</text>
+            <text class="copy" x="600" y="366">Reserve, consume, release</text>
+            <text class="title" x="600" y="402">Fulfillment state</text>
+            <text class="copy" x="600" y="425">
+              Production, handoff, delivery
+            </text>
+            <text class="title" x="600" y="461">Guest access</text>
+            <text class="copy" x="600" y="478">
+              Hash-only one-order capability
+            </text>
+
+            <rect class="evidence" x="873" y="60" width="190" height="205" />
+            <text class="mono" x="895" y="88">EXCEPTION EVIDENCE</text>
+            <text class="title" x="895" y="118">Payment recovery</text>
+            <text class="copy" x="895" y="141">
+              Blocking or non-blocking cases
+            </text>
+            <text class="title" x="895" y="177">Cancellation intent</text>
+            <text class="copy" x="895" y="200">Refund first, then cancel</text>
+            <text class="title" x="895" y="236">Post-handoff recovery</text>
+            <text class="copy" x="895" y="253">Preserve delivery truth</text>
+
+            <rect class="layer" x="873" y="285" width="190" height="205" />
+            <text class="mono" x="895" y="313">APPEND-ONLY EFFECTS</text>
+            <text class="title" x="895" y="343">Domain transitions</text>
+            <text class="copy" x="895" y="366">
+              Actor, reason, before, after
+            </text>
+            <text class="title" x="895" y="402">Webhook subjects</text>
+            <text class="copy" x="895" y="425">
+              One event, one exact target
+            </text>
+            <text class="title" x="895" y="461">Outbox jobs</text>
+            <text class="copy" x="895" y="478">
+              Atomic external work intent
+            </text>
+
+            <path class="line" d="M208 112 H270" />
+            <path class="line" d="M208 237 H270" />
+            <path class="line" d="M208 362 H270" />
+            <path class="line" d="M208 487 H270" />
+            <path class="good-line" d="M508 190 H570" />
+            <path class="line" d="M508 395 H570" />
+            <path class="line" d="M803 162 H865" />
+            <path class="line" d="M803 387 H865" />
+          </svg>
+          <span class="diagram-caption">
+            The database command boundary turns verified input into one local
+            outcome and one durable evidence trail.
+          </span>
+        </div>
+      </section>
+
+      <section id="schema">
+        <div class="section-header">
+          <span class="section-number">03</span>
+          <h2>The 13 new evidence tables</h2>
+        </div>
+        <p class="intro">
+          Six schema migrations create 11 public domain tables. The payment
+          command migration adds one public webhook-subject table and one
+          private normalized-fact table.
+        </p>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Domain</th>
+                <th>Table</th>
+                <th>What it stores</th>
+                <th>Main safety rule</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>Order</td>
+                <td><span class="object-name">orders</span></td>
+                <td>
+                  Identity, customer and delivery snapshots, totals, lifecycle,
+                  and payment pointers.
+                </td>
+                <td>Issued commercial facts cannot be rewritten or deleted.</td>
+              </tr>
+              <tr>
+                <td>Order</td>
+                <td><span class="object-name">order_items</span></td>
+                <td>
+                  Product, sales mode, quantity, package, price, and line-total
+                  snapshots.
+                </td>
+                <td>
+                  Same-order product facts freeze after the order leaves draft.
+                </td>
+              </tr>
+              <tr>
+                <td>Guest</td>
+                <td><span class="object-name">guest_order_access</span></td>
+                <td>
+                  Capability hash, exchange-key hash, expiry, revocation, and
+                  replacement lineage.
+                </td>
+                <td>
+                  Raw capability is never stored; access stays bound to one
+                  order.
+                </td>
+              </tr>
+              <tr>
+                <td>Payment</td>
+                <td><span class="object-name">payment_attempts</span></td>
+                <td>
+                  Each provider checkout attempt, amount, currency, state, and
+                  provider identity.
+                </td>
+                <td>
+                  Every retry keeps a separate identity; only one attempt can be
+                  actively payable.
+                </td>
+              </tr>
+              <tr>
+                <td>Payment</td>
+                <td><span class="object-name">webhook_event_subjects</span></td>
+                <td>
+                  Immutable event-to-attempt or event-to-order subject binding.
+                </td>
+                <td>
+                  One provider event cannot be reused for another local subject.
+                </td>
+              </tr>
+              <tr>
+                <td>Payment</td>
+                <td>
+                  <span class="object-name"
+                    >private.payment_evidence_facts</span
+                  >
+                </td>
+                <td>
+                  Normalized provider state, status, IDs, amount, currency, and
+                  source, plus a lock-serialized recorded sequence.
+                </td>
+                <td>
+                  An exact retry must match every normalized field. The recorded
+                  sequence selects paid precedence.
+                </td>
+              </tr>
+              <tr>
+                <td>Stock</td>
+                <td><span class="object-name">stock_reservations</span></td>
+                <td>
+                  Direct-stock reservation identity, quantity, attempts, expiry,
+                  and state.
+                </td>
+                <td>Only active to consumed or active to released is valid.</td>
+              </tr>
+              <tr>
+                <td>Recovery</td>
+                <td><span class="object-name">payment_recovery_cases</span></td>
+                <td>Late, duplicate, or cancelled-order paid facts.</td>
+                <td>
+                  Blocking behavior is fixed by recovery kind and exact paid
+                  transition.
+                </td>
+              </tr>
+              <tr>
+                <td>Recovery</td>
+                <td>
+                  <span class="object-name">payment_recovery_resolutions</span>
+                </td>
+                <td>
+                  One accepted settlement, verified refund, or administrative
+                  closure.
+                </td>
+                <td>
+                  One immutable resolution per case, bound to exact transition
+                  evidence.
+                </td>
+              </tr>
+              <tr>
+                <td>Cancellation</td>
+                <td>
+                  <span class="object-name">order_cancellation_intents</span>
+                </td>
+                <td>
+                  Refund-first paid cancellation request and staff evidence.
+                </td>
+                <td>One permanent intent per order; it cannot be withdrawn.</td>
+              </tr>
+              <tr>
+                <td>Cancellation</td>
+                <td>
+                  <span class="object-name"
+                    >paid_cancellation_stock_restorations</span
+                  >
+                </td>
+                <td>
+                  One stock restoration fact for each consumed reservation.
+                </td>
+                <td>
+                  The row and quantity prove that stock was restored only once.
+                </td>
+              </tr>
+              <tr>
+                <td>Handoff recovery</td>
+                <td>
+                  <span class="object-name">post_handoff_refund_cases</span>
+                </td>
+                <td>
+                  Verified refund after carrier, pickup, or local handoff.
+                </td>
+                <td>
+                  Payment can change while delivery and consumed-stock history
+                  stay unchanged.
+                </td>
+              </tr>
+              <tr>
+                <td>Handoff recovery</td>
+                <td>
+                  <span class="object-name"
+                    >post_handoff_refund_resolutions</span
+                  >
+                </td>
+                <td>
+                  Administrative evidence that closes one post-handoff case.
+                </td>
+                <td>
+                  Resolution cannot rewrite payment, fulfillment, settlement, or
+                  stock truth.
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <span class="table-caption"
+          >All 12 new public tables enable RLS and deny broad direct mutation.
+          <code>private.payment_evidence_facts</code> is the thirteenth table;
+          it has no application-role table grants and rejects update and
+          delete.</span
+        >
+      </section>
+
+      <section id="lifecycles">
+        <div class="section-header">
+          <span class="section-number">04</span>
+          <h2>Four lifecycles stay separate</h2>
+        </div>
+        <div class="four-col">
+          <article class="card">
+            <span class="label">Order</span>
+            <h3>Commercial lifecycle</h3>
+            <p>
+              The order records commercial existence. It does not copy payment
+              or delivery state.
+            </p>
+            <div class="state-line">
+              <span class="state">draft</span><span class="arrow">→</span
+              ><span class="state">placed</span>
+            </div>
+            <div class="state-line">
+              <span class="state">placed</span><span class="arrow">→</span
+              ><span class="state">cancelled</span>
+            </div>
+            <div class="state-line">
+              <span class="state">placed</span><span class="arrow">→</span
+              ><span class="state">completed</span>
+            </div>
+          </article>
+          <article class="card">
+            <span class="label">Payment</span>
+            <h3>Provider fact lifecycle</h3>
+            <p>
+              Attempts preserve retries and ambiguous provider results without
+              changing order state.
+            </p>
+            <div class="state-line">
+              <span class="state">not_started</span><span class="arrow">→</span
+              ><span class="state">creating</span><span class="arrow">→</span
+              ><span class="state">pending</span>
+            </div>
+            <div class="state-line">
+              <span class="state">creation_unknown</span
+              ><span class="arrow">→</span
+              ><span class="state">paid / failed</span>
+            </div>
+            <div class="state-line">
+              <span class="state">paid</span><span class="arrow">→</span
+              ><span class="state">refund_pending</span
+              ><span class="arrow">→</span><span class="state">refunded</span>
+            </div>
+          </article>
+          <article class="card">
+            <span class="label">Stock</span>
+            <h3>Reservation lifecycle</h3>
+            <p>
+              Available stock changes once for reserve, release, or approved
+              restoration.
+            </p>
+            <div class="state-line">
+              <span class="state">active</span><span class="arrow">→</span
+              ><span class="state">consumed</span>
+            </div>
+            <div class="state-line">
+              <span class="state">active</span><span class="arrow">→</span
+              ><span class="state">released</span>
+            </div>
+          </article>
+          <article class="card">
+            <span class="label">Fulfillment</span>
+            <h3>Physical delivery lifecycle</h3>
+            <p>
+              Every forward edge needs current settlement authority and clear
+              recovery gates.
+            </p>
+            <div class="state-line">
+              <span class="state">unfulfilled</span><span class="arrow">→</span
+              ><span class="state">in_production</span>
+            </div>
+            <div class="state-line">
+              <span class="state">ready</span><span class="arrow">→</span
+              ><span class="state">in_transit</span>
+            </div>
+            <div class="state-line">
+              <span class="state">exception</span><span class="arrow">→</span
+              ><span class="state">fulfilled</span>
+            </div>
+          </article>
+        </div>
+        <div class="callout">
+          <strong>Core distinction</strong>
+          <p>
+            <code>current_payment_attempt_id</code> selects retry work. It is
+            not fulfillment authority. Only
+            <code>settlement_payment_attempt_id</code> can grant forward
+            authority, and it must point to a same-order verified paid attempt
+            that passes every gate.
+          </p>
+        </div>
+        <div class="callout">
+          <strong>Terminal states agree in both directions</strong>
+          <p>
+            <code>orders.state = 'cancelled'</code> if and only if fulfillment
+            is <code>cancelled</code>.
+            <code>orders.state = 'completed'</code> if and only if fulfillment
+            is <code>fulfilled</code>. A placed order cannot carry either
+            terminal fulfillment state.
+          </p>
+        </div>
+      </section>
+
+      <section id="creation">
+        <div class="section-header">
+          <span class="section-number">05</span>
+          <h2>Order creation paths</h2>
+        </div>
+        <div class="flow-grid">
+          <article class="flow-card">
+            <div class="flow-head">
+              <span class="label">public.create_order</span>
+              <h3>Storefront order</h3>
+              <p>
+                Account checkout or trusted guest checkout becomes one placed
+                order.
+              </p>
+            </div>
+            <div class="flow-body steps">
+              <div class="step">
+                <div class="step-mark">
+                  <span class="step-dot">1</span><span class="step-line"></span>
+                </div>
+                <div class="step-copy">
+                  <strong>Serialize the global order key</strong
+                  ><span
+                    >The advisory lock runs before the first existing-order
+                    lookup. An exact replay returns payment attempt sequence 1,
+                    even after the current pointer changes.</span
+                  >
+                </div>
+              </div>
+              <div class="step">
+                <div class="step-mark">
+                  <span class="step-dot">2</span><span class="step-line"></span>
+                </div>
+                <div class="step-copy">
+                  <strong>Derive the actor</strong
+                  ><span
+                    >Authenticated user means account order. No user means the
+                    trusted guest service path.</span
+                  >
+                </div>
+              </div>
+              <div class="step">
+                <div class="step-mark">
+                  <span class="step-dot">3</span><span class="step-line"></span>
+                </div>
+                <div class="step-copy">
+                  <strong>Lock and recheck commerce facts</strong
+                  ><span
+                    >Cart, products, quote, package facts, destination, coupon
+                    capacity, and stock must still match.</span
+                  >
+                </div>
+              </div>
+              <div class="step">
+                <div class="step-mark">
+                  <span class="step-dot">4</span><span class="step-line"></span>
+                </div>
+                <div class="step-copy">
+                  <strong>Freeze snapshots</strong
+                  ><span
+                    >Database-derived prices, shipping, discount, total,
+                    contact, delivery, item facts, and the accepted cart hash
+                    become immutable.</span
+                  >
+                </div>
+              </div>
+              <div class="step">
+                <div class="step-mark">
+                  <span class="step-dot">5</span><span class="step-line"></span>
+                </div>
+                <div class="step-copy">
+                  <strong>Reserve every direct-stock line</strong
+                  ><span
+                    >Products lock by UUID. One unavailable line rolls back the
+                    full order.</span
+                  >
+                </div>
+              </div>
+              <div class="step">
+                <div class="step-mark">
+                  <span class="step-dot">6</span><span class="step-line"></span>
+                </div>
+                <div class="step-copy">
+                  <strong>Create payment and durable work</strong
+                  ><span
+                    >The first attempt, creating transition, payment-session
+                    job, and confirmation work commit together.</span
+                  >
+                </div>
+              </div>
+            </div>
+          </article>
+
+          <article class="flow-card">
+            <div class="flow-head">
+              <span class="label"
+                >create_assisted_draft + issue_assisted_order</span
+              >
+              <h3>Assisted order</h3>
+              <p>
+                Administrator-negotiated work stays non-payable until explicit
+                issue.
+              </p>
+            </div>
+            <div class="flow-body steps">
+              <div class="step">
+                <div class="step-mark">
+                  <span class="step-dot">1</span><span class="step-line"></span>
+                </div>
+                <div class="step-copy">
+                  <strong>Require administrator membership</strong
+                  ><span
+                    >Customers cannot create negotiated prices or assisted
+                    product facts.</span
+                  >
+                </div>
+              </div>
+              <div class="step">
+                <div class="step-mark">
+                  <span class="step-dot">2</span><span class="step-line"></span>
+                </div>
+                <div class="step-copy">
+                  <strong>Create editable draft facts</strong
+                  ><span
+                    >The draft contains contact, delivery, notes, products,
+                    quantities, and negotiated prices. The line snapshots become
+                    immutable only after issue.</span
+                  >
+                </div>
+              </div>
+              <div class="step">
+                <div class="step-mark">
+                  <span class="step-dot">3</span><span class="step-line"></span>
+                </div>
+                <div class="step-copy">
+                  <strong>Keep draft non-payable</strong
+                  ><span
+                    >No attempt, reservation, customer outbox, or fulfillment
+                    state exists yet.</span
+                  >
+                </div>
+              </div>
+              <div class="step">
+                <div class="step-mark">
+                  <span class="step-dot">4</span><span class="step-line"></span>
+                </div>
+                <div class="step-copy">
+                  <strong>Issue with optimistic concurrency</strong
+                  ><span
+                    >The expected update time prevents issue after an unseen
+                    draft edit or edit-and-revert cycle.</span
+                  >
+                </div>
+              </div>
+              <div class="step">
+                <div class="step-mark">
+                  <span class="step-dot">5</span><span class="step-line"></span>
+                </div>
+                <div class="step-copy">
+                  <strong>Recheck assisted products</strong
+                  ><span
+                    >All products must remain active, published, and
+                    assisted.</span
+                  >
+                </div>
+              </div>
+              <div class="step">
+                <div class="step-mark">
+                  <span class="step-dot">6</span><span class="step-line"></span>
+                </div>
+                <div class="step-copy">
+                  <strong>Place and start payment</strong
+                  ><span
+                    >Issue creates payment work and email work, but no stock
+                    reservation.</span
+                  >
+                </div>
+              </div>
+            </div>
+          </article>
+        </div>
+        <div class="callout">
+          <strong>Replay and snapshot hardening</strong>
+          <p>
+            Exact storefront and assisted-issue replays stay pinned to payment
+            attempt sequence 1. Changed cart hash, order input, issue key, or
+            payment input fails with <code>23514</code>, and a replay never
+            returns a second raw guest token. Draft assisted lines remain
+            editable; after issue, direct line insert, update, move, and delete
+            all fail. Order deletion and owner reassignment also fail, while
+            Auth user deletion follows the declared foreign key and sets
+            <code>orders.user_id</code> to null.
+          </p>
+        </div>
+      </section>
+
+      <section id="guest-access">
+        <div class="section-header">
+          <span class="section-number">06</span>
+          <h2>Guest access without anonymous order reads</h2>
+        </div>
+        <div class="three-col">
+          <article class="card">
+            <span class="label">Issue</span>
+            <h3>Generate 256-bit capability</h3>
+            <p>
+              The service gets the raw capability once. PostgreSQL stores only
+              SHA-256 and a finite expiry.
+            </p>
+          </article>
+          <article class="card">
+            <span class="label">Exchange</span>
+            <h3>Bind a second secret</h3>
+            <p>
+              The first exchange stores only the secure-cookie exchange-key
+              hash. A different key is replay and fails.
+            </p>
+          </article>
+          <article class="card">
+            <span class="label">Read</span>
+            <h3>Derive one-order scope</h3>
+            <p>
+              RLS reads the access ID from the restricted JWT and rechecks
+              order, exchange, expiry, and revocation.
+            </p>
+          </article>
+        </div>
+        <div class="code-panel" style="margin-top: 18px">
+          <pre><code><span class="comment">// The later server route must mint this restricted session.</span>
+role = <span class="string">"guest_order"</span>
+sub = guest_order_access.id
+rprt_session_kind = <span class="string">"guest_order"</span>
+exp &lt;= guest_order_access.expires_at
+
+<span class="comment">// RLS never trusts a caller-supplied order ID.</span>
+order_scope = guest_order_access.order_id</code></pre>
+        </div>
+        <div class="callout">
+          <strong>Fail-closed database role</strong>
+          <p>
+            <code>guest_order</code> is NOLOGIN, NOINHERIT, NOSUPERUSER,
+            NOCREATEDB, NOCREATEROLE, NOREPLICATION, and NOBYPASSRLS. Migration
+            rejects every unsafe flag or unexpected membership. Only
+            <code>authenticator</code> can assume the role, without admin or
+            inherited membership. A creator administration grant may remain only
+            when it cannot inherit or set the role. Malformed and expired
+            capabilities fail, and an exchanged guest still has only the two
+            order-ledger SELECT policies.
+          </p>
+        </div>
+      </section>
+
+      <section id="settlement">
+        <div class="section-header">
+          <span class="section-number">07</span>
+          <h2>From provider payment to settlement authority</h2>
+        </div>
+        <p class="intro">
+          <code>record_commerce_webhook_event</code> first binds one provider
+          event to one exact local subject.
+          <code>private.apply_payment_fact</code> then stores normalized
+          evidence and classifies the result under the order lock.
+        </p>
+        <div class="decision-tree" aria-label="Settlement decision tree">
+          <div class="decision-row warn">
+            <div class="decision-question">Order already cancelled?</div>
+            <div class="decision-connector">→</div>
+            <div class="decision-result">
+              <strong>cancelled_order_refund</strong
+              ><span
+                >Keep the order terminal, move the attempt to refund work, and
+                open a non-blocking case.</span
+              >
+            </div>
+          </div>
+          <div class="decision-row warn">
+            <div class="decision-question">
+              Settlement exists or another paid fact wins?
+            </div>
+            <div class="decision-connector">→</div>
+            <div class="decision-result">
+              <strong>duplicate_refund</strong
+              ><span
+                >Preserve both verified paid facts, keep the first settlement,
+                and request one full refund.</span
+              >
+            </div>
+          </div>
+          <div class="decision-row warn">
+            <div class="decision-question">
+              Payable competitor, missing stock, or blocking gate?
+            </div>
+            <div class="decision-connector">→</div>
+            <div class="decision-result">
+              <strong>settlement_recovery</strong
+              ><span
+                >Do not grant authority. Create blocking recovery evidence and
+                durable operations work.</span
+              >
+            </div>
+          </div>
+          <div class="decision-row safe">
+            <div class="decision-question">All local guards pass?</div>
+            <div class="decision-connector">→</div>
+            <div class="decision-result">
+              <strong>Accept settlement</strong
+              ><span
+                >Consume active reservations, set the same-order settlement
+                pointer, and enqueue one approval email.</span
+              >
+            </div>
+          </div>
+        </div>
+        <div class="two-col" style="margin-top: 18px">
+          <article class="card">
+            <span class="label">Deterministic winner</span>
+            <h3>Recorded sequence, then attempt ID</h3>
+            <p>
+              The database assigns a unique evidence sequence only after it
+              holds the order and related locks. The lowest sequence wins;
+              payment-attempt UUID is the tie-breaker. Statement time,
+              transition time, and transition UUID do not select authority. A
+              fully refunded earlier attempt does not block a later valid
+              settlement.
+            </p>
+          </article>
+          <article class="card">
+            <span class="label">Late paid recovery</span>
+            <h3>Reacquire all stock or refund</h3>
+            <p>
+              Recovery can supersede only untouched no-call attempts. It
+              reacquires every direct-stock line or changes to full-refund work
+              with no partial stock effect.
+            </p>
+          </article>
+        </div>
+      </section>
+
+      <section id="cancellation">
+        <div class="section-header">
+          <span class="section-number">08</span>
+          <h2>Cancellation, refunds, and handoff</h2>
+        </div>
+        <div class="three-col">
+          <article class="card">
+            <span class="label">Unpaid cancellation</span>
+            <h3>Cancel only when payment is safe</h3>
+            <p>
+              Untouched attempts can fail with no-call evidence. Creating,
+              unknown, pending, paid, and refund states block cancellation.
+              Active reservations release and stock increments once.
+            </p>
+          </article>
+          <article class="card">
+            <span class="label">Paid before handoff</span>
+            <h3>Refund first, then cancel</h3>
+            <p>
+              The intent blocks fulfillment and creates full-refund work.
+              Verified refund cancels order and fulfillment and writes one
+              restoration fact per consumed reservation.
+            </p>
+          </article>
+          <article class="card">
+            <span class="label">Refund after handoff</span>
+            <h3>Preserve physical truth</h3>
+            <p>
+              The attempt can become refunded, but order, fulfillment,
+              settlement, and consumed stock remain. A separate case and
+              immediate alert own recovery.
+            </p>
+          </article>
+        </div>
+        <div class="callout">
+          <strong>Shipping-label guard</strong>
+          <p>
+            Paid cancellation can suppress only a pristine, unclaimed label job
+            with zero provider calls, no fingerprint, no dispatch time, and no
+            call evidence. Processing, completed, or dead-letter state rejects
+            cancellation independently. A fingerprint, dispatch time, nonzero
+            call count, or provider-call row also rejects it independently.
+          </p>
+        </div>
+        <div class="two-col" style="margin-top: 18px">
+          <article class="card">
+            <span class="label">Exact recovery evidence</span>
+            <h3>One event, one attempt, one outcome</h3>
+            <p>
+              A recovery case must bind the order and attempt to the exact
+              normalized paid webhook: provider, subject, reference, actor,
+              source, transition, canonical reason, event operation reference,
+              checkout, payment, amount, currency, and state must agree.
+              Settlement recovery is valid only while that attempt remains paid.
+              Verified-refund and administrative resolutions require their own
+              exact evidence and cannot substitute for each other.
+            </p>
+          </article>
+          <article class="card">
+            <span class="label">Exact restoration and handoff evidence</span>
+            <h3>Physical truth stays bound</h3>
+            <p>
+              Stock restoration binds the consumed reservation and quantity to
+              the accepted settlement, normalized refund, webhook subject,
+              cancellation transition, and intent. Post-handoff recovery binds
+              the current locked fulfillment snapshot, retained settlement,
+              normalized refund, and an administrator-authorized handoff. Its
+              closure must use the same authorized administrator, reason, and
+              proof.
+            </p>
+          </article>
+        </div>
+      </section>
+
+      <section id="outbox">
+        <div class="section-header">
+          <span class="section-number">09</span>
+          <h2>Durable work created with business truth</h2>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Job type</th>
+                <th>Created when</th>
+                <th>Stable business key</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>payment-session-create</strong></td>
+                <td>An initial or retry attempt enters creating.</td>
+                <td><code>payment-session-create:&lt;attempt-id&gt;</code></td>
+              </tr>
+              <tr>
+                <td><strong>order-confirmation-email</strong></td>
+                <td>A storefront order is placed.</td>
+                <td><code>order-confirmation:&lt;order-id&gt;:placed</code></td>
+              </tr>
+              <tr>
+                <td><strong>assisted-order-issued-email</strong></td>
+                <td>An administrator issues an assisted draft.</td>
+                <td>
+                  <code>assisted-order-issued:&lt;order-id&gt;:placed</code>
+                </td>
+              </tr>
+              <tr>
+                <td><strong>payment-approved-email</strong></td>
+                <td>A command first assigns settlement authority.</td>
+                <td>
+                  <code
+                    >payment-approved-email:&lt;order-id&gt;:&lt;transition-id&gt;</code
+                  >
+                </td>
+              </tr>
+              <tr>
+                <td><strong>payment-recovery-required</strong></td>
+                <td>Verified paid truth cannot settle safely.</td>
+                <td>
+                  <code
+                    >payment-recovery-required:&lt;order&gt;:&lt;attempt&gt;:&lt;transition&gt;</code
+                  >
+                </td>
+              </tr>
+              <tr>
+                <td><strong>full-refund</strong></td>
+                <td>
+                  Duplicate, cancelled-order, staff, or stock-failure refund
+                  starts.
+                </td>
+                <td>
+                  <code
+                    >full-refund:&lt;attempt-id&gt;:&lt;transition-id&gt;</code
+                  >
+                </td>
+              </tr>
+              <tr>
+                <td><strong>shipping-label-create</strong></td>
+                <td>A settled order is ready for carrier fulfillment.</td>
+                <td>
+                  <code
+                    >shipping-label-create:&lt;order-id&gt;:&lt;ready-transition&gt;</code
+                  >
+                </td>
+              </tr>
+              <tr>
+                <td><strong>tracking-update-email</strong></td>
+                <td>The first carrier handoff becomes authoritative.</td>
+                <td>
+                  <code
+                    >tracking-update-email:&lt;order-id&gt;:&lt;transit-transition&gt;</code
+                  >
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <span class="table-caption"
+          >If enqueue fails, the business transaction rolls back.</span
+        >
+      </section>
+
+      <section id="security">
+        <div class="section-header">
+          <span class="section-number">10</span>
+          <h2>Roles, RLS, and direct-access denial</h2>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Actor</th>
+                <th>Allowed path</th>
+                <th>Explicitly denied</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>authenticated customer</strong></td>
+                <td>
+                  Create an owned storefront order; read owned safe order, item,
+                  and payment views.
+                </td>
+                <td>
+                  Assisted creation, provider facts, staff commands, recovery
+                  closure, and direct evidence mutation.
+                </td>
+              </tr>
+              <tr>
+                <td><strong>authenticated administrator</strong></td>
+                <td>
+                  Guarded assisted sales, cancellation, refund, fulfillment,
+                  capability rotation, and recovery closure.
+                </td>
+                <td>
+                  Caller-selected staff identity, direct evidence-table
+                  mutation, and provider impersonation.
+                </td>
+              </tr>
+              <tr>
+                <td><strong>service_role</strong></td>
+                <td>
+                  Guest checkout, guest exchange, payment sessions, normalized
+                  provider facts, fulfillment facts, and automated recovery.
+                </td>
+                <td>Direct broad mutation and staff-only actor authority.</td>
+              </tr>
+              <tr>
+                <td><strong>guest_order</strong></td>
+                <td>Read one safe order scope after exchange through RLS.</td>
+                <td>
+                  Creation, lifecycle commands, provider IDs, recovery proof,
+                  capability hashes, and other orders.
+                </td>
+              </tr>
+              <tr>
+                <td><strong>anon / public</strong></td>
+                <td>No commercial table access.</td>
+                <td>
+                  Order reads, order creation, capability exchange, and command
+                  execution.
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="callout">
+          <strong>Function hardening</strong>
+          <p>
+            Reviewed public commands use <code>security definer</code>, set
+            <code>search_path = ''</code>, revoke default execution, and grant
+            only the exact roles that own each command path.
+          </p>
+        </div>
+        <div class="callout">
+          <strong>Stored administrator authorization</strong>
+          <p>
+            Every domain transition stores a non-null authorization fact. A
+            before-insert security-definer trigger requires an administrator
+            actor to equal <code>auth.uid()</code> and to have current
+            <code>admin_users</code> membership. It records true only after that
+            check; non-administrator transitions record false. Migration
+            backfill fails if existing administrator evidence cannot be proved,
+            and later staff removal does not invalidate stored authorization.
+            Payment-recovery administrative replay must keep the same actor,
+            reason, proof, and idempotency key. Post-handoff closure keeps the
+            same actor, reason, and proof and has no separate idempotency-key
+            parameter.
+          </p>
+        </div>
+      </section>
+
+      <section id="locks">
+        <div class="section-header">
+          <span class="section-number">11</span>
+          <h2>One common lock order</h2>
+        </div>
+        <p class="intro">
+          Commands skip resource classes they do not need, but they never change
+          the relative order. Stable UUID ordering applies inside each multi-row
+          class.
+        </p>
+        <div class="lock-strip" aria-label="Common database lock order">
+          <div class="lock-step">
+            <span class="lock-number">01</span
+            ><strong>Authenticated cart</strong
+            ><span>When account checkout uses one.</span>
+          </div>
+          <div class="lock-step">
+            <span class="lock-number">02</span><strong>Order</strong
+            ><span>The main authority lock.</span>
+          </div>
+          <div class="lock-step">
+            <span class="lock-number">03</span><strong>Payment attempts</strong
+            ><span>By stable UUID.</span>
+          </div>
+          <div class="lock-step">
+            <span class="lock-number">04</span><strong>Recovery cases</strong
+            ><span>By stable UUID.</span>
+          </div>
+          <div class="lock-step">
+            <span class="lock-number">05</span><strong>Products</strong
+            ><span>By stable UUID.</span>
+          </div>
+          <div class="lock-step">
+            <span class="lock-number">06</span><strong>Reservations</strong
+            ><span>By stable UUID.</span>
+          </div>
+          <div class="lock-step">
+            <span class="lock-number">07</span><strong>Shipping quote</strong
+            ><span>Recheck expiry and package facts.</span>
+          </div>
+          <div class="lock-step">
+            <span class="lock-number">08</span><strong>Coupon</strong
+            ><span>Recheck capacity and consumption.</span>
+          </div>
+        </div>
+        <div class="callout">
+          <strong>Special serialization</strong>
+          <p>
+            First order creation takes a domain-specific advisory transaction
+            lock before the existence check. Paid cancellation also locks
+            matching shipping-label jobs after the order, attempts, and recovery
+            cases. Guest exchange, revoke, and replace serialize on the
+            capability row.
+          </p>
+        </div>
+      </section>
+
+      <section id="races">
+        <div class="section-header">
+          <span class="section-number">12</span>
+          <h2>Committed-session race outcomes</h2>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Competing operations</th>
+                <th>First committed operation</th>
+                <th>Proven final state</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>Two first storefront calls</td>
+                <td>Storefront first call</td>
+                <td>
+                  The waiter returns the first order. One order, one item, one
+                  attempt, one reservation, three transitions, two jobs, one
+                  quote consumption, and one stock decrement remain.
+                </td>
+              </tr>
+              <tr>
+                <td>Two first assisted-draft calls</td>
+                <td>Assisted draft first call</td>
+                <td>
+                  The waiter returns the first draft. One line, subtotal 14,000,
+                  total 14,800, no attempt, and no outbox job remain.
+                </td>
+              </tr>
+              <tr>
+                <td>Two orders reserve final stock</td>
+                <td>Final-stock reservation</td>
+                <td>
+                  The loser gets <code>55000</code>. Final stock is zero with
+                  one attempt, reservation, pointer, decrement, and two attempt
+                  transitions.
+                </td>
+              </tr>
+              <tr>
+                <td>Two active attempts on one order</td>
+                <td>First active attempt</td>
+                <td>
+                  The loser gets <code>55000</code>. One active attempt,
+                  reservation, current pointer, decrement, and two transitions
+                  remain.
+                </td>
+              </tr>
+              <tr>
+                <td>Two verified paid attempts</td>
+                <td>First lock-serialized paid evidence</td>
+                <td>
+                  The lower evidence sequence settles. The waiting attempt moves
+                  to refund_pending with one non-blocking duplicate-refund case
+                  and one full-refund job.
+                </td>
+              </tr>
+              <tr>
+                <td>Settlement versus failure and release</td>
+                <td>Settlement</td>
+                <td>
+                  The loser gets <code>23514</code>. Payment stays paid,
+                  reservation stays consumed, settlement stays set, and stock
+                  does not change twice.
+                </td>
+              </tr>
+              <tr>
+                <td>Recovered settlement versus administrative closure</td>
+                <td>Recovered settlement</td>
+                <td>
+                  Closure gets <code>23514</code>. One settlement-accepted
+                  resolution, transition, and approval job remain, with no
+                  closure alert.
+                </td>
+              </tr>
+              <tr>
+                <td>Paid cancellation versus pickup handoff</td>
+                <td>Paid cancellation</td>
+                <td>
+                  Handoff gets <code>55000</code>. The order stays placed and
+                  ready, payment moves to refund_pending, and one intent and
+                  refund job remain.
+                </td>
+              </tr>
+              <tr>
+                <td>Pickup handoff versus paid cancellation</td>
+                <td>Pickup handoff</td>
+                <td>
+                  Cancellation gets <code>55000</code>. Final state is
+                  completed, fulfilled, and paid, with no intent or refund job.
+                </td>
+              </tr>
+              <tr>
+                <td>Verified refund versus waiting pickup handoff</td>
+                <td>Verified refund</td>
+                <td>
+                  Handoff gets <code>55000</code>. Final state is cancelled,
+                  cancelled, and refunded, with one intent and no handoff
+                  transition.
+                </td>
+              </tr>
+              <tr>
+                <td>Two deliveries of one duplicate refund</td>
+                <td>First refund delivery</td>
+                <td>
+                  The waiter returns the first transition. Settlement and
+                  consumed history remain; cancellation and stock restoration
+                  occur once.
+                </td>
+              </tr>
+              <tr>
+                <td>Webhook recording versus settlement</td>
+                <td>Webhook recording</td>
+                <td>
+                  Settlement waits, then commits without deadlock. One subject
+                  binding, one paid transition, and one settlement remain.
+                </td>
+              </tr>
+              <tr>
+                <td>Paid cancellation versus carrier handoff</td>
+                <td>Paid cancellation</td>
+                <td>
+                  Carrier gets <code>55000</code>. Only the intent, two
+                  cancellation transitions, and refund job commit.
+                </td>
+              </tr>
+              <tr>
+                <td>Carrier handoff versus paid cancellation</td>
+                <td>Carrier handoff</td>
+                <td>
+                  Cancellation gets <code>55000</code>. Final state is placed,
+                  in-transit, and paid, with one handoff transition and tracking
+                  job and no cancellation effects.
+                </td>
+              </tr>
+              <tr>
+                <td>Paid cancellation versus local handoff</td>
+                <td>Paid cancellation</td>
+                <td>
+                  Local handoff gets <code>55000</code>. Only the intent, two
+                  cancellation transitions, and refund job commit.
+                </td>
+              </tr>
+              <tr>
+                <td>Local handoff versus paid cancellation</td>
+                <td>Local handoff</td>
+                <td>
+                  Cancellation gets <code>55000</code>. Final state is
+                  completed, fulfilled, and paid, with two completion
+                  transitions and no cancellation or outbox effect.
+                </td>
+              </tr>
+              <tr>
+                <td>Verified refund versus carrier or local handoff</td>
+                <td>Verified refund</td>
+                <td>
+                  Handoff gets <code>55000</code>. Final state is cancelled,
+                  cancelled, and refunded, with no post-handoff recovery.
+                </td>
+              </tr>
+              <tr>
+                <td>Carrier handoff versus verified refund</td>
+                <td>Carrier handoff</td>
+                <td>
+                  Both commit. Final state is placed, in-transit, and refunded,
+                  with one refund fact, post-handoff case, alert, and tracking
+                  job.
+                </td>
+              </tr>
+              <tr>
+                <td>Local handoff versus verified refund</td>
+                <td>Local handoff</td>
+                <td>
+                  Both commit. Final state is completed, fulfilled, and
+                  refunded, with one refund fact, post-handoff case, and alert,
+                  and no tracking job.
+                </td>
+              </tr>
+              <tr>
+                <td>Guest exchange versus replacement</td>
+                <td>Guest exchange</td>
+                <td>
+                  Exchange evidence remains, old access revokes, and one linked
+                  unexchanged successor exists.
+                </td>
+              </tr>
+              <tr>
+                <td>Replacement versus guest exchange</td>
+                <td>Replacement</td>
+                <td>
+                  Exchange gets <code>55000</code>. Old access is unexchanged
+                  and revoked; one unexchanged successor exists.
+                </td>
+              </tr>
+              <tr>
+                <td>Revocation versus guest exchange</td>
+                <td>Revocation</td>
+                <td>
+                  Exchange gets <code>55000</code>. Access stays unexchanged and
+                  revoked with one revocation transition.
+                </td>
+              </tr>
+              <tr>
+                <td>Guest exchange versus revocation</td>
+                <td>Guest exchange</td>
+                <td>
+                  Both commit. Exchange evidence remains and one later
+                  revocation is recorded.
+                </td>
+              </tr>
+              <tr>
+                <td>Paid cancellation versus label claim</td>
+                <td>Paid cancellation</td>
+                <td>
+                  Claim returns zero while the row is locked. Label ends
+                  completed with zero calls; one cancellation intent remains.
+                </td>
+              </tr>
+              <tr>
+                <td>Label claim versus paid cancellation</td>
+                <td>Label claim</td>
+                <td>
+                  Cancellation gets <code>55000</code>. Label stays processing
+                  with no cancellation intent or refund work.
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <span class="table-caption"
+          >The suites use separate dblink sessions, real blocking checks, finite
+          waits, and committed outcomes.</span
+        >
+      </section>
+
+      <section id="files">
+        <div class="section-header">
+          <span class="section-number">13</span>
+          <h2>File tour and risk map</h2>
+        </div>
+        <div class="risk-map" aria-label="Risk groups">
+          <span class="risk-chip attention"
+            >Settlement and cancellation commands</span
+          >
+          <span class="risk-chip medium"
+            >Schema validators and concurrency</span
+          >
+          <span class="risk-chip safe"
+            >Documentation, architecture, generated types</span
+          >
+        </div>
+
+        <details open>
+          <summary>
+            <span class="file-path">Six schema migrations</span
+            ><span class="file-stats">+2,096 / -0</span
+            ><span class="badge medium">Schema</span>
+          </summary>
+          <div class="details-body file-list">
+            <div class="file-row">
+              <code>20260823204718_add_order_snapshot_schema.sql</code
+              ><span class="file-stats">+512</span
+              ><span class="why"
+                >Orders, items, commercial constraints, RLS, and snapshot
+                protection.</span
+              >
+            </div>
+            <div class="file-row">
+              <code>20260823205154_add_guest_order_access_schema.sql</code
+              ><span class="file-stats">+278</span
+              ><span class="why"
+                >Restricted guest role, hash-only capability ledger, RLS helper,
+                and immutable exchange evidence.</span
+              >
+            </div>
+            <div class="file-row">
+              <code>20260823205528_add_payment_attempt_schema.sql</code
+              ><span class="file-stats">+250</span
+              ><span class="why"
+                >Payment attempt lifecycle, provider identities, active-payable
+                uniqueness, pointers, safe read grants.</span
+              >
+            </div>
+            <div class="file-row">
+              <code>20260823205830_add_stock_reservation_schema.sql</code
+              ><span class="file-stats">+136</span
+              ><span class="why"
+                >Same-order and same-product reservation history with active,
+                consumed, and released states.</span
+              >
+            </div>
+            <div class="file-row">
+              <code>20260823210148_add_payment_recovery_schema.sql</code
+              ><span class="file-stats">+398</span
+              ><span class="why"
+                >Recovery cases, one-to-one resolutions, exact validators, and
+                the shared blocking-gate predicate.</span
+              >
+            </div>
+            <div class="file-row">
+              <code>20260823210449_add_cancellation_recovery_schema.sql</code
+              ><span class="file-stats">+522</span
+              ><span class="why"
+                >Paid cancellation intent, stock restoration facts, and
+                post-handoff refund recovery.</span
+              >
+            </div>
+          </div>
+        </details>
+
+        <details open>
+          <summary>
+            <span class="file-path">Four command migrations</span
+            ><span class="file-stats">+3,721 / -0</span
+            ><span class="badge attention">Attention</span>
+          </summary>
+          <div class="details-body file-list">
+            <div class="file-row">
+              <code>20260823210912_add_guest_order_access_commands.sql</code
+              ><span class="file-stats">+392</span
+              ><span class="why"
+                >Issue, exchange, revoke, and atomic replacement of one-order
+                guest capabilities.</span
+              >
+            </div>
+            <div class="file-row">
+              <code>20260823210921_add_payment_settlement_commands.sql</code
+              ><span class="file-stats">+1,660</span
+              ><span class="why"
+                >Highest-risk payment authority: session work, immutable event
+                subjects, normalized facts, settlement, recovery, and
+                refunds.</span
+              >
+            </div>
+            <div class="file-row">
+              <code>20260823210928_add_order_creation_commands.sql</code
+              ><span class="file-stats">+812</span
+              ><span class="why"
+                >Storefront and assisted creation, global idempotency, snapshot
+                issue, stock reserve, and atomic durable work.</span
+              >
+            </div>
+            <div class="file-row">
+              <code
+                >20260823210935_add_cancellation_fulfillment_commands.sql</code
+              ><span class="file-stats">+857</span
+              ><span class="why"
+                >Unpaid and paid cancellation, label guards, refund convergence,
+                handoff, and fulfillment transitions.</span
+              >
+            </div>
+          </div>
+        </details>
+
+        <details>
+          <summary>
+            <span class="file-path">Six schema test files</span
+            ><span class="file-stats">119 assertions · +1,538</span
+            ><span class="badge medium">Proof</span>
+          </summary>
+          <div class="details-body file-list">
+            <div class="file-row">
+              <code>order_settlement_schema.test.sql</code
+              ><span class="file-stats">25 · +322</span
+              ><span class="why"
+                >Order/item snapshots, same-order links, immutable issued lines,
+                and terminal coupling.</span
+              >
+            </div>
+            <div class="file-row">
+              <code>guest_order_access.test.sql</code
+              ><span class="file-stats">16 · +156</span
+              ><span class="why"
+                >Hash-only capability storage, restricted role, RLS, replacement
+                lineage, and grant denial.</span
+              >
+            </div>
+            <div class="file-row">
+              <code>payment_attempt_schema.test.sql</code
+              ><span class="file-stats">30 · +425</span
+              ><span class="why"
+                >Attempt identity, active-payable uniqueness, same-order
+                pointers, and evidence protection.</span
+              >
+            </div>
+            <div class="file-row">
+              <code>stock_reservation_schema.test.sql</code
+              ><span class="file-stats">14 · +124</span
+              ><span class="why"
+                >Same-order/product links, reservation uniqueness, RLS, and no
+                broad grants.</span
+              >
+            </div>
+            <div class="file-row">
+              <code>payment_recovery_schema.test.sql</code
+              ><span class="file-stats">19 · +288</span
+              ><span class="why"
+                >Cases, resolutions, gate results, relationship validators, and
+                direct-access denial.</span
+              >
+            </div>
+            <div class="file-row">
+              <code>order_cancellation_recovery_schema.test.sql</code
+              ><span class="file-stats">15 · +223</span
+              ><span class="why"
+                >Intent, restoration, post-handoff cases, exact proof links,
+                RLS, and immutability.</span
+              >
+            </div>
+          </div>
+        </details>
+
+        <details>
+          <summary>
+            <span class="file-path">Five command and evidence test files</span
+            ><span class="file-stats">534 assertions · +6,811</span
+            ><span class="badge medium">Proof</span>
+          </summary>
+          <div class="details-body file-list">
+            <div class="file-row">
+              <code>guest_order_access_commands.test.sql</code
+              ><span class="file-stats">71 · +942</span
+              ><span class="why"
+                >Issue, exchange, same-key retry, replay denial, revoke,
+                replace, and immediate RLS invalidation.</span
+              >
+            </div>
+            <div class="file-row">
+              <code>order_creation_commands.test.sql</code
+              ><span class="file-stats">81 · +1,217</span
+              ><span class="why"
+                >Atomic storefront and assisted creation, stock, quote/coupon
+                use, snapshots, and idempotency conflict.</span
+              >
+            </div>
+            <div class="file-row">
+              <code>payment_settlement_commands.test.sql</code
+              ><span class="file-stats">118 · +2,666</span
+              ><span class="why"
+                >Session, unknown result, normalized evidence, settlement,
+                duplicates, recovery, refund, and closure.</span
+              >
+            </div>
+            <div class="file-row">
+              <code>cancellation_fulfillment_commands.test.sql</code
+              ><span class="file-stats">232 · +1,660</span
+              ><span class="why"
+                >Cancellation, label suppression, restoration, fulfillment
+                gates, handoff, carrier facts, and post-handoff recovery.</span
+              >
+            </div>
+            <div class="file-row">
+              <code>commerce_webhook_subject_binding.test.sql</code
+              ><span class="file-stats">32 · +326</span
+              ><span class="why"
+                >Exact event subject, provider and reference checks, retry
+                identity, and cross-subject denial.</span
+              >
+            </div>
+          </div>
+        </details>
+
+        <details>
+          <summary>
+            <span class="file-path"
+              >Two committed-session concurrency files</span
+            ><span class="file-stats">78 assertions · +3,131</span
+            ><span class="badge attention">Attention</span>
+          </summary>
+          <div class="details-body file-list">
+            <div class="file-row">
+              <code>order_settlement_concurrency.test.sql</code
+              ><span class="file-stats">72 · +2,712</span
+              ><span class="why"
+                >Twenty-four multi-session scenarios for creation, stock,
+                settlement, recovery, cancellation, handoff, refund, webhook,
+                and guest work.</span
+              >
+            </div>
+            <div class="file-row">
+              <code>cancellation_label_concurrency.test.sql</code
+              ><span class="file-stats">6 · +419</span
+              ><span class="why"
+                >Both commit orders for paid cancellation against shipping-label
+                claim.</span
+              >
+            </div>
+          </div>
+        </details>
+
+        <details>
+          <summary>
+            <span class="file-path"
+              >Documentation, architecture, generator, and types</span
+            ><span class="file-stats">+2,391 / -50</span
+            ><span class="badge safe">Contract</span>
+          </summary>
+          <div class="details-body file-list">
+            <div class="file-row">
+              <code>docs/database.md</code
+              ><span class="file-stats">+56 / -8</span
+              ><span class="why"
+                >Documents authority, states, lock order, guest exchange,
+                provider boundaries, and implemented commands.</span
+              >
+            </div>
+            <div class="file-row">
+              <code>scripts/architecture-sync.mjs</code
+              ><span class="file-stats">+4 / -1</span
+              ><span class="why"
+                >Keeps generated architecture output stable for valid identifier
+                keys.</span
+              >
+            </div>
+            <div class="file-row">
+              <code>scripts/generate-database-types.mjs</code
+              ><span class="file-stats">+1 / -1</span
+              ><span class="why"
+                >Generates public types from the local migration state instead
+                of a linked project.</span
+              >
+            </div>
+            <div class="file-row">
+              <code>src/architecture/coverage.json</code
+              ><span class="file-stats">+40 / -1</span
+              ><span class="why"
+                >Adds ownership for order commands, payments/recovery, stock,
+                fulfillment, and guest access.</span
+              >
+            </div>
+            <div class="file-row">
+              <code>src/architecture/graph.ts</code
+              ><span class="file-stats">+104 / -29</span
+              ><span class="why"
+                >Marks M1 database boundaries complete while runtime/provider
+                work stays planned.</span
+              >
+            </div>
+            <div class="file-row">
+              <code>src/architecture/measured.generated.ts</code
+              ><span class="file-stats">+7 / -3</span
+              ><span class="why"
+                >Updates measured file and line ownership with no unclaimed
+                files.</span
+              >
+            </div>
+            <div class="file-row">
+              <code>src/types/database.ts</code
+              ><span class="file-stats">+2,179 / -7</span
+              ><span class="why"
+                >Adds current public rows, relationships, and RPC signatures for
+                application code.</span
+              >
+            </div>
+          </div>
+        </details>
+      </section>
+
+      <section id="review-focus">
+        <div class="section-header">
+          <span class="section-number">14</span>
+          <h2>Where reviewers should focus</h2>
+        </div>
+        <div class="focus-list">
+          <div class="focus-item">
+            <span class="focus-number">1</span>
+            <div>
+              <strong>private.apply_payment_fact</strong>
+              <p>
+                Trace immutable evidence storage, deterministic paid selection,
+                payable-competitor checks, stock consumption, settlement
+                assignment, and recovery classification.
+              </p>
+            </div>
+          </div>
+          <div class="focus-item">
+            <span class="focus-number">2</span>
+            <div>
+              <strong>public.create_order</strong>
+              <p>
+                Confirm the advisory lock occurs before the first lookup, exact
+                retries compare all input, and quote, coupon, stock, snapshots,
+                attempts, and outbox work stay atomic.
+              </p>
+            </div>
+          </div>
+          <div class="focus-item">
+            <span class="focus-number">3</span>
+            <div>
+              <strong>public.request_paid_order_cancellation</strong>
+              <p>
+                Review label-job locks and no-call proof. Any possible provider
+                dispatch must reject cancellation.
+              </p>
+            </div>
+          </div>
+          <div class="focus-item">
+            <span class="focus-number">4</span>
+            <div>
+              <strong>private.converge_verified_settlement_refund</strong>
+              <p>
+                Check the split between pre-handoff cancellation with one-time
+                stock restoration and post-handoff recovery that preserves
+                physical truth.
+              </p>
+            </div>
+          </div>
+          <div class="focus-item">
+            <span class="focus-number">5</span>
+            <div>
+              <strong>Recovery and cancellation validators</strong>
+              <p>
+                Trace exact normalized event, provider, actor, command source,
+                transition, reason, operation reference, checkout, payment,
+                amount, currency, order, attempt, reservation, settlement,
+                fulfillment, and stored administrator-authorization evidence.
+                Provider and administrator resolutions must not substitute for
+                each other.
+              </p>
+            </div>
+          </div>
+          <div class="focus-item">
+            <span class="focus-number">6</span>
+            <div>
+              <strong>dblink concurrency fixtures</strong>
+              <p>
+                Confirm each test waits for real blocking, commits one winner,
+                checks the loser, and proves no mixed state or duplicate
+                stock/outbox effect.
+              </p>
+            </div>
+          </div>
+          <div class="focus-item">
+            <span class="focus-number">7</span>
+            <div>
+              <strong>Generated type reproducibility</strong>
+              <p>
+                Confirm the approved Supabase CLI produces the same public types
+                from a clean local migration state.
+              </p>
+            </div>
+          </div>
+        </div>
+        <div class="callout">
+          <strong>Atomic multi-line failure proof</strong>
+          <p>
+            A forced failure on the second late-payment stock line leaves both
+            stocks unchanged and creates no reservation, resolution, or
+            settlement transition. A forced failure on the second paid-
+            cancellation restoration leaves both stocks unchanged and creates no
+            refund transition or restoration fact. Each command commits all
+            lines or none.
+          </p>
+        </div>
+      </section>
+
+      <section id="verification">
+        <div class="section-header">
+          <span class="section-number">15</span>
+          <h2>Verification evidence</h2>
+        </div>
+        <div class="test-list">
+          <div class="test-item">
+            <span class="check"></span
+            ><span
+              ><strong>731 / 731</strong> focused RPRT-46 pgTAP assertions
+              passed.</span
+            >
+          </div>
+          <div class="test-item">
+            <span class="check"></span
+            ><span
+              ><strong>119</strong> schema assertions cover structure, RLS,
+              constraints, and immutability.</span
+            >
+          </div>
+          <div class="test-item">
+            <span class="check"></span
+            ><span
+              ><strong>534</strong> command assertions cover actors, flows,
+              evidence, and denial cases.</span
+            >
+          </div>
+          <div class="test-item">
+            <span class="check"></span
+            ><span
+              ><strong>78</strong> committed-session assertions cover race
+              outcomes.</span
+            >
+          </div>
+          <div class="test-item">
+            <span class="check"></span
+            ><span
+              >Clean local reset, ordered migration parity, database lint, and
+              schema diff passed with no warning or drift.</span
+            >
+          </div>
+          <div class="test-item">
+            <span class="check"></span
+            ><span
+              ><strong>39 / 39</strong> unit and
+              <strong>11 / 11</strong> Storage tests passed. Dependency,
+              formatting, ESLint, TypeScript, architecture freshness, and diff
+              checks also passed.</span
+            >
+          </div>
+          <div class="test-item">
+            <span class="check"></span
+            ><span>Local production build passed.</span>
+          </div>
+          <div class="test-item">
+            <span class="check"></span
+            ><span
+              >Final SQL security, lifecycle, and acceptance reviews found no
+              remaining actionable defects.</span
+            >
+          </div>
+        </div>
+        <div class="callout">
+          <strong>Known repository baseline</strong>
+          <p>
+            The complete suite declares 1,524 assertions and reaches 1,521. All
+            prior cross-file outbox isolation cases now pass. The only known
+            database-runner baseline is <code>outbox_replay.test.sql:440</code>,
+            where <code>service_role</code> has no direct SELECT grant on
+            <code>outbox_jobs</code>; that failure prevents its result and the
+            final two results from being emitted. Architecture freshness and
+            Vercel Preview Comments pass. The Vercel deployment is blocked,
+            while the local production build passes.
+          </p>
+        </div>
+      </section>
+
+      <section id="invariant">
+        <div class="section-header">
+          <span class="section-number">16</span>
+          <h2>The invariant to keep after merge</h2>
+        </div>
+        <div class="code-panel">
+          <pre><code><span class="comment">-- Provider truth is necessary, but it is not fulfillment authority.</span>
+<span class="keyword">settlement_authority</span> :=
+  payment_attempt.order_id = order.id
+  <span class="keyword">and</span> payment_attempt.state = <span class="string">'paid'</span>
+  <span class="keyword">and</span> no_payable_competitor
+  <span class="keyword">and</span> stock_is_safe
+  <span class="keyword">and not</span> has_open_payment_recovery_gate(order.id)
+  <span class="keyword">and not</span> has_active_order_cancellation_intent(order.id);
+
+<span class="comment">-- Only this same-order pointer grants forward fulfillment authority.</span>
+order.settlement_payment_attempt_id := payment_attempt.id;</code></pre>
+        </div>
+      </section>
+
+      <footer>
+        Detailed reviewer guide · PR #22 · RPRT-46 · feat(database): secure
+        order settlement boundary · head 7b27013
+      </footer>
+    </main>
+  </body>
+</html>
