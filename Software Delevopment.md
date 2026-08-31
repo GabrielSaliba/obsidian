@@ -12,6 +12,7 @@
   
 [[Studio Repertório]]
 [[Resend]]
+[[Stacked Pull Requests]]
 
 
 `Teach me how PR #123 works. Explain each important change from basic concepts to implementation details.`
