@@ -7,6 +7,7 @@ tags:
   - dashboard
 type: project-hub
 status: Active
+updated: 2026-08-31
 ---
 > [!abstract] Studio Repertório
 > Central workspace for project delivery, technical references, domain contracts, and product decisions.
@@ -33,6 +34,7 @@ status: Active
 | Hub | Coverage |
 |---|---|
 | [[Database Schemas\|Database Schema Index]] | Tables, relationships, diagrams, and schema security boundaries |
+| [RPRT-69](https://linear.app/guisaliba/issue/RPRT-69/pin-exact-public-rls-expressions-and-routine-privileges) | Backlog follow-up for exact public RLS expressions and routine privileges |
 
 ## <span style="color:rgb(112, 48, 160)">Platform and Integrations</span>
 
@@ -43,7 +45,8 @@ status: Active
 |---|---|
 | [[Auth Users and Profiles]] | Authentication and profile data |
 | [[Administrator Membership Schema]] | Administrator authorization |
-| [[Resend]] | Transactional email integration |
+| [[Resend]] | General transactional email operations reference |
+| [[Resend Project Initialization]] | RPRT-62 project structure; M1 baseline complete |
 
 ## <span style="color:rgb(0, 112, 192)">Catalog and Product Media</span>
 
@@ -53,7 +56,7 @@ status: Active
 | Note | Category | State |
 |---|---|:---:|
 | [[Catalog Products Categories and Archival]] | Catalog reference | Approved |
-| [[Product Media Storage]] | Storage and media reference | In review |
+| [[Product Media Storage]] | Storage and media reference | Complete |
 | [[RPRT-50 - Catalog Authority and Product Status]] | Catalog contract | Approved |
 
 ## <span style="color:rgb(0, 176, 80)">Commerce and Customer Access</span>
@@ -65,6 +68,7 @@ status: Active
 |---|---|
 | [[Cart, Quote and Coupons Security]] | Cart and quote security |
 | [[Opaque Guest Access Token]] | Guest order access |
+| [[Order and Settlement Security]] | Order creation, payment settlement, stock reservation, and protected commands |
 
 ## <span style="color:rgb(192, 0, 0)">Payments and Recovery</span>
 
@@ -83,7 +87,7 @@ status: Active
 
 | Note | Category | State |
 |---|---|:---:|
-| [[RPRT-52 - Reliability and Audit Foundation Plan]] | Implementation plan | In progress |
+| [[RPRT-52 - Reliability and Audit Foundation Plan]] | Implementation plan | Complete |
 | [[Reliability and Audit Schema]] | Implemented schema | Reference |
 | [[RPRT-43 - Provider Call Counting and Lease Contract]] | Provider-call and lease contract | Reference |
 

@@ -12,6 +12,7 @@
   
 [[Studio Repertório]]
 [[Resend]]
+[[RPRT/Resend Project Initialization|Resend Project Initialization]]
 [[Stacked Pull Requests]]
 
 

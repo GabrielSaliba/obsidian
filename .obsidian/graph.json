@@ -5,7 +5,7 @@
   "showAttachments": false,
   "hideUnresolved": true,
   "showOrphans": false,
-  "collapse-color-groups": false,
+  "collapse-color-groups": true,
   "colorGroups": [
     {
       "query": "file:\"2026-\"",
@@ -50,16 +50,16 @@
       }
     }
   ],
-  "collapse-display": false,
+  "collapse-display": true,
   "showArrow": true,
   "textFadeMultiplier": 0,
   "nodeSizeMultiplier": 1.25,
   "lineSizeMultiplier": 0.8,
-  "collapse-forces": false,
+  "collapse-forces": true,
   "centerStrength": 0.35,
   "repelStrength": 11,
   "linkStrength": 0.8,
   "linkDistance": 120,
-  "scale": 0.6419479163601965,
+  "scale": 0.23295479059634383,
   "close": false
 }

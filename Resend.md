@@ -16,7 +16,7 @@ documentation-index: https://resend.com/docs/llms.txt
 > **Documentation index:** [resend.com/docs/llms.txt](https://resend.com/docs/llms.txt)  
 > **Sandbox sender:** `onboarding@resend.dev` for controlled tests only
 
-Related note: [[Software Delevopment|Software Development]]
+Related notes: [[Software Delevopment|Software Development]] · [[RPRT/Studio Repertório|Studio Repertório]] · [[RPRT/Resend Project Initialization|Resend Project Initialization]]
 
 ## <span style="color:rgb(0, 112, 192)">Documentation Strategy</span>
 
