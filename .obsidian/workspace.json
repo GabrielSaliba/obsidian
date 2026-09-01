@@ -13,12 +13,12 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "RPRT/Resend Project Initialization.md",
+                "file": "RPRT/2026-08-31.md",
                 "mode": "source",
                 "source": false
               },
               "icon": "lucide-file",
-              "title": "Resend Project Initialization"
+              "title": "2026-08-31"
             }
           }
         ]
@@ -205,9 +205,10 @@
   },
   "active": "abb7fc052c4da9f1",
   "lastOpenFiles": [
-    "RPRT/Studio Repertório.md",
-    "RPRT/Resend Project Initialization.md",
     "Stacked Pull Requests.md",
+    "RPRT/2026-08-31.md",
+    "RPRT/Resend Project Initialization.md",
+    "RPRT/Studio Repertório.md",
     "Resend.md",
     "README.md",
     "RPRT/2026-08-20.md",
@@ -240,7 +241,6 @@
     "RPRT/RPRT-43 - Provider Call Counting and Lease Contract.md",
     "RPRT/2026-08-18.md",
     "RPRT/RPRT-52 - Reliability and Audit Foundation Plan.md",
-    "RPRT/RPRT-42 - Cancellation Intent and Paid-Stock Recovery Contract.md",
     "Blue Prince.canvas",
     "thumbnails/external/f0a66f1f345e27a26d74d0bc70984e8b.failed.png",
     "thumbnails/external/d255b3b66800e6ae8be11feff4edd16e.failed.png",
