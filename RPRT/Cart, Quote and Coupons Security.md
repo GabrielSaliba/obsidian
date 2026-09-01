@@ -23,9 +23,9 @@ type: schema-reference
 > [!warning] Source Of Truth
 > The repository migration, pgTAP tests, and `docs/database.md` are authoritative.
 
-> [!example] Visual Explainer
-> [[Visual Explainers/RPRT-49 Cart Quote Coupon Visual Explainer.html|Open the local commerce schema visual explainer]]
-> [[Visual Explainers/Account and Guest Order Journey Visual Explainer.html|Compare account and guest cart, quote, and order flows]]
+> [!example] Visual Explainers
+> [Open the commerce schema visual explainer in Linear](https://uploads.linear.app/445023d5-264c-47cb-a70c-e4a15a58da5c/d8aaa184-da1a-43ec-9d24-ce7cae0fbc90/60f3ddad-9ccb-4a28-a292-57c3e649db5a)
+> [Compare account and guest flows in Linear](https://uploads.linear.app/445023d5-264c-47cb-a70c-e4a15a58da5c/5caadee1-c691-4e53-ae4c-623fa2e1e62a/195367a3-e015-4fed-acfa-5cfd92ff2d7b)
 
 ## <span style="color:rgb(112, 48, 160)">Schema Boundary</span>
 

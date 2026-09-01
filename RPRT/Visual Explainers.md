@@ -13,109 +13,22 @@ type: visual-index
 # Visual Explainers
 
 > [!abstract] Visual Library
-> Central index for the Repertório architecture, environment, database, reliability, and recovery explainers.
+> Each explainer has a canonical Linear attachment and a physical HTML copy in this vault.
 
-> [!info] Library Status
-> The vault contains eleven canonical HTML explainers in `RPRT/Visual Explainers/`. Current copies are attached to related Linear issues for workspace access.
+| Domain                      | Local file                                                                                  | Linear attachment                                                                                                                                        | Related work                                                                                                   |
+| --------------------------- | ------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------- |
+| Studio architecture         | [Open local](<Visual Explainers/Studio Repertorio Lifecycle Visual Explainer.html>)         | [Open Linear](https://uploads.linear.app/445023d5-264c-47cb-a70c-e4a15a58da5c/6f18f7c2-4c43-4f21-a7fa-0d280a40152e/c0112ead-0dab-42e3-82ce-b609db4b86a5) | [Lifecycle Diagrams](https://linear.app/guisaliba/document/lifecycle-diagrams-7784b41c07ee)                    |
+| Preview and staging         | [Open local](<Visual Explainers/PR-10 Preview and Staging Controls Visual Explainer.html>)  | [Open Linear](https://uploads.linear.app/445023d5-264c-47cb-a70c-e4a15a58da5c/23b6a0bb-74f4-4587-919e-8a168ac4a860/7fc2df14-993b-4846-8676-337360e76720) | [RPRT-56](https://linear.app/guisaliba/issue/RPRT-56/implement-preview-and-staging-environment-controls)       |
+| Observability               | [Open local](<Visual Explainers/Sentry and Source Maps Visual Explainer.html>)              | [Open Linear](https://uploads.linear.app/445023d5-264c-47cb-a70c-e4a15a58da5c/125bcf06-049a-498b-a259-10b1203dc4f4/de1c9633-b27f-4cab-be8e-d92bca992216) | [RPRT-60](https://linear.app/guisaliba/issue/RPRT-60/prepare-sentry-access-and-project-ownership)              |
+| Identity and access         | [Open local](<Visual Explainers/RPRT-47 Identity Schema Visual Explainer.html>)             | [Open Linear](https://uploads.linear.app/445023d5-264c-47cb-a70c-e4a15a58da5c/61bb1f27-0ddf-4e26-b625-e33dd9a632b8/8b2e304e-fdc2-491e-bac6-e360a8624459) | [RPRT-47](https://linear.app/guisaliba/issue/RPRT-47/implement-identity-and-access-schema-security)            |
+| Catalog                     | [Open local](<Visual Explainers/RPRT-50 Catalog Authority Visual Explainer.html>)           | [Open Linear](https://uploads.linear.app/445023d5-264c-47cb-a70c-e4a15a58da5c/14ca619e-b32a-4335-8429-70828eeffb3e/57ab77d9-b287-4e46-b806-50792af663f6) | [RPRT-50](https://linear.app/guisaliba/issue/RPRT-50/implement-catalog-schema-security)                        |
+| Cart, quote, and coupons    | [Open local](<Visual Explainers/RPRT-49 Cart Quote Coupon Visual Explainer.html>)           | [Open Linear](https://uploads.linear.app/445023d5-264c-47cb-a70c-e4a15a58da5c/d8aaa184-da1a-43ec-9d24-ce7cae0fbc90/60f3ddad-9ccb-4a28-a292-57c3e649db5a) | [RPRT-49](https://linear.app/guisaliba/issue/RPRT-49/implement-cart-quote-and-coupon-schema-security)          |
+| Customer order journey      | [Open local](<Visual Explainers/Account and Guest Order Journey Visual Explainer.html>)     | [Open Linear](https://uploads.linear.app/445023d5-264c-47cb-a70c-e4a15a58da5c/5caadee1-c691-4e53-ae4c-623fa2e1e62a/195367a3-e015-4fed-acfa-5cfd92ff2d7b) | [RPRT-46](https://linear.app/guisaliba/issue/RPRT-46/implement-order-and-settlement-schema-security)           |
+| Product media               | [Open local](<Visual Explainers/RPRT-10 Product Media Storage Visual Explainer.html>)       | [Open Linear](https://uploads.linear.app/445023d5-264c-47cb-a70c-e4a15a58da5c/ffec53f6-2bd7-498e-89ec-8a42fcfe26d6/3fa8941c-4e77-4de0-9c11-3ea88f86b8d7) | [RPRT-10](https://linear.app/guisaliba/issue/RPRT-10/implement-supabase-storage-security-contracts)            |
+| Reliability and audit       | [Open local](<Visual Explainers/RPRT-52 Reliability and Audit Visual Explainer.html>)       | [Open Linear](https://uploads.linear.app/445023d5-264c-47cb-a70c-e4a15a58da5c/15a18f3e-95f7-4a62-9eb6-50a47e84879e/ffd5318f-da82-45e4-8648-353035b4b6a3) | [RPRT-52](https://linear.app/guisaliba/issue/RPRT-52/implement-reliability-and-audit-schema-security)          |
+| Paid cancellation           | [Open local](<Visual Explainers/RPRT-42 Cancellation Contract Visual Explainer.html>)       | [Open Linear](https://uploads.linear.app/445023d5-264c-47cb-a70c-e4a15a58da5c/642159b2-cf20-4f11-874f-4f706450cb9a/b44a084d-a1ca-4d90-a11b-c869b9211829) | [RPRT-42](https://linear.app/guisaliba/issue/RPRT-42/define-cancellation-intent-and-paid-stock-recovery-rules) |
+| Order and settlement        | [Open local](<Visual Explainers/PR-22 Order and Settlement Security Visual Explainer.html>) | [Open Linear](https://uploads.linear.app/445023d5-264c-47cb-a70c-e4a15a58da5c/d6547540-3cff-4af1-b924-72e63213f669/9c48b817-f00f-45fe-b085-0c617ba771a3) | [RPRT-46](https://linear.app/guisaliba/issue/RPRT-46/implement-order-and-settlement-schema-security)           |
+| Order and settlement schema | [Open local](<Visual Explainers/PR-22 Order and Settlement Schema Explorer.html>)           | [Open Linear](https://uploads.linear.app/445023d5-264c-47cb-a70c-e4a15a58da5c/a9b586ff-ad11-4e63-b8aa-04d720962fa8/71a33544-4cf0-4e82-bfb3-a2f82b611649) | [RPRT-46](https://linear.app/guisaliba/issue/RPRT-46/implement-order-and-settlement-schema-security)           |
 
----
-
-## <span style="color:#80352F">Library Summary</span>
-
-| Collection | Count | Storage |
-|---|:---:|---|
-| Physical HTML explainers | 11 | `RPRT/Visual Explainers/` |
-
-## <span style="color:#80352F">Architecture And Environments</span>
-
-> [!example] Studio Lifecycle
-> [[Visual Explainers/Studio Repertorio Lifecycle Visual Explainer.html|Open the Studio lifecycle visual explainer]]
-
-> [!example] Preview And Staging Controls
-> [[Visual Explainers/PR-10 Preview and Staging Controls Visual Explainer.html|Open the Preview and staging controls visual explainer]]
-
-| Related note | Coverage |
-|---|---|
-| [[2026-08-10]] | Lifecycle review, command ownership, guardrails, approval state, and diagram verification |
-| [[2026-08-17]] | Environment identity, Preview isolation, migration gates, and deployment controls |
-
-## <span style="color:rgb(112, 48, 160)">Identity And Access</span>
-
-> [!example] Identity Schema
-> [[Visual Explainers/RPRT-47 Identity Schema Visual Explainer.html|Open the identity schema visual explainer]]
-
-| Related note | Coverage |
-|---|---|
-| [[Auth Users and Profiles]] | Auth identity, profiles, addresses, RLS, and account initialization |
-
-## <span style="color:rgb(0, 112, 192)">Catalog</span>
-
-> [!example] Catalog Authority
-> [[Visual Explainers/RPRT-50 Catalog Authority Visual Explainer.html|Open the catalog authority visual explainer]]
-
-| Related note | Coverage |
-|---|---|
-| [[Catalog Products Categories and Archival]] | Categories, products, media relations, merchandising, visibility, and guarded state |
-
-## <span style="color:rgb(0, 176, 80)">Commerce And Product Media</span>
-
-> [!example] Account And Guest Order Journey
-> [[Visual Explainers/Account and Guest Order Journey Visual Explainer.html|Open the account and guest order journey visual explainer]]
-
-> [!example] Cart, Quote, And Coupons
-> [[Visual Explainers/RPRT-49 Cart Quote Coupon Visual Explainer.html|Open the commerce schema visual explainer]]
-
-> [!example] Product Media Storage
-> [[Visual Explainers/RPRT-10 Product Media Storage Visual Explainer.html|Open the product media storage visual explainer]]
-
-| Related note | Coverage |
-|---|---|
-| [[Cart, Quote and Coupons Security]] | Cart ownership, protected shipping evidence, coupons, lock order, and consumption |
-| [[Product Media Storage]] | Bucket rules, object identity, MIME validation, actor access, and public delivery |
-
-## <span style="color:rgb(255, 192, 0)">Reliability And Audit</span>
-
-> [!example] Reliability Foundation
-> [[Visual Explainers/RPRT-52 Reliability and Audit Visual Explainer.html|Open the reliability and audit visual explainer]]
-
-| Related note | Coverage |
-|---|---|
-| [[RPRT-52 - Reliability and Audit Foundation Plan]] | Audit evidence, durable outbox work, provider-call controls, leases, retries, and replay |
-| [[Reliability and Audit Schema]] | Implemented reliability tables, relationships, RLS boundaries, and protected commands |
-
-## <span style="color:rgb(192, 0, 0)">Payments And Recovery</span>
-
-> [!example] Paid Cancellation
-> [[Visual Explainers/RPRT-42 Cancellation Contract Visual Explainer.html|Open the paid-cancellation visual explainer]]
-
-> [!tip] Order And Settlement
-> [[Visual Explainers/PR-22 Order and Settlement Security Visual Explainer.html|Open the detailed PR #22 Order and Settlement visual explainer]].
-
-> [!example] Order And Settlement Schema
-> [[Visual Explainers/PR-22 Order and Settlement Schema Explorer.html|Open the interactive PR #22 schema explorer]].
-
-| Related note | Coverage |
-|---|---|
-| [[RPRT-42 - Cancellation Intent and Paid-Stock Recovery Contract]] | Immutable cancellation intent, verified refunds, race controls, and exactly-once stock restoration |
-| [[Order and Settlement Security]] | Order snapshots, settlement authority, stock reservations, guest access, recovery, and fulfillment gates |
-
----
-
-## <span style="color:#80352F">Local File Index</span>
-
-| Domain | Local HTML file |
-|---|---|
-| Studio architecture | [[Visual Explainers/Studio Repertorio Lifecycle Visual Explainer.html]] |
-| Environments | [[Visual Explainers/PR-10 Preview and Staging Controls Visual Explainer.html]] |
-| Identity and access | [[Visual Explainers/RPRT-47 Identity Schema Visual Explainer.html]] |
-| Catalog | [[Visual Explainers/RPRT-50 Catalog Authority Visual Explainer.html]] |
-| Commerce | [[Visual Explainers/RPRT-49 Cart Quote Coupon Visual Explainer.html]] |
-| Customer order journey | [[Visual Explainers/Account and Guest Order Journey Visual Explainer.html]] |
-| Product media | [[Visual Explainers/RPRT-10 Product Media Storage Visual Explainer.html]] |
-| Reliability and audit | [[Visual Explainers/RPRT-52 Reliability and Audit Visual Explainer.html]] |
-| Paid cancellation | [[Visual Explainers/RPRT-42 Cancellation Contract Visual Explainer.html]] |
-| Order and settlement | [[Visual Explainers/PR-22 Order and Settlement Security Visual Explainer.html]] |
-| Order and settlement schema | [[Visual Explainers/PR-22 Order and Settlement Schema Explorer.html]] |
-
-> [!quote] Library Rule
-> Store each canonical visual explainer as a physical HTML file in `RPRT/Visual Explainers/`. Add it to this index, attach its current copy to the related Linear issue, and use the attachment URL in Linear documents that reference it.
+> [!info] Maintenance Rule
+> When an explainer changes, replace its Linear attachment, replace its local HTML file, and update both links in this table.

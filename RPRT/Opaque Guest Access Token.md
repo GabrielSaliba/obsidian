@@ -3,7 +3,7 @@
 [[Auth Users and Profiles]]
 
 > [!example] Visual Explainer
-> [[Visual Explainers/Account and Guest Order Journey Visual Explainer.html|Open the account and guest order journey visual explainer]]
+> [Open the account and guest order journey visual explainer in Linear](https://uploads.linear.app/445023d5-264c-47cb-a70c-e4a15a58da5c/5caadee1-c691-4e53-ae4c-623fa2e1e62a/195367a3-e015-4fed-acfa-5cfd92ff2d7b)
 
 > [!abstract] Definition
 

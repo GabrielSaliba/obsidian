@@ -23,9 +23,9 @@ type: schema-reference
 > [!warning] Source Of Truth
 > The repository migrations, pgTAP tests, and `docs/database.md` are authoritative.
 
-> [!example] Visual Explainer
-> [[Visual Explainers/RPRT-47 Identity Schema Visual Explainer.html|Open the local identity schema visual explainer]]
-> [[Visual Explainers/Account and Guest Order Journey Visual Explainer.html|Compare account and guest access through order creation]]
+> [!example] Visual Explainers
+> [Open the identity schema visual explainer in Linear](https://uploads.linear.app/445023d5-264c-47cb-a70c-e4a15a58da5c/61bb1f27-0ddf-4e26-b625-e33dd9a632b8/8b2e304e-fdc2-491e-bac6-e360a8624459)
+> [Compare account and guest access in Linear](https://uploads.linear.app/445023d5-264c-47cb-a70c-e4a15a58da5c/5caadee1-c691-4e53-ae4c-623fa2e1e62a/195367a3-e015-4fed-acfa-5cfd92ff2d7b)
 
 ## <span style="color:rgb(112, 48, 160)">Schema Boundary</span>
 

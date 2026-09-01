@@ -27,7 +27,7 @@ type: schema-reference
 > The repository migrations, tests, `docs/database.md`, Technical Architecture, and Lifecycle Diagrams are authoritative.
 
 > [!example] Visual Explainer
-> [[Visual Explainers/RPRT-50 Catalog Authority Visual Explainer.html|Open the local catalog schema visual explainer]]
+> [Open the catalog schema visual explainer in Linear](https://uploads.linear.app/445023d5-264c-47cb-a70c-e4a15a58da5c/14ca619e-b32a-4335-8429-70828eeffb3e/57ab77d9-b287-4e46-b806-50792af663f6)
 
 ## <span style="color:rgb(112, 48, 160)">Catalog Boundary</span>
 

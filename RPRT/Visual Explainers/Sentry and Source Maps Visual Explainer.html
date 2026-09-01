@@ -1,0 +1,1463 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="plannotator-theme" content="host" />
+    <title>Sentry, Source Maps, and the Initial Next.js Setup</title>
+    <style>
+      :root {
+        color-scheme: light;
+        --background: oklch(0.97 0.005 260);
+        --foreground: oklch(0.18 0.02 260);
+        --card: oklch(1 0 0);
+        --card-foreground: oklch(0.18 0.02 260);
+        --muted: oklch(0.92 0.01 260);
+        --muted-foreground: oklch(0.4 0.02 260);
+        --primary: oklch(0.5 0.25 280);
+        --primary-foreground: oklch(1 0 0);
+        --secondary: oklch(0.5 0.18 180);
+        --accent: oklch(0.6 0.22 50);
+        --destructive: oklch(0.5 0.25 25);
+        --success: oklch(0.45 0.2 150);
+        --warning: oklch(0.55 0.18 85);
+        --border: oklch(0.88 0.01 260);
+        --code-bg: oklch(0.92 0.01 260);
+        --ring: oklch(0.5 0.25 280);
+        --font-sans: Inter, system-ui, -apple-system, sans-serif;
+        --font-mono: "JetBrains Mono", "Fira Code", ui-monospace, monospace;
+        --font-display: ui-serif, Georgia, "Times New Roman", serif;
+        --radius: 0.625rem;
+      }
+
+      @media (prefers-color-scheme: dark) {
+        :root {
+          color-scheme: dark;
+          --background: oklch(0.15 0.02 260);
+          --foreground: oklch(0.9 0.01 260);
+          --card: oklch(0.22 0.02 260);
+          --card-foreground: oklch(0.9 0.01 260);
+          --muted: oklch(0.26 0.02 260);
+          --muted-foreground: oklch(0.72 0.02 260);
+          --primary: oklch(0.75 0.18 280);
+          --primary-foreground: oklch(0.15 0.02 260);
+          --secondary: oklch(0.7 0.14 180);
+          --accent: oklch(0.7 0.2 60);
+          --border: oklch(0.35 0.02 260);
+          --code-bg: oklch(0.26 0.02 260);
+          --destructive: oklch(0.65 0.2 25);
+          --success: oklch(0.72 0.17 150);
+          --warning: oklch(0.75 0.15 85);
+        }
+      }
+
+      *,
+      *::before,
+      *::after {
+        box-sizing: border-box;
+      }
+
+      html {
+        scroll-behavior: smooth;
+      }
+
+      body {
+        margin: 0;
+        color: var(--foreground);
+        background-color: var(--background);
+        background-image: radial-gradient(
+          circle at 82% 8%,
+          color-mix(in oklab, var(--primary) 10%, transparent),
+          transparent 30rem
+        );
+        font-family: var(--font-sans);
+        font-size: 15px;
+        line-height: 1.65;
+        -webkit-font-smoothing: antialiased;
+      }
+
+      .wrap {
+        width: min(1380px, calc(100% - 48px));
+        margin: 0 auto;
+        display: grid;
+        grid-template-columns: 184px minmax(0, 1fr);
+        gap: 48px;
+        padding: 56px 0 96px;
+      }
+
+      .main {
+        min-width: 0;
+      }
+
+      .toc {
+        position: sticky;
+        top: 24px;
+        align-self: start;
+        max-height: calc(100dvh - 48px);
+        overflow-y: auto;
+        padding: 12px 0;
+      }
+
+      .toc-title,
+      .eyebrow,
+      .label,
+      .badge,
+      .step-number {
+        font-family: var(--font-mono);
+        font-size: 0.7rem;
+        font-weight: 650;
+        letter-spacing: 0.07em;
+        text-transform: uppercase;
+      }
+
+      .toc-title {
+        color: var(--muted-foreground);
+        border-bottom: 1px solid var(--border);
+        padding-bottom: 10px;
+        margin-bottom: 8px;
+      }
+
+      .toc a {
+        display: block;
+        color: var(--muted-foreground);
+        text-decoration: none;
+        border-left: 2px solid transparent;
+        border-radius: 4px;
+        padding: 6px 9px;
+        font-size: 0.76rem;
+        line-height: 1.35;
+      }
+
+      .toc a:hover,
+      .toc a.active {
+        color: var(--foreground);
+        background: var(--muted);
+        border-left-color: var(--primary);
+      }
+
+      header {
+        min-height: 70dvh;
+        display: grid;
+        align-content: center;
+        padding: 44px 0 72px;
+      }
+
+      .eyebrow {
+        color: var(--primary);
+      }
+
+      h1,
+      h2,
+      h3 {
+        font-family: var(--font-display);
+        font-weight: 500;
+        text-wrap: balance;
+      }
+
+      h1 {
+        max-width: 900px;
+        margin: 12px 0 22px;
+        font-size: clamp(2.7rem, 7vw, 5.8rem);
+        line-height: 0.98;
+        letter-spacing: -0.045em;
+      }
+
+      h2 {
+        margin: 0;
+        font-size: clamp(1.75rem, 3vw, 2.6rem);
+        line-height: 1.1;
+      }
+
+      h3 {
+        margin: 0 0 8px;
+        font-size: 1.2rem;
+      }
+
+      p {
+        margin: 0;
+      }
+
+      .lede {
+        max-width: 68ch;
+        color: var(--muted-foreground);
+        font-size: 1.08rem;
+      }
+
+      .hero-strip {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 14px;
+        margin-top: 38px;
+      }
+
+      .metric,
+      .ve-card,
+      .diagram-panel,
+      .code-file,
+      .comparison {
+        background: var(--card);
+        border: 1.5px solid var(--border);
+        border-radius: var(--radius);
+      }
+
+      .metric {
+        padding: 18px;
+      }
+
+      .metric strong {
+        display: block;
+        font-family: var(--font-display);
+        font-size: 1.65rem;
+        font-weight: 500;
+      }
+
+      .metric span {
+        color: var(--muted-foreground);
+        font-family: var(--font-mono);
+        font-size: 0.72rem;
+      }
+
+      section {
+        min-height: 88dvh;
+        padding: 80px 0 48px;
+        scroll-margin-top: 24px;
+      }
+
+      .section-head {
+        display: flex;
+        align-items: baseline;
+        gap: 18px;
+        border-bottom: 1.5px solid var(--border);
+        padding-bottom: 14px;
+        margin-bottom: 28px;
+      }
+
+      .section-number {
+        color: var(--primary);
+        font-family: var(--font-mono);
+        font-size: 0.78rem;
+        font-weight: 650;
+      }
+
+      .two-col,
+      .three-col {
+        display: grid;
+        gap: 20px;
+      }
+
+      .two-col {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      .three-col {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+      }
+
+      .ve-card {
+        min-width: 0;
+        padding: 24px;
+      }
+
+      .ve-card--hero {
+        background: color-mix(in oklab, var(--primary) 5%, var(--card));
+        border-color: var(--primary);
+        box-shadow: 0 5px 24px
+          color-mix(in oklab, var(--primary) 10%, transparent);
+      }
+
+      .ve-card--recessed {
+        background: var(--muted);
+        border-color: transparent;
+      }
+
+      .ve-card p,
+      .ve-card li {
+        color: var(--muted-foreground);
+      }
+
+      .ve-card ul,
+      .ve-card ol {
+        margin: 12px 0 0;
+        padding-left: 20px;
+      }
+
+      .ve-card li + li {
+        margin-top: 7px;
+      }
+
+      .label {
+        display: block;
+        color: var(--primary);
+        margin-bottom: 10px;
+      }
+
+      code {
+        color: var(--primary);
+        font-family: var(--font-mono);
+        font-size: 0.86em;
+      }
+
+      .diagram-panel {
+        padding: 30px;
+        overflow-x: auto;
+      }
+
+      .diagram-panel svg {
+        display: block;
+        width: 100%;
+        min-width: 720px;
+      }
+
+      .diagram-caption {
+        display: block;
+        margin-top: 16px;
+        color: var(--muted-foreground);
+        font-family: var(--font-mono);
+        font-size: 0.72rem;
+        text-align: center;
+      }
+
+      .comparison {
+        display: grid;
+        grid-template-columns: 1fr 1px 1fr;
+        overflow: hidden;
+      }
+
+      .comparison > div {
+        padding: 26px;
+        min-width: 0;
+      }
+
+      .comparison .divider {
+        padding: 0;
+        background: var(--border);
+      }
+
+      .badge {
+        display: inline-block;
+        border-radius: 4px;
+        padding: 3px 8px;
+        margin-bottom: 12px;
+      }
+
+      .badge.public {
+        color: var(--secondary);
+        background: color-mix(in oklab, var(--secondary) 13%, transparent);
+      }
+
+      .badge.secret {
+        color: var(--destructive);
+        background: color-mix(in oklab, var(--destructive) 13%, transparent);
+      }
+
+      .code-file {
+        overflow: hidden;
+      }
+
+      .code-file__header {
+        border-bottom: 1px solid var(--border);
+        background: var(--muted);
+        color: var(--muted-foreground);
+        padding: 10px 16px;
+        font-family: var(--font-mono);
+        font-size: 0.74rem;
+      }
+
+      .code-file pre {
+        margin: 0;
+        padding: 20px;
+        overflow-x: auto;
+        white-space: pre;
+        font-family: var(--font-mono);
+        font-size: 0.78rem;
+        line-height: 1.65;
+      }
+
+      .kw {
+        color: var(--primary);
+      }
+
+      .fn {
+        color: var(--accent);
+      }
+
+      .str {
+        color: var(--success);
+      }
+
+      .cm {
+        color: var(--muted-foreground);
+        font-style: italic;
+      }
+
+      .pipeline {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 14px;
+      }
+
+      .step {
+        position: relative;
+        padding: 20px;
+        background: var(--card);
+        border: 1.5px solid var(--border);
+        border-radius: var(--radius);
+        min-width: 0;
+      }
+
+      .step:not(:last-child)::after {
+        content: ">";
+        position: absolute;
+        top: 50%;
+        right: -12px;
+        z-index: 2;
+        width: 22px;
+        height: 22px;
+        display: grid;
+        place-items: center;
+        transform: translateY(-50%);
+        color: var(--primary);
+        background: var(--background);
+        font-family: var(--font-mono);
+        font-weight: 700;
+      }
+
+      .step-number {
+        color: var(--primary);
+      }
+
+      .step p {
+        color: var(--muted-foreground);
+        font-size: 0.88rem;
+      }
+
+      .environment-grid {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 12px;
+        margin-top: 22px;
+      }
+
+      .environment {
+        padding: 20px;
+        border-radius: var(--radius);
+        border: 1.5px solid var(--border);
+        background: var(--card);
+      }
+
+      .environment.on {
+        border-color: var(--success);
+        background: color-mix(in oklab, var(--success) 7%, var(--card));
+      }
+
+      .environment strong,
+      .environment span {
+        display: block;
+      }
+
+      .environment span {
+        margin-top: 6px;
+        color: var(--muted-foreground);
+        font-family: var(--font-mono);
+        font-size: 0.72rem;
+      }
+
+      .callout {
+        margin-top: 22px;
+        padding: 18px 22px;
+        border-left: 3px solid var(--primary);
+        border-radius: 0 var(--radius) var(--radius) 0;
+        background: var(--muted);
+        color: var(--muted-foreground);
+      }
+
+      footer {
+        margin-top: 60px;
+        border-top: 1px solid var(--border);
+        padding-top: 20px;
+        color: var(--muted-foreground);
+        font-size: 0.8rem;
+      }
+
+      @media (max-width: 1000px) {
+        .wrap {
+          width: min(100% - 32px, 900px);
+          grid-template-columns: 1fr;
+          gap: 0;
+          padding-top: 0;
+        }
+
+        .toc {
+          position: sticky;
+          top: 0;
+          z-index: 20;
+          display: flex;
+          gap: 4px;
+          max-height: none;
+          margin: 0 -16px;
+          padding: 9px 16px;
+          overflow-x: auto;
+          background: var(--background);
+          border-bottom: 1px solid var(--border);
+        }
+
+        .toc-title {
+          display: none;
+        }
+
+        .toc a {
+          flex: 0 0 auto;
+          white-space: nowrap;
+          border-left: 0;
+          border-bottom: 2px solid transparent;
+        }
+
+        .toc a.active {
+          border-left: 0;
+          border-bottom-color: var(--primary);
+        }
+
+        section {
+          scroll-margin-top: 58px;
+        }
+
+        .pipeline,
+        .environment-grid {
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+
+        .step::after {
+          display: none !important;
+        }
+      }
+
+      @media (max-width: 700px) {
+        header {
+          min-height: auto;
+          padding-top: 72px;
+        }
+
+        .hero-strip,
+        .two-col,
+        .three-col,
+        .pipeline,
+        .environment-grid,
+        .comparison {
+          grid-template-columns: 1fr;
+        }
+
+        .comparison .divider {
+          height: 1px;
+        }
+
+        section {
+          min-height: auto;
+          padding-top: 68px;
+        }
+
+        .section-head {
+          align-items: flex-start;
+        }
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+        html {
+          scroll-behavior: auto;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="wrap">
+      <nav class="toc" id="toc" aria-label="Page sections">
+        <div class="toc-title">Contents</div>
+        <a href="#mental-model">1. Mental model</a>
+        <a href="#credentials">2. Two credentials</a>
+        <a href="#source-maps">3. Source-map flow</a>
+        <a href="#nextjs">4. Next.js shape</a>
+        <a href="#rollout">5. Initial rollout</a>
+      </nav>
+
+      <main class="main">
+        <header>
+          <span class="eyebrow">RPRT-60 learning brief</span>
+          <h1>Sentry makes production errors readable and actionable.</h1>
+          <p class="lede">
+            Sentry receives unexpected exceptions, groups similar failures into
+            issues, connects them to a release, restores readable source
+            locations, and notifies the operators who can respond.
+          </p>
+          <div class="hero-strip">
+            <div class="metric">
+              <strong>1</strong>
+              <span>Next.js project</span>
+            </div>
+            <div class="metric">
+              <strong>2</strong>
+              <span>Different credential jobs</span>
+            </div>
+            <div class="metric">
+              <strong>Staging</strong>
+              <span>Only initial reporting scope</span>
+            </div>
+          </div>
+        </header>
+
+        <section id="mental-model">
+          <div class="section-head">
+            <span class="section-number">01</span>
+            <h2>The basic Sentry mental model</h2>
+          </div>
+
+          <div class="diagram-panel">
+            <svg
+              viewBox="0 0 980 390"
+              xmlns="http://www.w3.org/2000/svg"
+              role="img"
+              aria-labelledby="runtime-title runtime-desc"
+            >
+              <title id="runtime-title">
+                Runtime error flow through Sentry
+              </title>
+              <desc id="runtime-desc">
+                A browser or server exception passes through the Sentry SDK to
+                event ingestion, issue grouping, release context, and operator
+                alerts.
+              </desc>
+              <defs>
+                <marker
+                  id="arrow"
+                  viewBox="0 0 10 10"
+                  refX="9"
+                  refY="5"
+                  markerWidth="7"
+                  markerHeight="7"
+                  orient="auto-start-reverse"
+                >
+                  <path d="M0,0 L10,5 L0,10 z" fill="var(--muted-foreground)" />
+                </marker>
+                <marker
+                  id="arrow-primary"
+                  viewBox="0 0 10 10"
+                  refX="9"
+                  refY="5"
+                  markerWidth="7"
+                  markerHeight="7"
+                  orient="auto-start-reverse"
+                >
+                  <path d="M0,0 L10,5 L0,10 z" fill="var(--primary)" />
+                </marker>
+              </defs>
+              <style>
+                .box {
+                  fill: var(--card);
+                  stroke: var(--border);
+                  stroke-width: 1.5;
+                }
+                .hot {
+                  fill: color-mix(in oklab, var(--primary) 8%, var(--card));
+                  stroke: var(--primary);
+                  stroke-width: 1.5;
+                }
+                .ok {
+                  fill: color-mix(in oklab, var(--success) 8%, var(--card));
+                  stroke: var(--success);
+                  stroke-width: 1.5;
+                }
+                .title {
+                  font: 600 14px var(--font-sans);
+                  fill: var(--foreground);
+                }
+                .sub {
+                  font: 11px var(--font-mono);
+                  fill: var(--muted-foreground);
+                }
+                .edge {
+                  stroke: var(--muted-foreground);
+                  stroke-width: 1.5;
+                }
+                .primary-edge {
+                  stroke: var(--primary);
+                  stroke-width: 1.8;
+                }
+              </style>
+
+              <rect
+                x="30"
+                y="142"
+                width="150"
+                height="74"
+                rx="10"
+                class="box"
+              />
+              <text x="105" y="171" text-anchor="middle" class="title">
+                Unexpected error
+              </text>
+              <text x="105" y="192" text-anchor="middle" class="sub">
+                browser or server
+              </text>
+
+              <line
+                x1="180"
+                y1="179"
+                x2="245"
+                y2="179"
+                class="edge"
+                marker-end="url(#arrow)"
+              />
+
+              <rect
+                x="245"
+                y="142"
+                width="150"
+                height="74"
+                rx="10"
+                class="hot"
+              />
+              <text x="320" y="171" text-anchor="middle" class="title">
+                Sentry SDK
+              </text>
+              <text x="320" y="192" text-anchor="middle" class="sub">
+                captures safe context
+              </text>
+
+              <line
+                x1="395"
+                y1="179"
+                x2="460"
+                y2="179"
+                class="primary-edge"
+                marker-end="url(#arrow-primary)"
+              />
+
+              <rect
+                x="460"
+                y="122"
+                width="170"
+                height="114"
+                rx="10"
+                class="hot"
+              />
+              <text x="545" y="153" text-anchor="middle" class="title">
+                Sentry project
+              </text>
+              <text x="545" y="176" text-anchor="middle" class="sub">
+                ingest + group
+              </text>
+              <text x="545" y="197" text-anchor="middle" class="sub">
+                release + environment
+              </text>
+              <text x="545" y="218" text-anchor="middle" class="sub">
+                readable stack trace
+              </text>
+
+              <path
+                d="M630,156 C690,156 700,90 755,90"
+                fill="none"
+                class="edge"
+                marker-end="url(#arrow)"
+              />
+              <path
+                d="M630,202 C690,202 700,278 755,278"
+                fill="none"
+                class="edge"
+                marker-end="url(#arrow)"
+              />
+
+              <rect
+                x="755"
+                y="52"
+                width="190"
+                height="76"
+                rx="10"
+                class="box"
+              />
+              <text x="850" y="82" text-anchor="middle" class="title">
+                Issue dashboard
+              </text>
+              <text x="850" y="103" text-anchor="middle" class="sub">
+                triage, assign, resolve
+              </text>
+
+              <rect
+                x="755"
+                y="240"
+                width="190"
+                height="76"
+                rx="10"
+                class="ok"
+              />
+              <text x="850" y="270" text-anchor="middle" class="title">
+                Operator alert
+              </text>
+              <text x="850" y="291" text-anchor="middle" class="sub">
+                email notification
+              </text>
+
+              <text x="320" y="269" text-anchor="middle" class="sub">
+                Sentry is for exceptions.
+              </text>
+              <text x="320" y="291" text-anchor="middle" class="sub">
+                Business evidence stays in PostgreSQL.
+              </text>
+            </svg>
+            <span class="diagram-caption">
+              Runtime flow: exception capture is separate from business audit
+              and normal operational logging.
+            </span>
+          </div>
+
+          <div class="three-col" style="margin-top: 20px">
+            <article class="ve-card">
+              <span class="label">Capture</span>
+              <h3>Unexpected exceptions</h3>
+              <p>
+                The SDK captures an error, a safe stack trace, release identity,
+                environment, and approved correlation fields.
+              </p>
+            </article>
+            <article class="ve-card">
+              <span class="label">Group</span>
+              <h3>Many events become one issue</h3>
+              <p>
+                Similar failures are grouped so operators can see frequency,
+                affected releases, and regressions instead of isolated logs.
+              </p>
+            </article>
+            <article class="ve-card">
+              <span class="label">Respond</span>
+              <h3>Operators receive useful alerts</h3>
+              <p>
+                Alert rules notify the approved inbox for new or escalating
+                staging exceptions without sending normal success events.
+              </p>
+            </article>
+          </div>
+        </section>
+
+        <section id="credentials">
+          <div class="section-head">
+            <span class="section-number">02</span>
+            <h2>DSN and source-map token do different jobs</h2>
+          </div>
+
+          <div class="comparison">
+            <div>
+              <span class="badge public">Event route</span>
+              <h3>DSN</h3>
+              <p>
+                The SDK uses the Data Source Name to send exception events to
+                the correct Sentry project.
+              </p>
+              <ul>
+                <li>Used while the application runs.</li>
+                <li>Identifies the Sentry project and ingest endpoint.</li>
+                <li>Can exist in client configuration.</li>
+                <li>Cannot manage the organization or upload source maps.</li>
+              </ul>
+            </div>
+            <div class="divider" aria-hidden="true"></div>
+            <div>
+              <span class="badge secret">Upload authority</span>
+              <h3>Source-map auth token</h3>
+              <p>
+                A trusted build or release process uses this secret to upload
+                source maps and release metadata.
+              </p>
+              <ul>
+                <li>Used only during a build or release step.</li>
+                <li>Must stay in a trusted secret store.</li>
+                <li>Must never enter browser code or repository files.</li>
+                <li>Can be revoked without changing event ingestion.</li>
+              </ul>
+            </div>
+          </div>
+
+          <div class="two-col" style="margin-top: 20px">
+            <article class="ve-card ve-card--hero">
+              <span class="label">GitHub path</span>
+              <h3><code>repertorio-github-source-maps</code></h3>
+              <p>
+                A future Sentry organization token for a trusted CI upload job.
+                Create it only when RPRT-5 provides that job.
+              </p>
+            </article>
+            <article class="ve-card ve-card--hero">
+              <span class="label">Vercel path</span>
+              <h3><code>repertorio-vercel-source-maps</code></h3>
+              <p>
+                A separate future token if Vercel performs uploads. Separate
+                tokens let one path be revoked without stopping the other.
+              </p>
+            </article>
+          </div>
+
+          <div class="callout">
+            <strong>Initial setup rule:</strong> create the Sentry project and
+            record the approved token names and storage locations. Do not create
+            upload tokens until RPRT-5 implements and verifies the upload path.
+          </div>
+        </section>
+
+        <section id="source-maps">
+          <div class="section-head">
+            <span class="section-number">03</span>
+            <h2>How source maps restore the original code</h2>
+          </div>
+
+          <div class="diagram-panel">
+            <svg
+              viewBox="0 0 1040 560"
+              xmlns="http://www.w3.org/2000/svg"
+              role="img"
+              aria-labelledby="maps-title maps-desc"
+            >
+              <title id="maps-title">
+                Source-map upload and error resolution flow
+              </title>
+              <desc id="maps-desc">
+                Source code is built into a minified bundle and source map. A
+                protected token uploads the map to Sentry. At runtime, an error
+                event includes the matching release so Sentry can show original
+                source lines.
+              </desc>
+              <defs>
+                <marker
+                  id="map-arrow"
+                  viewBox="0 0 10 10"
+                  refX="9"
+                  refY="5"
+                  markerWidth="7"
+                  markerHeight="7"
+                  orient="auto-start-reverse"
+                >
+                  <path d="M0,0 L10,5 L0,10 z" fill="var(--muted-foreground)" />
+                </marker>
+                <marker
+                  id="map-primary"
+                  viewBox="0 0 10 10"
+                  refX="9"
+                  refY="5"
+                  markerWidth="7"
+                  markerHeight="7"
+                  orient="auto-start-reverse"
+                >
+                  <path d="M0,0 L10,5 L0,10 z" fill="var(--primary)" />
+                </marker>
+                <marker
+                  id="map-success"
+                  viewBox="0 0 10 10"
+                  refX="9"
+                  refY="5"
+                  markerWidth="7"
+                  markerHeight="7"
+                  orient="auto-start-reverse"
+                >
+                  <path d="M0,0 L10,5 L0,10 z" fill="var(--success)" />
+                </marker>
+              </defs>
+              <style>
+                .m-box {
+                  fill: var(--card);
+                  stroke: var(--border);
+                  stroke-width: 1.5;
+                }
+                .m-hot {
+                  fill: color-mix(in oklab, var(--primary) 8%, var(--card));
+                  stroke: var(--primary);
+                  stroke-width: 1.5;
+                }
+                .m-ok {
+                  fill: color-mix(in oklab, var(--success) 8%, var(--card));
+                  stroke: var(--success);
+                  stroke-width: 1.5;
+                }
+                .m-title {
+                  font: 600 14px var(--font-sans);
+                  fill: var(--foreground);
+                }
+                .m-sub {
+                  font: 11px var(--font-mono);
+                  fill: var(--muted-foreground);
+                }
+                .m-edge {
+                  stroke: var(--muted-foreground);
+                  stroke-width: 1.5;
+                }
+                .m-secret {
+                  stroke: var(--primary);
+                  stroke-width: 1.8;
+                  stroke-dasharray: 6 5;
+                }
+                .m-success {
+                  stroke: var(--success);
+                  stroke-width: 1.8;
+                }
+                .m-lane {
+                  font: 650 11px var(--font-mono);
+                  fill: var(--primary);
+                  letter-spacing: 1px;
+                }
+              </style>
+
+              <text x="28" y="38" class="m-lane">BUILD AND UPLOAD</text>
+              <line x1="28" y1="52" x2="1010" y2="52" stroke="var(--border)" />
+
+              <rect
+                x="40"
+                y="91"
+                width="160"
+                height="72"
+                rx="10"
+                class="m-box"
+              />
+              <text x="120" y="120" text-anchor="middle" class="m-title">
+                Original source
+              </text>
+              <text x="120" y="141" text-anchor="middle" class="m-sub">
+                checkout.ts:184
+              </text>
+
+              <line
+                x1="200"
+                y1="127"
+                x2="272"
+                y2="127"
+                class="m-edge"
+                marker-end="url(#map-arrow)"
+              />
+
+              <rect
+                x="272"
+                y="91"
+                width="160"
+                height="72"
+                rx="10"
+                class="m-box"
+              />
+              <text x="352" y="120" text-anchor="middle" class="m-title">
+                Next.js build
+              </text>
+              <text x="352" y="141" text-anchor="middle" class="m-sub">
+                release = commit SHA
+              </text>
+
+              <path
+                d="M432,112 C485,112 492,88 540,88"
+                fill="none"
+                class="m-edge"
+                marker-end="url(#map-arrow)"
+              />
+              <path
+                d="M432,142 C485,142 492,172 540,172"
+                fill="none"
+                class="m-edge"
+                marker-end="url(#map-arrow)"
+              />
+
+              <rect
+                x="540"
+                y="59"
+                width="180"
+                height="58"
+                rx="10"
+                class="m-box"
+              />
+              <text x="630" y="84" text-anchor="middle" class="m-title">
+                Minified bundle
+              </text>
+              <text x="630" y="102" text-anchor="middle" class="m-sub">
+                app-a91f.js
+              </text>
+
+              <rect
+                x="540"
+                y="143"
+                width="180"
+                height="58"
+                rx="10"
+                class="m-hot"
+              />
+              <text x="630" y="168" text-anchor="middle" class="m-title">
+                Source map
+              </text>
+              <text x="630" y="186" text-anchor="middle" class="m-sub">
+                app-a91f.js.map
+              </text>
+
+              <line
+                x1="720"
+                y1="172"
+                x2="810"
+                y2="172"
+                class="m-secret"
+                marker-end="url(#map-primary)"
+              />
+              <text x="765" y="160" text-anchor="middle" class="m-sub">
+                auth token
+              </text>
+
+              <rect
+                x="810"
+                y="129"
+                width="190"
+                height="86"
+                rx="10"
+                class="m-hot"
+              />
+              <text x="905" y="159" text-anchor="middle" class="m-title">
+                Sentry artifacts
+              </text>
+              <text x="905" y="180" text-anchor="middle" class="m-sub">
+                map + release identity
+              </text>
+              <text x="905" y="199" text-anchor="middle" class="m-sub">
+                not public app output
+              </text>
+
+              <text x="28" y="290" class="m-lane">RUNTIME ERROR</text>
+              <line
+                x1="28"
+                y1="304"
+                x2="1010"
+                y2="304"
+                stroke="var(--border)"
+              />
+
+              <rect
+                x="40"
+                y="347"
+                width="160"
+                height="78"
+                rx="10"
+                class="m-box"
+              />
+              <text x="120" y="377" text-anchor="middle" class="m-title">
+                Deployed bundle
+              </text>
+              <text x="120" y="398" text-anchor="middle" class="m-sub">
+                error at app-a91f.js:1
+              </text>
+
+              <line
+                x1="200"
+                y1="386"
+                x2="292"
+                y2="386"
+                class="m-edge"
+                marker-end="url(#map-arrow)"
+              />
+
+              <rect
+                x="292"
+                y="347"
+                width="180"
+                height="78"
+                rx="10"
+                class="m-box"
+              />
+              <text x="382" y="377" text-anchor="middle" class="m-title">
+                Error event
+              </text>
+              <text x="382" y="398" text-anchor="middle" class="m-sub">
+                stack + matching release
+              </text>
+
+              <line
+                x1="472"
+                y1="386"
+                x2="565"
+                y2="386"
+                class="m-edge"
+                marker-end="url(#map-arrow)"
+              />
+
+              <rect
+                x="565"
+                y="347"
+                width="180"
+                height="78"
+                rx="10"
+                class="m-hot"
+              />
+              <text x="655" y="377" text-anchor="middle" class="m-title">
+                Sentry joins both
+              </text>
+              <text x="655" y="398" text-anchor="middle" class="m-sub">
+                release selects source map
+              </text>
+
+              <path
+                d="M905,215 C905,292 745,290 745,347"
+                fill="none"
+                class="m-secret"
+                marker-end="url(#map-primary)"
+              />
+
+              <line
+                x1="745"
+                y1="386"
+                x2="822"
+                y2="386"
+                class="m-success"
+                marker-end="url(#map-success)"
+              />
+
+              <rect
+                x="822"
+                y="338"
+                width="178"
+                height="96"
+                rx="10"
+                class="m-ok"
+              />
+              <text x="911" y="369" text-anchor="middle" class="m-title">
+                Readable result
+              </text>
+              <text x="911" y="392" text-anchor="middle" class="m-sub">
+                checkout.ts:184
+              </text>
+              <text x="911" y="412" text-anchor="middle" class="m-sub">
+                original function + context
+              </text>
+
+              <text x="520" y="506" text-anchor="middle" class="m-sub">
+                The release identity is the join key between a runtime error and
+                the correct build artifacts.
+              </text>
+            </svg>
+            <span class="diagram-caption">
+              Source maps are build artifacts. The token uploads them; the DSN
+              sends runtime events.
+            </span>
+          </div>
+
+          <div class="two-col" style="margin-top: 20px">
+            <article class="ve-card">
+              <span class="label">Without maps</span>
+              <h3><code>app-a91f.js:1:29442</code></h3>
+              <p>
+                The exception points to generated, compressed JavaScript. The
+                location is difficult to connect to the source change.
+              </p>
+            </article>
+            <article class="ve-card ve-card--hero">
+              <span class="label">With maps</span>
+              <h3><code>src/app/checkout.ts:184</code></h3>
+              <p>
+                Sentry shows the original file, function, line, and nearby code
+                for the exact release that produced the error.
+              </p>
+            </article>
+          </div>
+        </section>
+
+        <section id="nextjs">
+          <div class="section-head">
+            <span class="section-number">04</span>
+            <h2>The initial Next.js code shape</h2>
+          </div>
+
+          <p class="lede" style="margin-bottom: 24px">
+            This is the future RPRT-5 shape, not code that exists today. The
+            final implementation must use the exact SDK version and current
+            Next.js integration contract selected during that issue.
+          </p>
+
+          <div class="two-col">
+            <div class="code-file">
+              <div class="code-file__header">instrumentation-client.ts</div>
+              <pre><code><span class="kw">import</span> * <span class="kw">as</span> Sentry <span class="kw">from</span> <span class="str">"@sentry/nextjs"</span>;
+
+Sentry.<span class="fn">init</span>({
+  dsn: process.env.NEXT_PUBLIC_SENTRY_DSN,
+  environment: <span class="str">"staging"</span>,
+  enabled: <span class="kw">true</span>,
+  <span class="cm">// Add strict redaction and sampling.</span>
+});</code></pre>
+            </div>
+
+            <div class="code-file">
+              <div class="code-file__header">instrumentation.ts</div>
+              <pre><code><span class="kw">export async function</span> <span class="fn">register</span>() {
+  <span class="kw">if</span> (process.env.NEXT_RUNTIME === <span class="str">"nodejs"</span>) {
+    <span class="kw">await import</span>(<span class="str">"./sentry.server.config"</span>);
+  }
+
+  <span class="kw">if</span> (process.env.NEXT_RUNTIME === <span class="str">"edge"</span>) {
+    <span class="kw">await import</span>(<span class="str">"./sentry.edge.config"</span>);
+  }
+}</code></pre>
+            </div>
+
+            <div class="code-file">
+              <div class="code-file__header">next.config.ts</div>
+              <pre><code><span class="kw">import</span> { withSentryConfig } <span class="kw">from</span> <span class="str">"@sentry/nextjs"</span>;
+
+<span class="kw">export default</span> <span class="fn">withSentryConfig</span>(nextConfig, {
+  org: <span class="str">"studio-repertorio"</span>,
+  project: <span class="str">"repertorio"</span>,
+  authToken: process.env.SENTRY_AUTH_TOKEN,
+  sourcemaps: {
+    deleteSourcemapsAfterUpload: <span class="kw">true</span>,
+  },
+});</code></pre>
+            </div>
+
+            <article class="ve-card ve-card--recessed">
+              <span class="label">Safety boundary</span>
+              <h3>Before an event leaves the app</h3>
+              <ul>
+                <li>
+                  Remove cookies, authorization headers, and request bodies.
+                </li>
+                <li>
+                  Remove names, email, phone, CPF, addresses, and payment data.
+                </li>
+                <li>Allow only approved correlation and deployment fields.</li>
+                <li>Do not change a business result if Sentry fails.</li>
+                <li>Do not send normal informational events to Sentry.</li>
+              </ul>
+            </article>
+          </div>
+
+          <div class="callout">
+            <strong>Important:</strong> a real setup also needs server and edge
+            initialization, safe error serialization, tests with fake values, a
+            release identity, token isolation, and proof that uploaded source
+            maps do not remain in public browser output.
+          </div>
+        </section>
+
+        <section id="rollout">
+          <div class="section-head">
+            <span class="section-number">05</span>
+            <h2>The selected initial rollout</h2>
+          </div>
+
+          <div class="environment-grid">
+            <div class="environment">
+              <strong>Local</strong>
+              <span>OFF</span>
+              <p>
+                Use local logs and test doubles. Do not consume Sentry quota.
+              </p>
+            </div>
+            <div class="environment">
+              <strong>Feature Preview</strong>
+              <span>OFF</span>
+              <p>
+                PR branches do not send test exceptions or receive upload
+                tokens.
+              </p>
+            </div>
+            <div class="environment on">
+              <strong>Staging</strong>
+              <span>ON: dev branch</span>
+              <p>
+                First environment for exception, alert, release, and source-map
+                proof.
+              </p>
+            </div>
+            <div class="environment">
+              <strong>Production</strong>
+              <span>OFF</span>
+              <p>Enable only after the production environment is approved.</p>
+            </div>
+          </div>
+
+          <div class="pipeline" style="margin-top: 28px">
+            <article class="step">
+              <span class="step-number">Step 1</span>
+              <h3>Create</h3>
+              <p>
+                Create the US Sentry organization, the default team, and the
+                Next.js project named <code>repertorio</code>.
+              </p>
+            </article>
+            <article class="step">
+              <span class="step-number">Step 2</span>
+              <h3>Secure</h3>
+              <p>
+                Enable MFA, store account and recovery material in the approved
+                shared password-manager vault, and name both operators.
+              </p>
+            </article>
+            <article class="step">
+              <span class="step-number">Step 3</span>
+              <h3>Define</h3>
+              <p>
+                Record environment names, alert inbox, diagnostic limits, DSN
+                location, future token names, and owners without secret values.
+              </p>
+            </article>
+            <article class="step">
+              <span class="step-number">Step 4</span>
+              <h3>Implement later</h3>
+              <p>
+                RPRT-5 installs the SDK, creates only the tokens its upload
+                paths need, adds tests, and proves one mapped staging exception.
+              </p>
+            </article>
+          </div>
+
+          <div class="two-col" style="margin-top: 22px">
+            <article class="ve-card">
+              <span class="label">RPRT-60 does now</span>
+              <ul>
+                <li>Provider account and project setup.</li>
+                <li>MFA and operator custody.</li>
+                <li>Staging-only environment policy.</li>
+                <li>Alert inbox and safe diagnostic rules.</li>
+                <li>Secret inventory names and future locations.</li>
+              </ul>
+            </article>
+            <article class="ve-card">
+              <span class="label">RPRT-5 does later</span>
+              <ul>
+                <li>SDK and Pino dependencies.</li>
+                <li>Next.js browser, server, and edge setup.</li>
+                <li>Source-map token creation and upload jobs.</li>
+                <li>Redaction, sampling, and correlation tests.</li>
+                <li>Mapped synthetic staging exception proof.</li>
+              </ul>
+            </article>
+          </div>
+        </section>
+
+        <footer>
+          Informational explainer only. No Sentry account, token, repository
+          configuration, branch, application code, or Linear issue was changed.
+        </footer>
+      </main>
+    </div>
+
+    <script>
+      (() => {
+        const links = [...document.querySelectorAll(".toc a")];
+        const sections = links
+          .map((link) => ({
+            link,
+            section: document.querySelector(link.getAttribute("href")),
+          }))
+          .filter(({ section }) => section);
+
+        const observer = new IntersectionObserver(
+          (entries) => {
+            const visible = entries.find((entry) => entry.isIntersecting);
+            if (!visible) return;
+
+            links.forEach((link) => link.classList.remove("active"));
+            const match = sections.find(
+              ({ section }) => section === visible.target,
+            );
+            match?.link.classList.add("active");
+          },
+          { rootMargin: "-15% 0px -72% 0px" },
+        );
+
+        sections.forEach(({ section }) => observer.observe(section));
+      })();
+    </script>
+  </body>
+</html>

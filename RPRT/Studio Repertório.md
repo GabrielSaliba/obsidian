@@ -7,7 +7,7 @@ tags:
   - dashboard
 type: project-hub
 status: Active
-updated: 2026-08-31
+updated: 2026-09-01
 ---
 > [!abstract] Studio Repertório
 > Central workspace for project delivery, technical references, domain contracts, and product decisions.
@@ -45,6 +45,7 @@ updated: 2026-08-31
 |---|---|
 | [[Auth Users and Profiles]] | Authentication and profile data |
 | [[Administrator Membership Schema]] | Administrator authorization |
+| [[Sentry and Source Maps]] | Exception monitoring, source maps, credential roles, and initial setup |
 | [[Resend]] | General transactional email operations reference |
 | [[Resend Project Initialization]] | RPRT-62 project structure; M1 baseline complete |
 

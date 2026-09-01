@@ -40,9 +40,9 @@ focused_assertions: 731
 > Repository migrations, pgTAP tests, and `docs/database.md` are authoritative. This note explains their contract; it does not replace them.
 
 > [!tip] Visual Guides
-> - [[Visual Explainers/PR-22 Order and Settlement Security Visual Explainer.html|PR #22 detailed system explainer]]
-> - [[Visual Explainers/PR-22 Order and Settlement Schema Explorer.html|Interactive ERD for commerce, payment evidence, settlement, cancellation, and recovery]]
-> - [[Visual Explainers/Account and Guest Order Journey Visual Explainer.html|Account and guest journey from access through settlement]]
+> - [PR #22 detailed system explainer in Linear](https://uploads.linear.app/445023d5-264c-47cb-a70c-e4a15a58da5c/d6547540-3cff-4af1-b924-72e63213f669/9c48b817-f00f-45fe-b085-0c617ba771a3)
+> - [Interactive commerce ERD in Linear](https://uploads.linear.app/445023d5-264c-47cb-a70c-e4a15a58da5c/a9b586ff-ad11-4e63-b8aa-04d720962fa8/71a33544-4cf0-4e82-bfb3-a2f82b611649)
+> - [Account and guest journey in Linear](https://uploads.linear.app/445023d5-264c-47cb-a70c-e4a15a58da5c/5caadee1-c691-4e53-ae4c-623fa2e1e62a/195367a3-e015-4fed-acfa-5cfd92ff2d7b)
 
 ## <span style="color:rgb(112, 48, 160)">Contract At A Glance</span>
 
