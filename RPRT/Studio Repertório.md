@@ -21,10 +21,9 @@ updated: 2026-09-01
 
 | Note                           | Purpose                                                         |
 | ------------------------------ | --------------------------------------------------------------- |
-| [[RPRT - Tracklist\|Work Log]] | Daily delivery notes, decisions, issues, and next work.          |
+| [[RPRT - Tracklist\|Work Log]] | Daily delivery notes, decisions, issues, and next work.         |
 | [[Database Schemas]]           | Database tables, relationships, and schema security references. |
 | [[Visual Explainers]]          | Local HTML diagrams and implementation walkthroughs.            |
-| [[Stacked Pull Requests]]      | Review scope, dependency order, and stacked delivery judgment.   |
 
 ## <span style="color:#80352F">Data Architecture</span>
 

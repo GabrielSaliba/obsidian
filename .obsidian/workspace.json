@@ -11,10 +11,14 @@
             "id": "93b948408b1892d1",
             "type": "leaf",
             "state": {
-              "type": "graph",
-              "state": {},
-              "icon": "lucide-git-fork",
-              "title": "Graph view"
+              "type": "markdown",
+              "state": {
+                "file": "RPRT/Studio Repertório.md",
+                "mode": "source",
+                "source": false
+              },
+              "icon": "lucide-file",
+              "title": "Studio Repertório"
             }
           }
         ]
@@ -199,10 +203,14 @@
       "obsidian-git:Open Git source control": false
     }
   },
-  "active": "0f37fa753bb0571d",
+  "active": "93b948408b1892d1",
   "lastOpenFiles": [
-    "Blue Prince.canvas",
+    "Stacked Pull Requests.md",
+    "RPRT/Studio Repertório.md",
+    "RPRT/Database Schemas.md",
     "RPRT/Visual Explainers.md",
+    "RPRT/RPRT - Tracklist.md",
+    "Blue Prince.canvas",
     "RPRT/Visual Explainers/Studio Repertorio Lifecycle Visual Explainer.html",
     "Resend.md",
     "RPRT/Sentry and Source Maps.md",
@@ -221,9 +229,7 @@
     "RPRT/RPRT-42 - Cancellation Intent and Paid-Stock Recovery Contract.md",
     "Visual Explainers/RPRT-42 Cancellation Contract Visual Explainer.html.md",
     "RPRT/2026-08-31.md",
-    "Stacked Pull Requests.md",
     "RPRT/Resend Project Initialization.md",
-    "RPRT/Studio Repertório.md",
     "README.md",
     "RPRT/2026-08-20.md",
     "2026-08-20.md",
@@ -232,7 +238,6 @@
     "RPRT/Auth Users and Profiles.md",
     "RPRT/Opaque Guest Access Token.md",
     "RPRT/Cart, Quote and Coupons Security.md",
-    "RPRT/Database Schemas.md",
     "RPRT/Reliability and Audit Schema.md",
     "RPRT/Administrator Membership Schema.md",
     "RPRT/RPRT-50 - Catalog Authority and Product Status.md",
