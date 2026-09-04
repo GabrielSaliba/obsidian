@@ -13,12 +13,12 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "RPRT/Studio Repertório.md",
+                "file": "RPRT/2026-09-03.md",
                 "mode": "source",
                 "source": false
               },
               "icon": "lucide-file",
-              "title": "Studio Repertório"
+              "title": "2026-09-03"
             }
           }
         ]
@@ -205,8 +205,10 @@
   },
   "active": "93b948408b1892d1",
   "lastOpenFiles": [
-    "Stacked Pull Requests.md",
+    "RPRT/2026-09-02.md",
     "RPRT/Studio Repertório.md",
+    "RPRT/2026-09-03.md",
+    "Stacked Pull Requests.md",
     "RPRT/Database Schemas.md",
     "RPRT/Visual Explainers.md",
     "RPRT/RPRT - Tracklist.md",
@@ -240,8 +242,6 @@
     "RPRT/Cart, Quote and Coupons Security.md",
     "RPRT/Reliability and Audit Schema.md",
     "RPRT/Administrator Membership Schema.md",
-    "RPRT/RPRT-50 - Catalog Authority and Product Status.md",
-    "RPRT/Product Media Storage.md",
     "thumbnails/external/f0a66f1f345e27a26d74d0bc70984e8b.failed.png",
     "thumbnails/external/d255b3b66800e6ae8be11feff4edd16e.failed.png",
     "attachments/Pasted image 20260307005942.png",
