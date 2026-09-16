@@ -312,6 +312,11 @@
         border-style: dashed;
       }
 
+      .stack-row.merged {
+        border-color: color-mix(in oklab, var(--success) 55%, var(--border));
+        background: color-mix(in oklab, var(--success) 6%, var(--card));
+      }
+
       .flow {
         display: grid;
         grid-template-columns: repeat(6, minmax(0, 1fr));
@@ -705,6 +710,7 @@
           <a class="meta-pill" href="https://github.com/guisaliba/repertorio/pull/53">PR #53 · runner</a>
           <a class="meta-pill" href="https://github.com/guisaliba/repertorio/pull/54">PR #54 · evidence</a>
           <span class="meta-pill">Stack #56</span>
+          <span class="meta-pill">PR #51 · merged prerequisite</span>
           <span class="meta-pill">Author · GabrielSaliba</span>
         </div>
       </header>
@@ -719,24 +725,25 @@
       <div class="tldr">
         <span class="label">TL;DR</span>
         <p>
-          This stack does not schedule a production job. It creates the protected factory
-          that every later job must use. Authentication happens before observability context
-          or handler work, handlers receive strict batch and time limits, duplicate safety is
-          their durable responsibility, and every authorized invocation produces one bounded
-          response and one final wide event.
+          PR #51 has merged and now supplies the observability foundation on <code>dev</code>.
+          This stack does not schedule a production job. It creates the protected factory that
+          every later job must use. Authentication happens before observability context or
+          handler work, handlers receive strict batch and time limits, duplicate safety is their
+          durable responsibility, and every authorized invocation produces one bounded response
+          and one final wide event.
         </p>
       </div>
 
       <section>
         <div class="section-head"><span class="section-number">01</span><h2>Review in this order</h2></div>
         <div class="stack">
-          <div class="stack-row external">
+          <div class="stack-row external merged">
             <div class="stack-order">0</div>
             <div class="stack-copy">
-              <h3><a href="https://github.com/guisaliba/repertorio/pull/51">PR #51 · Observability prerequisite</a></h3>
-              <p>Supplies correlation context, safe wide-event delivery, and final operation controls. It is an external blocker, not a member of stack #56.</p>
+              <h3><a href="https://github.com/guisaliba/repertorio/pull/51">PR #51 · Merged observability prerequisite</a></h3>
+              <p>Supplies correlation context, safe wide-event delivery, and final operation controls from <code>dev</code>. It merged on September 16, 2026, and is not a member of stack #56.</p>
             </div>
-            <div class="stack-stat">RPRT-5<br />external base</div>
+            <div class="stack-stat"><span class="badge success">MERGED</span><br />RPRT-5 foundation</div>
           </div>
           <div class="stack-row">
             <div class="stack-order">1</div>
@@ -991,7 +998,7 @@
       </section>
 
       <footer>
-        RPRT-55 · Protected scheduler foundation · Stack #56 · PRs #52–#54 · Generated for human review
+        RPRT-55 · Protected scheduler foundation · PR #51 merged · Stack #56 · PRs #52–#54 · Generated for human review
       </footer>
     </main>
   </body>

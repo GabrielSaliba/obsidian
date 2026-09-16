@@ -13,12 +13,12 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "RPRT/RPRT - Tracklist.md",
+                "file": "RPRT/Visual Explainers.md",
                 "mode": "source",
                 "source": false
               },
               "icon": "lucide-file",
-              "title": "RPRT - Tracklist"
+              "title": "Visual Explainers"
             }
           }
         ]
@@ -203,8 +203,9 @@
       "obsidian-git:Open Git source control": false
     }
   },
-  "active": "0f37fa753bb0571d",
+  "active": "93b948408b1892d1",
   "lastOpenFiles": [
+    "RPRT/RPRT - Tracklist.md",
     "RPRT/2026-08-30.md",
     "RPRT/2026-08-26.md",
     "RPRT/2026-08-25.md",
@@ -218,7 +219,6 @@
     "RPRT/2026-09-04.md",
     "RPRT/Visual Explainers.md",
     "RPRT/Studio Repertório.md",
-    "RPRT/RPRT - Tracklist.md",
     "Personal Learning.md",
     "Library of Alexandria.md",
     "RPRT/2026-09-03.md",
