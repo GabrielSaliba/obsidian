@@ -1,0 +1,998 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>RPRT-55 Protected Scheduler Foundation — PR Review Guide</title>
+    <style>
+      :root {
+        --background: oklch(0.97 0.005 260);
+        --foreground: oklch(0.18 0.02 260);
+        --card: oklch(1 0 0);
+        --card-foreground: oklch(0.18 0.02 260);
+        --primary: oklch(0.5 0.25 280);
+        --primary-foreground: oklch(1 0 0);
+        --secondary: oklch(0.5 0.18 180);
+        --secondary-foreground: oklch(1 0 0);
+        --muted: oklch(0.92 0.01 260);
+        --muted-foreground: oklch(0.4 0.02 260);
+        --accent: oklch(0.6 0.22 50);
+        --accent-foreground: oklch(0.18 0.02 260);
+        --destructive: oklch(0.5 0.25 25);
+        --destructive-foreground: oklch(1 0 0);
+        --success: oklch(0.45 0.2 150);
+        --success-foreground: oklch(1 0 0);
+        --warning: oklch(0.55 0.18 85);
+        --warning-foreground: oklch(0.18 0.02 260);
+        --border: oklch(0.88 0.01 260);
+        --ring: oklch(0.5 0.25 280);
+        --code-bg: oklch(0.92 0.01 260);
+        --font-sans: Inter, ui-sans-serif, system-ui, -apple-system, sans-serif;
+        --font-mono: "JetBrains Mono", "Fira Code", ui-monospace, monospace;
+        --font-display: ui-serif, Georgia, "Times New Roman", serif;
+        --radius: 0.625rem;
+      }
+
+      @media (prefers-color-scheme: dark) {
+        :root {
+          --background: oklch(0.16 0.018 260);
+          --foreground: oklch(0.92 0.01 260);
+          --card: oklch(0.2 0.02 260);
+          --card-foreground: oklch(0.92 0.01 260);
+          --primary: oklch(0.72 0.2 280);
+          --primary-foreground: oklch(0.14 0.02 260);
+          --secondary: oklch(0.68 0.15 180);
+          --secondary-foreground: oklch(0.14 0.02 260);
+          --muted: oklch(0.25 0.02 260);
+          --muted-foreground: oklch(0.7 0.02 260);
+          --accent: oklch(0.72 0.17 55);
+          --accent-foreground: oklch(0.14 0.02 260);
+          --destructive: oklch(0.68 0.2 25);
+          --success: oklch(0.68 0.17 150);
+          --warning: oklch(0.75 0.15 85);
+          --border: oklch(0.32 0.02 260);
+          --code-bg: oklch(0.13 0.02 260);
+        }
+      }
+
+      *,
+      *::before,
+      *::after {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+
+      html {
+        scroll-behavior: smooth;
+      }
+
+      body {
+        background:
+          linear-gradient(90deg, color-mix(in oklab, var(--border) 45%, transparent) 1px, transparent 1px),
+          linear-gradient(color-mix(in oklab, var(--border) 35%, transparent) 1px, transparent 1px),
+          var(--background);
+        background-size: 48px 48px;
+        color: var(--foreground);
+        font-family: var(--font-sans);
+        font-size: 15px;
+        line-height: 1.65;
+        -webkit-font-smoothing: antialiased;
+      }
+
+      a {
+        color: var(--primary);
+        text-decoration-thickness: 1px;
+        text-underline-offset: 3px;
+      }
+
+      code {
+        border: 1px solid var(--border);
+        border-radius: 4px;
+        background: var(--code-bg);
+        padding: 1px 5px;
+        font-family: var(--font-mono);
+        font-size: 0.84em;
+      }
+
+      .container {
+        max-width: 1120px;
+        margin: 0 auto;
+        padding: 64px 24px 96px;
+      }
+
+      .eyebrow,
+      .label,
+      .section-number,
+      .badge,
+      .metric-label,
+      .path,
+      .step-no {
+        font-family: var(--font-mono);
+        font-weight: 650;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+      }
+
+      .eyebrow {
+        color: var(--primary);
+        font-size: 0.76rem;
+      }
+
+      h1,
+      h2,
+      h3 {
+        font-family: var(--font-display);
+        font-weight: 520;
+        line-height: 1.15;
+      }
+
+      h1 {
+        max-width: 900px;
+        margin-top: 10px;
+        font-size: clamp(2.6rem, 7vw, 5.8rem);
+        letter-spacing: -0.045em;
+      }
+
+      h1 span {
+        color: var(--primary);
+      }
+
+      h2 {
+        font-size: clamp(1.65rem, 3.2vw, 2.5rem);
+      }
+
+      h3 {
+        font-size: 1.15rem;
+      }
+
+      header {
+        position: relative;
+        overflow: hidden;
+        border: 1.5px solid var(--border);
+        border-radius: calc(var(--radius) * 2);
+        background: color-mix(in oklab, var(--card) 92%, transparent);
+        padding: clamp(28px, 6vw, 64px);
+        box-shadow: 0 20px 70px color-mix(in oklab, var(--foreground) 8%, transparent);
+      }
+
+      header::after {
+        position: absolute;
+        right: -5%;
+        bottom: -55%;
+        width: 360px;
+        height: 360px;
+        border: 42px solid color-mix(in oklab, var(--primary) 14%, transparent);
+        border-radius: 50%;
+        content: "";
+      }
+
+      .subtitle {
+        max-width: 740px;
+        margin-top: 22px;
+        color: var(--muted-foreground);
+        font-size: 1.05rem;
+      }
+
+      .pr-meta {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin-top: 28px;
+      }
+
+      .meta-pill,
+      .badge,
+      .risk-chip {
+        display: inline-flex;
+        align-items: center;
+        gap: 7px;
+        border: 1px solid var(--border);
+        border-radius: 999px;
+        background: var(--muted);
+        padding: 6px 11px;
+        font-family: var(--font-mono);
+        font-size: 0.72rem;
+      }
+
+      .summary-strip {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 14px;
+        margin: 24px 0;
+      }
+
+      .metric {
+        border: 1.5px solid var(--border);
+        border-radius: var(--radius);
+        background: var(--card);
+        padding: 18px;
+      }
+
+      .metric-value {
+        display: block;
+        font-family: var(--font-display);
+        font-size: 2rem;
+        line-height: 1;
+      }
+
+      .metric-label {
+        display: block;
+        margin-top: 8px;
+        color: var(--muted-foreground);
+        font-size: 0.66rem;
+      }
+
+      .tldr {
+        border: 1.5px solid var(--border);
+        border-left: 5px solid var(--primary);
+        border-radius: var(--radius);
+        background: var(--card);
+        padding: 22px 26px;
+      }
+
+      .tldr .label {
+        color: var(--primary);
+        font-size: 0.7rem;
+      }
+
+      .tldr p {
+        max-width: 80ch;
+        margin-top: 7px;
+        font-size: 1rem;
+      }
+
+      section {
+        margin-top: 80px;
+      }
+
+      .section-head {
+        display: flex;
+        align-items: baseline;
+        gap: 16px;
+        margin-bottom: 28px;
+        border-bottom: 1.5px solid var(--border);
+        padding-bottom: 12px;
+      }
+
+      .section-number {
+        color: var(--primary);
+        font-size: 0.75rem;
+      }
+
+      .muted {
+        color: var(--muted-foreground);
+      }
+
+      .stack {
+        display: grid;
+        gap: 12px;
+      }
+
+      .stack-row {
+        display: grid;
+        grid-template-columns: 74px 1fr 150px;
+        align-items: stretch;
+        overflow: hidden;
+        border: 1.5px solid var(--border);
+        border-radius: var(--radius);
+        background: var(--card);
+      }
+
+      .stack-order {
+        display: grid;
+        place-items: center;
+        border-right: 1.5px solid var(--border);
+        background: var(--muted);
+        color: var(--primary);
+        font-family: var(--font-display);
+        font-size: 1.8rem;
+      }
+
+      .stack-copy {
+        padding: 18px 22px;
+      }
+
+      .stack-copy p {
+        margin-top: 5px;
+        color: var(--muted-foreground);
+      }
+
+      .stack-stat {
+        display: grid;
+        place-items: center;
+        border-left: 1.5px solid var(--border);
+        color: var(--muted-foreground);
+        font-family: var(--font-mono);
+        font-size: 0.75rem;
+        text-align: center;
+      }
+
+      .stack-row.external {
+        border-style: dashed;
+      }
+
+      .flow {
+        display: grid;
+        grid-template-columns: repeat(6, minmax(0, 1fr));
+        gap: 12px;
+        align-items: stretch;
+      }
+
+      .flow-node {
+        position: relative;
+        border: 1.5px solid var(--border);
+        border-radius: var(--radius);
+        background: var(--card);
+        padding: 18px 14px;
+        min-height: 142px;
+      }
+
+      .flow-node:not(:last-child)::after {
+        position: absolute;
+        z-index: 2;
+        top: 50%;
+        right: -15px;
+        color: var(--primary);
+        content: "→";
+        font-family: var(--font-mono);
+        font-size: 1.2rem;
+        transform: translateY(-50%);
+      }
+
+      .flow-node strong {
+        display: block;
+        margin: 8px 0;
+      }
+
+      .flow-node p {
+        color: var(--muted-foreground);
+        font-size: 0.82rem;
+        line-height: 1.45;
+      }
+
+      .flow-node.gate {
+        border-color: var(--primary);
+        box-shadow: inset 0 4px 0 var(--primary);
+      }
+
+      .flow-node.exit {
+        border-color: color-mix(in oklab, var(--success) 55%, var(--border));
+        box-shadow: inset 0 4px 0 var(--success);
+      }
+
+      .branch-note {
+        margin-top: 14px;
+        border: 1px dashed color-mix(in oklab, var(--destructive) 55%, var(--border));
+        border-radius: var(--radius);
+        background: color-mix(in oklab, var(--destructive) 7%, var(--card));
+        padding: 14px 18px;
+        color: var(--muted-foreground);
+      }
+
+      .branch-note strong {
+        color: var(--destructive);
+      }
+
+      .grid-2,
+      .grid-3 {
+        display: grid;
+        gap: 16px;
+      }
+
+      .grid-2 {
+        grid-template-columns: repeat(2, 1fr);
+      }
+
+      .grid-3 {
+        grid-template-columns: repeat(3, 1fr);
+      }
+
+      .card {
+        border: 1.5px solid var(--border);
+        border-radius: var(--radius);
+        background: var(--card);
+        padding: 22px;
+      }
+
+      .card p,
+      .card li {
+        color: var(--muted-foreground);
+      }
+
+      .card h3 + p,
+      .card h3 + ul {
+        margin-top: 10px;
+      }
+
+      .card ul {
+        padding-left: 20px;
+      }
+
+      .before {
+        border-top: 5px solid var(--destructive);
+      }
+
+      .after {
+        border-top: 5px solid var(--success);
+      }
+
+      .outcomes {
+        width: 100%;
+        border-collapse: separate;
+        border-spacing: 0;
+        overflow: hidden;
+        border: 1.5px solid var(--border);
+        border-radius: var(--radius);
+        background: var(--card);
+      }
+
+      .outcomes th,
+      .outcomes td {
+        border-bottom: 1px solid var(--border);
+        padding: 14px 16px;
+        text-align: left;
+        vertical-align: top;
+      }
+
+      .outcomes tr:last-child td {
+        border-bottom: 0;
+      }
+
+      .outcomes th {
+        background: var(--muted);
+        color: var(--muted-foreground);
+        font-family: var(--font-mono);
+        font-size: 0.7rem;
+        letter-spacing: 0.05em;
+        text-transform: uppercase;
+      }
+
+      .badge {
+        padding: 4px 8px;
+        font-size: 0.62rem;
+      }
+
+      .badge.success {
+        border-color: color-mix(in oklab, var(--success) 45%, var(--border));
+        color: var(--success);
+      }
+
+      .badge.warning {
+        border-color: color-mix(in oklab, var(--warning) 50%, var(--border));
+        color: var(--warning);
+      }
+
+      .badge.danger {
+        border-color: color-mix(in oklab, var(--destructive) 50%, var(--border));
+        color: var(--destructive);
+      }
+
+      .file-card {
+        overflow: hidden;
+        border: 1.5px solid var(--border);
+        border-radius: var(--radius);
+        background: var(--card);
+      }
+
+      .file-head {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        border-bottom: 1px solid var(--border);
+        padding: 14px 18px;
+      }
+
+      .file-body {
+        padding: 16px 18px;
+      }
+
+      .file-body p {
+        color: var(--muted-foreground);
+      }
+
+      .path {
+        font-size: 0.71rem;
+        text-transform: none;
+      }
+
+      .risk-map {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 9px;
+        margin-bottom: 18px;
+      }
+
+      .risk-chip .dot {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+      }
+
+      .risk-chip.attention .dot {
+        background: var(--destructive);
+      }
+
+      .risk-chip.medium .dot {
+        background: var(--warning);
+      }
+
+      .risk-chip.safe .dot {
+        background: var(--success);
+      }
+
+      .review-step {
+        display: grid;
+        grid-template-columns: 54px 1fr;
+        gap: 18px;
+        border-bottom: 1px solid var(--border);
+        padding: 20px 0;
+      }
+
+      .review-step:last-child {
+        border-bottom: 0;
+      }
+
+      .step-no {
+        display: grid;
+        place-items: center;
+        width: 44px;
+        height: 44px;
+        border: 1.5px solid var(--primary);
+        border-radius: 50%;
+        color: var(--primary);
+        font-size: 0.72rem;
+      }
+
+      .review-step p {
+        margin-top: 5px;
+        color: var(--muted-foreground);
+      }
+
+      .criteria {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 12px;
+      }
+
+      .criterion {
+        display: grid;
+        grid-template-columns: 30px 1fr;
+        gap: 12px;
+        border: 1.5px solid var(--border);
+        border-radius: var(--radius);
+        background: var(--card);
+        padding: 16px;
+      }
+
+      .check {
+        display: grid;
+        place-items: center;
+        width: 26px;
+        height: 26px;
+        border-radius: 50%;
+        background: var(--success);
+        color: var(--success-foreground);
+        font-weight: 800;
+      }
+
+      .criterion p {
+        margin-top: 4px;
+        color: var(--muted-foreground);
+        font-size: 0.84rem;
+      }
+
+      .test-panel {
+        overflow: hidden;
+        border: 1.5px solid var(--border);
+        border-radius: var(--radius);
+        background: var(--code-bg);
+      }
+
+      .test-head {
+        display: flex;
+        justify-content: space-between;
+        border-bottom: 1px solid var(--border);
+        padding: 14px 18px;
+        font-family: var(--font-mono);
+        font-size: 0.75rem;
+      }
+
+      .test-body {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 1px;
+        background: var(--border);
+      }
+
+      .test-cell {
+        background: var(--card);
+        padding: 18px;
+      }
+
+      .test-cell strong {
+        display: block;
+        color: var(--success);
+      }
+
+      .test-cell span {
+        color: var(--muted-foreground);
+        font-size: 0.82rem;
+      }
+
+      .scope-note {
+        border: 1.5px solid color-mix(in oklab, var(--warning) 55%, var(--border));
+        border-radius: var(--radius);
+        background: color-mix(in oklab, var(--warning) 8%, var(--card));
+        padding: 20px 24px;
+      }
+
+      .scope-note strong {
+        color: var(--warning);
+      }
+
+      footer {
+        margin-top: 80px;
+        border-top: 1.5px solid var(--border);
+        padding-top: 24px;
+        color: var(--muted-foreground);
+        font-family: var(--font-mono);
+        font-size: 0.72rem;
+      }
+
+      @media (max-width: 860px) {
+        .summary-strip,
+        .grid-3,
+        .test-body {
+          grid-template-columns: repeat(2, 1fr);
+        }
+
+        .flow {
+          grid-template-columns: repeat(2, 1fr);
+        }
+
+        .flow-node::after {
+          display: none;
+        }
+      }
+
+      @media (max-width: 620px) {
+        .container {
+          padding: 24px 14px 64px;
+        }
+
+        .summary-strip,
+        .grid-2,
+        .grid-3,
+        .criteria,
+        .test-body,
+        .flow {
+          grid-template-columns: 1fr;
+        }
+
+        .stack-row {
+          grid-template-columns: 52px 1fr;
+        }
+
+        .stack-stat {
+          grid-column: 1 / -1;
+          border-top: 1px solid var(--border);
+          border-left: 0;
+          padding: 9px;
+        }
+
+        .outcomes {
+          display: block;
+          overflow-x: auto;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <main class="container">
+      <header>
+        <span class="eyebrow">Pull request stack · RPRT-55 · Review guide</span>
+        <h1>Protected scheduler <span>foundation</span></h1>
+        <p class="subtitle">
+          A server-only execution boundary for future cleanup, recovery, outbox,
+          reconciliation, and tracking jobs. The change defines how scheduled work
+          authenticates, stays bounded, survives duplicate delivery, and reports one safe
+          final result.
+        </p>
+        <div class="pr-meta">
+          <a class="meta-pill" href="https://github.com/guisaliba/repertorio/pull/52">PR #52 · contracts</a>
+          <a class="meta-pill" href="https://github.com/guisaliba/repertorio/pull/53">PR #53 · runner</a>
+          <a class="meta-pill" href="https://github.com/guisaliba/repertorio/pull/54">PR #54 · evidence</a>
+          <span class="meta-pill">Stack #56</span>
+          <span class="meta-pill">Author · GabrielSaliba</span>
+        </div>
+      </header>
+
+      <div class="summary-strip">
+        <div class="metric"><span class="metric-value">3</span><span class="metric-label">Review layers</span></div>
+        <div class="metric"><span class="metric-value">24</span><span class="metric-label">Files changed</span></div>
+        <div class="metric"><span class="metric-value">278</span><span class="metric-label">Passing tests</span></div>
+        <div class="metric"><span class="metric-value">0</span><span class="metric-label">Deployed routes</span></div>
+      </div>
+
+      <div class="tldr">
+        <span class="label">TL;DR</span>
+        <p>
+          This stack does not schedule a production job. It creates the protected factory
+          that every later job must use. Authentication happens before observability context
+          or handler work, handlers receive strict batch and time limits, duplicate safety is
+          their durable responsibility, and every authorized invocation produces one bounded
+          response and one final wide event.
+        </p>
+      </div>
+
+      <section>
+        <div class="section-head"><span class="section-number">01</span><h2>Review in this order</h2></div>
+        <div class="stack">
+          <div class="stack-row external">
+            <div class="stack-order">0</div>
+            <div class="stack-copy">
+              <h3><a href="https://github.com/guisaliba/repertorio/pull/51">PR #51 · Observability prerequisite</a></h3>
+              <p>Supplies correlation context, safe wide-event delivery, and final operation controls. It is an external blocker, not a member of stack #56.</p>
+            </div>
+            <div class="stack-stat">RPRT-5<br />external base</div>
+          </div>
+          <div class="stack-row">
+            <div class="stack-order">1</div>
+            <div class="stack-copy">
+              <h3><a href="https://github.com/guisaliba/repertorio/pull/52">PR #52 · Contracts and secret scope</a></h3>
+              <p>Review the credential boundary, public handler types, telemetry vocabulary, operating rules, and architecture ownership.</p>
+            </div>
+            <div class="stack-stat">246<br />reviewable lines</div>
+          </div>
+          <div class="stack-row">
+            <div class="stack-order">2</div>
+            <div class="stack-copy">
+              <h3><a href="https://github.com/guisaliba/repertorio/pull/53">PR #53 · Authenticated bounded runner</a></h3>
+              <p>Review the single execution path: bearer gate, operation context, batch loop, deadline signal, classification, response, and final event.</p>
+            </div>
+            <div class="stack-stat">387<br />reviewable lines</div>
+          </div>
+          <div class="stack-row">
+            <div class="stack-order">3</div>
+            <div class="stack-copy">
+              <h3><a href="https://github.com/guisaliba/repertorio/pull/54">PR #54 · Behavioral evidence</a></h3>
+              <p>Review duplicate, limit, timeout, partial-failure, retry, exception, and invalid-configuration proof.</p>
+            </div>
+            <div class="stack-stat">384<br />reviewable lines</div>
+          </div>
+        </div>
+      </section>
+
+      <section>
+        <div class="section-head"><span class="section-number">02</span><h2>Why this boundary exists</h2></div>
+        <div class="grid-2">
+          <article class="card before">
+            <h3>Before</h3>
+            <ul>
+              <li>No shared scheduler authentication contract.</li>
+              <li>No common batch or whole-route deadline.</li>
+              <li>Later jobs could invent different retry rules.</li>
+              <li>No approved final-event fields for scheduled work.</li>
+              <li>Duplicate-delivery expectations existed only in issue text.</li>
+            </ul>
+          </article>
+          <article class="card after">
+            <h3>After</h3>
+            <ul>
+              <li>One exact bearer gate through server-only <code>CRON_SECRET</code>.</li>
+              <li>One handler interface with limit, deadline, signal, and correlation.</li>
+              <li>One outcome vocabulary for success, duplicate, failure, and retry.</li>
+              <li>One final safe wide event for each authorized operation.</li>
+              <li>Tests prove bounds and duplicate-safe fixture behavior.</li>
+            </ul>
+          </article>
+        </div>
+      </section>
+
+      <section>
+        <div class="section-head"><span class="section-number">03</span><h2>The authorized execution path</h2></div>
+        <div class="flow">
+          <article class="flow-node">
+            <span class="badge">Request</span>
+            <strong>GET invocation</strong>
+            <p>Cookies and browser sessions have no authority.</p>
+          </article>
+          <article class="flow-node gate">
+            <span class="badge danger">Trust gate</span>
+            <strong>Exact bearer check</strong>
+            <p>Reject before context creation, loading, or execution.</p>
+          </article>
+          <article class="flow-node">
+            <span class="badge">Observe</span>
+            <strong>Create operation</strong>
+            <p>Generate request and operation IDs through RPRT-5.</p>
+          </article>
+          <article class="flow-node">
+            <span class="badge warning">Bound</span>
+            <strong>Load up to limit</strong>
+            <p>Pass batch limit, deadline, and shared abort signal.</p>
+          </article>
+          <article class="flow-node">
+            <span class="badge warning">Execute</span>
+            <strong>Process each item</strong>
+            <p>Require a stable business key; stop before new work at deadline.</p>
+          </article>
+          <article class="flow-node exit">
+            <span class="badge success">Finalize</span>
+            <strong>Response + event</strong>
+            <p>Return bounded counts and emit one final safe wide event.</p>
+          </article>
+        </div>
+        <div class="branch-note">
+          <strong>Unauthorized branch:</strong> returns HTTP 401 with <code>no-store</code>.
+          The observer, loader, and executor are not called.
+        </div>
+      </section>
+
+      <section>
+        <div class="section-head"><span class="section-number">04</span><h2>Outcome semantics</h2></div>
+        <table class="outcomes">
+          <thead>
+            <tr><th>Condition</th><th>HTTP</th><th>Operation result</th><th>Reviewer meaning</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>All loaded work succeeds or is already applied</td>
+              <td><span class="badge success">200</span></td>
+              <td><code>success</code></td>
+              <td>No retry remains.</td>
+            </tr>
+            <tr>
+              <td>One or more items have a final classified failure</td>
+              <td><span class="badge success">200</span></td>
+              <td><code>partial_failure</code></td>
+              <td>The handler owns durable final evidence; repeating the batch is unsafe or unnecessary.</td>
+            </tr>
+            <tr>
+              <td>Retry-safe work or loaded work remains</td>
+              <td><span class="badge warning">503</span></td>
+              <td><code>retry</code></td>
+              <td>The next controlled invocation can continue durable work. Vercel Cron does not retry automatically.</td>
+            </tr>
+            <tr>
+              <td>Timer expiry or unexpected exception</td>
+              <td><span class="badge danger">500</span></td>
+              <td><code>error</code></td>
+              <td>Abort the signal and do not assume an in-flight external effect is safe to repeat.</td>
+            </tr>
+          </tbody>
+        </table>
+      </section>
+
+      <section>
+        <div class="section-head"><span class="section-number">05</span><h2>Security and privacy boundary</h2></div>
+        <div class="grid-3">
+          <article class="card">
+            <span class="badge danger">Credential</span>
+            <h3>Server only</h3>
+            <p><code>CRON_SECRET</code> must have at least 16 characters, cannot use a public prefix, and is forbidden from feature Preview configuration.</p>
+          </article>
+          <article class="card">
+            <span class="badge warning">Idempotency</span>
+            <h3>Handler owned</h3>
+            <p>The runner passes a stable business key. Durable database or provider guards must make duplicate delivery safe across requests and runtime instances.</p>
+          </article>
+          <article class="card">
+            <span class="badge success">Telemetry</span>
+            <h3>Counts, not payloads</h3>
+            <p>Events include job type, limits, counts, deadline state, status, and correlation. They exclude secrets, items, business keys, cookies, and raw messages.</p>
+          </article>
+        </div>
+      </section>
+
+      <section>
+        <div class="section-head"><span class="section-number">06</span><h2>File tour and risk map</h2></div>
+        <div class="risk-map">
+          <span class="risk-chip attention"><span class="dot"></span>scheduler.ts · primary attention</span>
+          <span class="risk-chip medium"><span class="dot"></span>deployment.mts · secret scope</span>
+          <span class="risk-chip medium"><span class="dot"></span>wide-event.ts · schema growth</span>
+          <span class="risk-chip safe"><span class="dot"></span>tests · evidence</span>
+          <span class="risk-chip safe"><span class="dot"></span>docs · operating rules</span>
+        </div>
+        <div class="grid-2">
+          <article class="file-card">
+            <div class="file-head"><span class="path">src/lib/scheduler/contracts.ts</span><span class="badge success">NEW</span></div>
+            <div class="file-body"><p>The public extension seam. Later handlers receive only bounds, correlation, cancellation, and a private business key.</p></div>
+          </article>
+          <article class="file-card">
+            <div class="file-head"><span class="path">src/lib/scheduler/scheduler.ts</span><span class="badge danger">ATTENTION</span></div>
+            <div class="file-body"><p>The trust and execution boundary. Review authentication order, timer races, remaining-work calculation, response status, and exception handling.</p></div>
+          </article>
+          <article class="file-card">
+            <div class="file-head"><span class="path">src/lib/env/deployment.mts</span><span class="badge warning">MOD</span></div>
+            <div class="file-body"><p>Validates secret length and rejects scheduler credentials from feature Preview deployments.</p></div>
+          </article>
+          <article class="file-card">
+            <div class="file-head"><span class="path">src/lib/observability/wide-event.ts</span><span class="badge warning">MOD</span></div>
+            <div class="file-body"><p>Adds only bounded scheduler count, limit, and deadline fields to the approved event schema.</p></div>
+          </article>
+          <article class="file-card">
+            <div class="file-head"><span class="path">src/lib/scheduler/*unit.test.ts</span><span class="badge success">NEW</span></div>
+            <div class="file-body"><p>Separates core authentication evidence from duplicate, bound, timeout, and outcome evidence so each review layer stays below 400 lines.</p></div>
+          </article>
+          <article class="file-card">
+            <div class="file-head"><span class="path">docs/scheduler.md</span><span class="badge success">NEW</span></div>
+            <div class="file-body"><p>Defines what later M3-M6 routes must do and what this foundation does not claim to implement.</p></div>
+          </article>
+        </div>
+      </section>
+
+      <section>
+        <div class="section-head"><span class="section-number">07</span><h2>Where the reviewer should focus</h2></div>
+        <div class="card">
+          <div class="review-step">
+            <span class="step-no">01</span>
+            <div><h3>Authentication order</h3><p>Confirm the exact bearer check happens before <code>observer.observe</code>, <code>load</code>, and <code>execute</code>. This prevents unauthorized work and unauthorized correlation events.</p></div>
+          </div>
+          <div class="review-step">
+            <span class="step-no">02</span>
+            <div><h3>Duplicate contract</h3><p>Confirm the runner does not claim that process memory is durable. The production handler must use a database command, lock, lease, or provider-supported idempotency key.</p></div>
+          </div>
+          <div class="review-step">
+            <span class="step-no">03</span>
+            <div><h3>Deadline and ambiguity</h3><p>Confirm timer expiry aborts the signal and returns an error instead of converting an unsettled external effect into a blind retry.</p></div>
+          </div>
+          <div class="review-step">
+            <span class="step-no">04</span>
+            <div><h3>Partial failure versus retry</h3><p>Confirm a final classified item failure returns HTTP 200, while retry-safe or unprocessed work returns 503 and remains durable for a future run.</p></div>
+          </div>
+          <div class="review-step">
+            <span class="step-no">05</span>
+            <div><h3>Outbound privacy</h3><p>Confirm the response and final event contain bounded counts and correlation only. The secret, work item, business key, cookie, and raw exception message must stay absent.</p></div>
+          </div>
+        </div>
+      </section>
+
+      <section>
+        <div class="section-head"><span class="section-number">08</span><h2>Acceptance criteria trace</h2></div>
+        <div class="criteria">
+          <article class="criterion"><span class="check">✓</span><div><strong>Dedicated authentication</strong><p><code>CRON_SECRET</code> and exact bearer validation.</p></div></article>
+          <article class="criterion"><span class="check">✓</span><div><strong>Bounded execution</strong><p>Batch limit, route deadline, and shared abort signal.</p></div></article>
+          <article class="criterion"><span class="check">✓</span><div><strong>Handler interfaces</strong><p>Typed load, business-key, execute, and result contracts.</p></div></article>
+          <article class="criterion"><span class="check">✓</span><div><strong>One final event</strong><p>RPRT-5 observer wraps each authorized invocation.</p></div></article>
+          <article class="criterion"><span class="check">✓</span><div><strong>Outcome behavior</strong><p>Success, partial failure, retry, timeout, and exception are explicit.</p></div></article>
+          <article class="criterion"><span class="check">✓</span><div><strong>Server-only credential</strong><p>Feature Preview rejection and client-boundary tests.</p></div></article>
+          <article class="criterion"><span class="check">✓</span><div><strong>Duplicate-safe fixture</strong><p>Concurrent invocation applies one fixture effect.</p></div></article>
+          <article class="criterion"><span class="check">✓</span><div><strong>Later-route guidance</strong><p>M3-M6 must use this factory and guarded durable commands.</p></div></article>
+        </div>
+      </section>
+
+      <section>
+        <div class="section-head"><span class="section-number">09</span><h2>Verification evidence</h2></div>
+        <div class="test-panel">
+          <div class="test-head"><span>Top head · 20c142b</span><span class="badge success">PASS</span></div>
+          <div class="test-body">
+            <div class="test-cell"><strong>278 tests</strong><span>27 files, complete unit suite</span></div>
+            <div class="test-cell"><strong>18 focused</strong><span>Bounds and outcome tests</span></div>
+            <div class="test-cell"><strong>4 focused</strong><span>Authentication and correlation tests</span></div>
+            <div class="test-cell"><strong>Clean</strong><span>Prettier, ESLint, TypeScript</span></div>
+            <div class="test-cell"><strong>Fresh</strong><span>Architecture measurements</span></div>
+            <div class="test-cell"><strong>Excluded</strong><span>Synthetic server secret from client assets</span></div>
+          </div>
+        </div>
+      </section>
+
+      <section>
+        <div class="section-head"><span class="section-number">10</span><h2>Explicitly out of scope</h2></div>
+        <div class="scope-note">
+          <strong>This stack provides a framework, not a deployed schedule.</strong>
+          It does not add a fixture route, <code>vercel.json</code> cron entry, outbox claimant,
+          payment reconciliation handler, shipment tracker, cleanup command, provider call,
+          production secret, or live scheduler proof. Those belong to their delivery milestones
+          and must use the reviewed factory.
+        </div>
+      </section>
+
+      <footer>
+        RPRT-55 · Protected scheduler foundation · Stack #56 · PRs #52–#54 · Generated for human review
+      </footer>
+    </main>
+  </body>
+</html>
