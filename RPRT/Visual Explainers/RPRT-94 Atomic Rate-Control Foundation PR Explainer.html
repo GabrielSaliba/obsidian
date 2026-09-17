@@ -141,7 +141,7 @@
         <div class="check"><span class="tick">✓</span><span>Complete database suite passed 1,707 tests across 36 files.</span></div>
         <div class="check"><span class="tick">✓</span><span>Generated type, architecture freshness, TypeScript, and formatting checks passed.</span></div>
       </div>
-      <div class="callout"><h3>Why this issue exists</h3><p>The initial delivery had six dependent PRs. The project limit is four PRs per stack. This issue isolates the reusable database decision so reviewers can approve it before the route-specific application layer.</p></div>
+      <div class="callout"><h3>Cross-stack merge gate</h3><p>The initial delivery had six dependent PRs. The project limit is four PRs per stack. Stack #65 isolates the reusable database decision. The route-specific application work is open in separate stack #66, but stack #65 must merge first.</p></div>
     </section>
 
     <footer>RPRT-94 · active stack #65 · heads f62b897 → e220170 → 5b4bf6d</footer>
