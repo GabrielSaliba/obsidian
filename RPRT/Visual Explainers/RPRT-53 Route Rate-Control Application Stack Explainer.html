@@ -1,0 +1,167 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>RPRT-53 Route Rate-Control Application Stack Explainer</title>
+  <style>
+    :root {
+      --background: oklch(0.97 0.005 260); --foreground: oklch(0.18 0.02 260);
+      --card: oklch(1 0 0); --primary: oklch(0.50 0.25 280);
+      --primary-foreground: oklch(1 0 0); --muted: oklch(0.92 0.01 260);
+      --muted-foreground: oklch(0.40 0.02 260); --success: oklch(0.45 0.20 150);
+      --warning: oklch(0.55 0.18 85); --destructive: oklch(0.50 0.25 25);
+      --border: oklch(0.88 0.01 260); --font-sans: Inter, system-ui, sans-serif;
+      --font-mono: "JetBrains Mono", ui-monospace, monospace;
+      --font-display: ui-serif, Georgia, serif; --radius: 0.7rem;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --background: oklch(0.16 0.015 260); --foreground: oklch(0.92 0.01 260);
+        --card: oklch(0.20 0.018 260); --primary: oklch(0.70 0.18 280);
+        --primary-foreground: oklch(0.16 0.015 260); --muted: oklch(0.25 0.018 260);
+        --muted-foreground: oklch(0.72 0.02 260); --success: oklch(0.68 0.15 150);
+        --warning: oklch(0.75 0.14 85); --destructive: oklch(0.68 0.18 25);
+        --border: oklch(0.32 0.02 260);
+      }
+    }
+    * { box-sizing: border-box; }
+    body { margin: 0; background: var(--background); color: var(--foreground); font: 15px/1.65 var(--font-sans); }
+    main { max-width: 1040px; margin: auto; padding: 64px 24px 96px; }
+    h1, h2, h3 { font-family: var(--font-display); font-weight: 500; }
+    h1 { max-width: 850px; margin: 8px 0 18px; font-size: clamp(2.3rem, 6vw, 4.6rem); line-height: 0.98; }
+    h2 { margin: 0; font-size: 1.55rem; }
+    h3 { margin: 0 0 5px; font-size: 1.08rem; }
+    p { max-width: 70ch; }
+    code { font-family: var(--font-mono); }
+    a { color: var(--primary); }
+    .eyebrow, .meta, .label, .num { font-family: var(--font-mono); }
+    .eyebrow, .label { color: var(--muted-foreground); font-size: 0.72rem; font-weight: 650; letter-spacing: 0.07em; text-transform: uppercase; }
+    .meta { display: flex; flex-wrap: wrap; gap: 10px 20px; color: var(--muted-foreground); font-size: 0.78rem; }
+    .hero-card { max-width: 810px; margin-top: 34px; padding: 22px 26px; background: var(--card); border: 1.5px solid var(--border); border-left: 4px solid var(--warning); border-radius: var(--radius); }
+    .hero-card strong { color: var(--warning); font: 650 0.75rem var(--font-mono); letter-spacing: 0.06em; text-transform: uppercase; }
+    .hero-card p { margin: 7px 0 0; color: var(--muted-foreground); }
+    .stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin-top: 28px; }
+    .stat { padding: 17px; text-align: center; background: var(--card); border: 1.5px solid var(--border); border-radius: var(--radius); }
+    .stat b { display: block; font: 500 2rem var(--font-display); }
+    .stat span { color: var(--muted-foreground); font: 650 0.67rem var(--font-mono); letter-spacing: 0.05em; text-transform: uppercase; }
+    section { margin-top: 70px; }
+    .section-title { display: flex; align-items: baseline; gap: 15px; margin-bottom: 24px; padding-bottom: 9px; border-bottom: 1.5px solid var(--border); }
+    .num { color: var(--primary); font-size: 0.74rem; font-weight: 700; }
+    .diagram { padding: 24px; overflow-x: auto; background: var(--card); border: 1.5px solid var(--border); border-radius: var(--radius); }
+    .diagram svg { display: block; min-width: 760px; width: 100%; }
+    .caption { display: block; margin-top: 10px; text-align: center; color: var(--muted-foreground); font: 0.72rem var(--font-mono); }
+    .policy-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    .policy { display: grid; grid-template-columns: 1fr auto; gap: 7px 14px; padding: 16px 18px; background: var(--card); border: 1.5px solid var(--border); border-radius: var(--radius); }
+    .policy strong, .policy .limit { font: 650 0.8rem var(--font-mono); }
+    .policy .limit { color: var(--primary); }
+    .policy small { grid-column: 1 / -1; color: var(--muted-foreground); }
+    .layers { display: flex; flex-direction: column-reverse; gap: 9px; }
+    .layer { display: grid; grid-template-columns: 55px 1fr auto; gap: 15px; align-items: center; padding: 16px 19px; background: var(--card); border: 1.5px solid var(--border); border-radius: var(--radius); }
+    .layer .id { color: var(--primary); font: 700 0.8rem var(--font-mono); }
+    .layer strong { font-size: 0.94rem; }
+    .layer p { margin: 2px 0 0; color: var(--muted-foreground); font-size: 0.86rem; }
+    .layer .size { color: var(--muted-foreground); white-space: nowrap; font: 0.72rem var(--font-mono); }
+    .status { display: inline-block; margin-left: 7px; padding: 2px 7px; color: var(--warning); background: color-mix(in oklab, var(--warning) 12%, transparent); border-radius: 5px; font: 650 0.63rem var(--font-mono); }
+    .steps { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+    .step { padding: 18px 20px; background: var(--card); border: 1.5px solid var(--border); border-radius: var(--radius); }
+    .step b { display: block; margin-bottom: 6px; color: var(--primary); font: 700 0.75rem var(--font-mono); }
+    .step p { margin: 0; color: var(--muted-foreground); font-size: 0.88rem; }
+    .checks { display: flex; flex-direction: column; gap: 9px; }
+    .check { display: flex; gap: 13px; align-items: flex-start; padding: 14px 18px; background: var(--card); border: 1.5px solid var(--border); border-radius: var(--radius); }
+    .tick { display: grid; flex: 0 0 20px; width: 20px; height: 20px; place-items: center; border-radius: 6px; background: var(--success); color: var(--card); font-weight: 800; }
+    .callout { margin-top: 18px; padding: 18px 22px; background: var(--card); border: 1.5px solid var(--border); border-left: 4px solid var(--warning); border-radius: var(--radius); }
+    .callout p { margin: 5px 0 0; color: var(--muted-foreground); }
+    footer { margin-top: 70px; padding-top: 20px; border-top: 1.5px solid var(--border); color: var(--muted-foreground); font: 0.72rem var(--font-mono); }
+    @media (max-width: 760px) { main { padding: 40px 18px 72px; } .stats, .steps { grid-template-columns: 1fr; } .policy-grid { grid-template-columns: 1fr; } .layer { grid-template-columns: 42px 1fr; } .layer .size { grid-column: 2; } }
+    @media (max-width: 520px) { .stats { grid-template-columns: 1fr 1fr; } }
+  </style>
+</head>
+<body>
+  <main>
+    <header>
+      <span class="eyebrow">Preserved application stack · RPRT-53</span>
+      <h1>Trusted route actors become private, stable decisions</h1>
+      <div class="meta"><span>3 preserved branches</span><span>8 route policies</span><span>HMAC-SHA-256</span><span>blocked by RPRT-94</span></div>
+      <div class="hero-card"><strong>Delivery state</strong><p>The first RPRT-53 publication had six dependent PRs and exceeded the project limit of four PRs per stack. PRs #61-#63 are retired without branch deletion. After RPRT-94 merges, these three branches will be rebased onto <code>dev</code> and published as one new three-layer stack.</p></div>
+    </header>
+
+    <div class="stats">
+      <div class="stat"><b>3</b><span>Future layers</span></div>
+      <div class="stat"><b>8</b><span>Policies</span></div>
+      <div class="stat"><b>429</b><span>Stable denial</span></div>
+      <div class="stat"><b>503</b><span>Fail closed</span></div>
+    </div>
+
+    <section>
+      <div class="section-title"><span class="num">01</span><h2>Application Trust Flow</h2></div>
+      <div class="diagram">
+        <svg viewBox="0 0 940 310" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="title desc">
+          <title id="title">Route rate-control application flow</title><desc id="desc">A route verifies an actor, HMAC hashes it, calls the atomic foundation, and returns an allowed, denied, or unavailable result.</desc>
+          <defs><marker id="a" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0 0L0 6L9 3z" fill="var(--muted-foreground)"/></marker></defs>
+          <g font-family="var(--font-sans)" fill="var(--foreground)">
+            <rect x="20" y="86" width="165" height="120" rx="12" fill="var(--card)" stroke="var(--border)" stroke-width="2"/>
+            <text x="102" y="118" text-anchor="middle" font-family="var(--font-mono)" font-size="13" fill="var(--primary)">ROUTE</text><text x="102" y="150" text-anchor="middle" font-size="14">Verify session, token,</text><text x="102" y="172" text-anchor="middle" font-size="14">signature, or proxy IP</text><text x="102" y="194" text-anchor="middle" font-size="14">before gate call</text>
+            <rect x="235" y="66" width="210" height="160" rx="12" fill="var(--card)" stroke="var(--primary)" stroke-width="2.5"/>
+            <text x="340" y="100" text-anchor="middle" font-family="var(--font-mono)" font-size="13" fill="var(--primary)">SERVER GATE</text><text x="340" y="133" text-anchor="middle" font-size="14">Select reviewed policy</text><text x="340" y="156" text-anchor="middle" font-size="14">HMAC actor identity</text><text x="340" y="179" text-anchor="middle" font-size="14">Call narrow RPC adapter</text><text x="340" y="202" text-anchor="middle" font-size="14">Emit bounded fields only</text>
+            <rect x="495" y="86" width="180" height="120" rx="12" fill="var(--muted)" stroke="var(--warning)" stroke-width="2.5"/>
+            <text x="585" y="118" text-anchor="middle" font-family="var(--font-mono)" font-size="13" fill="var(--warning)">RPRT-94</text><text x="585" y="150" text-anchor="middle" font-size="14">Atomic private state</text><text x="585" y="172" text-anchor="middle" font-size="14">allowed + remaining</text><text x="585" y="194" text-anchor="middle" font-size="14">retry delay</text>
+            <rect x="735" y="22" width="180" height="70" rx="12" fill="var(--card)" stroke="var(--success)" stroke-width="2"/><text x="825" y="50" text-anchor="middle" font-family="var(--font-mono)" font-size="13" fill="var(--success)">ALLOW</text><text x="825" y="75" text-anchor="middle" font-size="14">Continue route</text>
+            <rect x="735" y="110" width="180" height="70" rx="12" fill="var(--card)" stroke="var(--warning)" stroke-width="2"/><text x="825" y="138" text-anchor="middle" font-family="var(--font-mono)" font-size="13" fill="var(--warning)">DENY 429</text><text x="825" y="163" text-anchor="middle" font-size="14">No-store + retry</text>
+            <rect x="735" y="198" width="180" height="70" rx="12" fill="var(--card)" stroke="var(--destructive)" stroke-width="2"/><text x="825" y="226" text-anchor="middle" font-family="var(--font-mono)" font-size="13" fill="var(--destructive)">ERROR 503</text><text x="825" y="251" text-anchor="middle" font-size="14">No DB detail</text>
+            <path d="M185 146H227" stroke="var(--muted-foreground)" stroke-width="2" marker-end="url(#a)"/><path d="M445 146H487" stroke="var(--muted-foreground)" stroke-width="2" marker-end="url(#a)"/><path d="M675 139C704 139 704 57 727 57" fill="none" stroke="var(--muted-foreground)" stroke-width="2" marker-end="url(#a)"/><path d="M675 146H727" stroke="var(--muted-foreground)" stroke-width="2" marker-end="url(#a)"/><path d="M675 153C704 153 704 233 727 233" fill="none" stroke="var(--muted-foreground)" stroke-width="2" marker-end="url(#a)"/>
+            <text x="470" y="296" text-anchor="middle" font-family="var(--font-mono)" font-size="12" fill="var(--muted-foreground)">Raw actor identity stops at the route boundary. PostgreSQL and telemetry receive no raw subject.</text>
+          </g>
+        </svg>
+        <span class="caption">RPRT-53 consumes the reviewed RPRT-94 decision contract. It does not bypass it.</span>
+      </div>
+    </section>
+
+    <section>
+      <div class="section-title"><span class="num">02</span><h2>Selected Policies</h2></div>
+      <div class="policy-grid">
+        <div class="policy"><strong>auth_signup</strong><span class="limit">5 / hour</span><small>Anonymous, keyed forwarded IP.</small></div>
+        <div class="policy"><strong>auth_login</strong><span class="limit">10 / 15 min</span><small>Non-enumerating response.</small></div>
+        <div class="policy"><strong>auth_password_recovery</strong><span class="limit">5 / hour</span><small>Same external response for all accounts.</small></div>
+        <div class="policy"><strong>order_access_customer</strong><span class="limit">60 / min</span><small>Verified customer identity.</small></div>
+        <div class="policy"><strong>order_access_guest</strong><span class="limit">20 / min</span><small>Verified guest-order token identity.</small></div>
+        <div class="policy"><strong>checkout_customer</strong><span class="limit">10 / min</span><small>Verified customer identity.</small></div>
+        <div class="policy"><strong>checkout_guest</strong><span class="limit">5 / min</span><small>Verified guest-cart identity.</small></div>
+        <div class="policy"><strong>provider_webhook</strong><span class="limit">600 / min</span><small>Separate lane; signature and dedup remain required.</small></div>
+      </div>
+    </section>
+
+    <section>
+      <div class="section-title"><span class="num">03</span><h2>Preserved Three-Layer Shape</h2></div>
+      <div class="layers">
+        <div class="layer"><span class="id">L3</span><div><strong>Policy and operating boundaries</strong><span class="status">RETIRED PR #63</span><p>Policy matrix, Vercel shield choice, webhook separation, scheduler separation, and future route review.</p></div><span class="size">134 lines</span></div>
+        <div class="layer"><span class="id">L2</span><div><strong>Privacy and response evidence</strong><span class="status">RETIRED PR #62</span><p>Actor separation, HMAC behavior, stable 429/503 responses, safe telemetry, and observer isolation.</p></div><span class="size">230 reviewable</span></div>
+        <div class="layer"><span class="id">L1</span><div><strong>Trusted server gate</strong><span class="status">RETIRED PR #61</span><p>Policy catalog, opaque actor constructors, HMAC digest, narrow RPC adapter, and response mapping.</p></div><span class="size">358 reviewable</span></div>
+      </div>
+    </section>
+
+    <section>
+      <div class="section-title"><span class="num">04</span><h2>Sequential Delivery</h2></div>
+      <div class="steps">
+        <div class="step"><b>1 · REVIEW RPRT-94</b><p>Review and merge active stack #65 from PR #58 through PR #60.</p></div>
+        <div class="step"><b>2 · REBASE</b><p>Rebase the three preserved application branches onto the new <code>dev</code>.</p></div>
+        <div class="step"><b>3 · REPUBLISH</b><p>Create a new three-layer RPRT-53 stack and request human review.</p></div>
+      </div>
+      <div class="callout"><h3>No implementation loss</h3><p>The upper commits remain on local and remote branches. PR retirement removes an invalid delivery shape; it does not remove code or evidence.</p></div>
+    </section>
+
+    <section>
+      <div class="section-title"><span class="num">05</span><h2>Existing Evidence</h2></div>
+      <div class="checks">
+        <div class="check"><span class="tick">✓</span><span>Full unit suite passed 290 tests across 29 files.</span></div>
+        <div class="check"><span class="tick">✓</span><span>Privacy tests prove raw subjects do not reach state, responses, or telemetry.</span></div>
+        <div class="check"><span class="tick">✓</span><span>Adapter evidence includes a real local <code>supabase-js</code> RPC call.</span></div>
+        <div class="check"><span class="tick">✓</span><span>Production build, lint, TypeScript, formatting, dependency policy, and architecture checks passed.</span></div>
+        <div class="check"><span class="tick">✓</span><span>Synthetic client-bundle canary proves the HMAC secret stays server-only.</span></div>
+      </div>
+    </section>
+
+    <footer>RPRT-53 · blocked by RPRT-94 · preserved heads 3d180e2 → 2e14b18 → 499d109</footer>
+  </main>
+</body>
+</html>

@@ -1,0 +1,150 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>RPRT-94 Atomic Rate-Control Foundation PR Explainer</title>
+  <style>
+    :root {
+      --background: oklch(0.97 0.005 260); --foreground: oklch(0.18 0.02 260);
+      --card: oklch(1 0 0); --primary: oklch(0.50 0.25 280);
+      --primary-foreground: oklch(1 0 0); --muted: oklch(0.92 0.01 260);
+      --muted-foreground: oklch(0.40 0.02 260); --success: oklch(0.45 0.20 150);
+      --warning: oklch(0.55 0.18 85); --destructive: oklch(0.50 0.25 25);
+      --border: oklch(0.88 0.01 260); --font-sans: Inter, system-ui, sans-serif;
+      --font-mono: "JetBrains Mono", ui-monospace, monospace;
+      --font-display: ui-serif, Georgia, serif; --radius: 0.7rem;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --background: oklch(0.16 0.015 260); --foreground: oklch(0.92 0.01 260);
+        --card: oklch(0.20 0.018 260); --primary: oklch(0.70 0.18 280);
+        --primary-foreground: oklch(0.16 0.015 260); --muted: oklch(0.25 0.018 260);
+        --muted-foreground: oklch(0.72 0.02 260); --success: oklch(0.68 0.15 150);
+        --warning: oklch(0.75 0.14 85); --destructive: oklch(0.68 0.18 25);
+        --border: oklch(0.32 0.02 260);
+      }
+    }
+    * { box-sizing: border-box; }
+    body { margin: 0; background: var(--background); color: var(--foreground); font: 15px/1.65 var(--font-sans); }
+    main { max-width: 1040px; margin: auto; padding: 64px 24px 96px; }
+    h1, h2, h3 { font-family: var(--font-display); font-weight: 500; }
+    h1 { max-width: 820px; margin: 8px 0 18px; font-size: clamp(2.3rem, 6vw, 4.6rem); line-height: 0.98; }
+    h2 { margin: 0; font-size: 1.55rem; }
+    h3 { margin: 0 0 5px; font-size: 1.08rem; }
+    p { max-width: 70ch; }
+    code { font-family: var(--font-mono); }
+    a { color: var(--primary); }
+    .eyebrow, .meta, .label, .num { font-family: var(--font-mono); }
+    .eyebrow, .label { color: var(--muted-foreground); font-size: 0.72rem; font-weight: 650; letter-spacing: 0.07em; text-transform: uppercase; }
+    .meta { display: flex; flex-wrap: wrap; gap: 10px 20px; color: var(--muted-foreground); font-size: 0.78rem; }
+    .hero-card { max-width: 790px; margin-top: 34px; padding: 22px 26px; background: var(--card); border: 1.5px solid var(--border); border-left: 4px solid var(--primary); border-radius: var(--radius); }
+    .hero-card strong { color: var(--primary); font: 650 0.75rem var(--font-mono); letter-spacing: 0.06em; text-transform: uppercase; }
+    .hero-card p { margin: 7px 0 0; color: var(--muted-foreground); }
+    .stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin-top: 28px; }
+    .stat { padding: 17px; text-align: center; background: var(--card); border: 1.5px solid var(--border); border-radius: var(--radius); }
+    .stat b { display: block; font: 500 2rem var(--font-display); }
+    .stat span { color: var(--muted-foreground); font: 650 0.67rem var(--font-mono); letter-spacing: 0.05em; text-transform: uppercase; }
+    section { margin-top: 70px; }
+    .section-title { display: flex; align-items: baseline; gap: 15px; margin-bottom: 24px; padding-bottom: 9px; border-bottom: 1.5px solid var(--border); }
+    .num { color: var(--primary); font-size: 0.74rem; font-weight: 700; }
+    .diagram { padding: 24px; overflow-x: auto; background: var(--card); border: 1.5px solid var(--border); border-radius: var(--radius); }
+    .diagram svg { display: block; min-width: 740px; width: 100%; }
+    .caption { display: block; margin-top: 10px; text-align: center; color: var(--muted-foreground); font: 0.72rem var(--font-mono); }
+    .layers { display: flex; flex-direction: column-reverse; gap: 9px; }
+    .layer { display: grid; grid-template-columns: 55px 1fr auto; gap: 15px; align-items: center; padding: 16px 19px; background: var(--card); border: 1.5px solid var(--border); border-radius: var(--radius); }
+    .layer .id { color: var(--primary); font: 700 0.8rem var(--font-mono); }
+    .layer a { color: var(--foreground); font-weight: 700; text-decoration: none; }
+    .layer p { margin: 2px 0 0; color: var(--muted-foreground); font-size: 0.86rem; }
+    .layer .size { color: var(--muted-foreground); white-space: nowrap; font: 0.72rem var(--font-mono); }
+    .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+    .card { padding: 19px 21px; background: var(--card); border: 1.5px solid var(--border); border-radius: var(--radius); }
+    .card p { margin: 6px 0 0; color: var(--muted-foreground); font-size: 0.9rem; }
+    .risk { border-color: var(--warning); }
+    .checks { display: flex; flex-direction: column; gap: 9px; }
+    .check { display: flex; gap: 13px; align-items: flex-start; padding: 14px 18px; background: var(--card); border: 1.5px solid var(--border); border-radius: var(--radius); }
+    .tick { display: grid; flex: 0 0 20px; width: 20px; height: 20px; place-items: center; border-radius: 6px; background: var(--success); color: var(--card); font-weight: 800; }
+    .callout { margin-top: 18px; padding: 18px 22px; background: var(--card); border: 1.5px solid var(--border); border-left: 4px solid var(--success); border-radius: var(--radius); }
+    .callout p { margin: 5px 0 0; color: var(--muted-foreground); }
+    footer { margin-top: 70px; padding-top: 20px; border-top: 1.5px solid var(--border); color: var(--muted-foreground); font: 0.72rem var(--font-mono); }
+    @media (max-width: 720px) { main { padding: 40px 18px 72px; } .stats, .grid { grid-template-columns: 1fr 1fr; } .layer { grid-template-columns: 42px 1fr; } .layer .size { grid-column: 2; } }
+    @media (max-width: 470px) { .stats, .grid { grid-template-columns: 1fr; } }
+  </style>
+</head>
+<body>
+  <main>
+    <header>
+      <span class="eyebrow">Active pull request stack #65 · RPRT-94</span>
+      <h1>One atomic decision, shared by every server instance</h1>
+      <div class="meta"><span>3 pull requests</span><span>15 database checks in scope</span><span>service_role only</span><span>blocked by RPRT-55</span></div>
+      <div class="hero-card"><strong>Review decision</strong><p>Does this stack provide a private, least-privilege fixed-window foundation that cannot over-admit under concurrency and cannot let maintenance block active decisions?</p></div>
+    </header>
+
+    <div class="stats">
+      <div class="stat"><b>3</b><span>Review layers</span></div>
+      <div class="stat"><b>1</b><span>Atomic consume RPC</span></div>
+      <div class="stat"><b>10k</b><span>Cleanup hard cap</span></div>
+      <div class="stat"><b>0</b><span>App table grants</span></div>
+    </div>
+
+    <section>
+      <div class="section-title"><span class="num">01</span><h2>Database Boundary</h2></div>
+      <div class="diagram">
+        <svg viewBox="0 0 920 290" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="title desc">
+          <title id="title">Atomic rate-control database flow</title><desc id="desc">Service role calls one atomic command that locks and updates private state. Cleanup skips locked rows.</desc>
+          <defs><marker id="a" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0 0L0 6L9 3z" fill="var(--muted-foreground)"/></marker></defs>
+          <g font-family="var(--font-sans)" fill="var(--foreground)">
+            <rect x="22" y="74" width="170" height="112" rx="12" fill="var(--card)" stroke="var(--primary)" stroke-width="2"/>
+            <text x="107" y="107" text-anchor="middle" font-family="var(--font-mono)" font-size="13" fill="var(--primary)">SERVICE ROLE</text>
+            <text x="107" y="140" text-anchor="middle" font-size="14">Policy + digest</text><text x="107" y="162" text-anchor="middle" font-size="14">limit + window</text>
+            <rect x="250" y="52" width="235" height="156" rx="12" fill="var(--card)" stroke="var(--warning)" stroke-width="2.5"/>
+            <text x="368" y="86" text-anchor="middle" font-family="var(--font-mono)" font-size="13" fill="var(--warning)">ATOMIC CONSUME</text>
+            <text x="368" y="119" text-anchor="middle" font-size="14">Lock one policy + digest row</text><text x="368" y="142" text-anchor="middle" font-size="14">roll over or count</text><text x="368" y="165" text-anchor="middle" font-size="14">return allowed + remaining</text><text x="368" y="188" text-anchor="middle" font-size="14">increment accepted only</text>
+            <rect x="545" y="52" width="190" height="156" rx="12" fill="var(--card)" stroke="var(--success)" stroke-width="2.5"/>
+            <text x="640" y="86" text-anchor="middle" font-family="var(--font-mono)" font-size="13" fill="var(--success)">PRIVATE STATE</text>
+            <text x="640" y="119" text-anchor="middle" font-size="14">Not in Data API</text><text x="640" y="142" text-anchor="middle" font-size="14">No anon grant</text><text x="640" y="165" text-anchor="middle" font-size="14">No authenticated grant</text><text x="640" y="188" text-anchor="middle" font-size="14">Digest only</text>
+            <rect x="785" y="74" width="115" height="112" rx="12" fill="var(--muted)" stroke="var(--border)" stroke-width="2"/>
+            <text x="842" y="107" text-anchor="middle" font-family="var(--font-mono)" font-size="13">CLEANUP</text><text x="842" y="138" text-anchor="middle" font-size="13">bounded</text><text x="842" y="160" text-anchor="middle" font-size="13">skip locked</text>
+            <path d="M192 130H242" stroke="var(--muted-foreground)" stroke-width="2" marker-end="url(#a)"/><path d="M485 130H537" stroke="var(--muted-foreground)" stroke-width="2" marker-end="url(#a)"/><path d="M785 130H744" stroke="var(--muted-foreground)" stroke-width="2" marker-end="url(#a)"/>
+            <text x="460" y="252" text-anchor="middle" font-family="var(--font-mono)" font-size="12" fill="var(--muted-foreground)">Concurrent calls serialize on the same state row; unrelated subjects remain independent.</text>
+          </g>
+        </svg>
+        <span class="caption">The application receives a decision. It never receives direct state access.</span>
+      </div>
+    </section>
+
+    <section>
+      <div class="section-title"><span class="num">02</span><h2>Review Bottom-Up</h2></div>
+      <div class="layers">
+        <div class="layer"><span class="id">L3</span><div><a href="https://github.com/guisaliba/repertorio/pull/60">#60 · Atomic concurrency evidence</a><p>Committed-session race and cleanup lock-skipping proof. This PR completes RPRT-94.</p></div><span class="size">252 reviewable</span></div>
+        <div class="layer"><span class="id">L2</span><div><a href="https://github.com/guisaliba/repertorio/pull/59">#59 · Policy and cleanup behavior</a><p>Limits, rollover, validation, privileges, active-window retention, and cleanup bounds.</p></div><span class="size">314 reviewable</span></div>
+        <div class="layer"><span class="id">L1</span><div><a href="https://github.com/guisaliba/repertorio/pull/58">#58 · Private atomic state</a><p>Migration, consume and cleanup commands, exact contract, types, and ownership.</p></div><span class="size">231 reviewable</span></div>
+      </div>
+    </section>
+
+    <section>
+      <div class="section-title"><span class="num">03</span><h2>Review Focus</h2></div>
+      <div class="grid">
+        <div class="card risk"><h3>Admission invariant</h3><p>Confirm that one locked row decides admission and that denied requests do not increase the accepted count.</p></div>
+        <div class="card risk"><h3>Window boundary</h3><p>Confirm exact rollover at the fixed-window boundary without carrying an old count into the new window.</p></div>
+        <div class="card"><h3>Privilege boundary</h3><p>Confirm direct state access is unavailable to <code>anon</code> and <code>authenticated</code>.</p></div>
+        <div class="card"><h3>Maintenance safety</h3><p>Confirm cleanup has a one-day cutoff, a 10,000-row maximum, and <code>SKIP LOCKED</code>.</p></div>
+      </div>
+    </section>
+
+    <section>
+      <div class="section-title"><span class="num">04</span><h2>Evidence</h2></div>
+      <div class="checks">
+        <div class="check"><span class="tick">✓</span><span>Clean migration application, database lint, exact public contract, and generated local types passed.</span></div>
+        <div class="check"><span class="tick">✓</span><span>Focused route-rate behavior suite passed 38 tests.</span></div>
+        <div class="check"><span class="tick">✓</span><span>Committed-session concurrency and cleanup lock-skipping tests passed.</span></div>
+        <div class="check"><span class="tick">✓</span><span>Complete database suite passed 1,707 tests across 36 files.</span></div>
+        <div class="check"><span class="tick">✓</span><span>Generated type, architecture freshness, TypeScript, and formatting checks passed.</span></div>
+      </div>
+      <div class="callout"><h3>Why this issue exists</h3><p>The initial delivery had six dependent PRs. The project limit is four PRs per stack. This issue isolates the reusable database decision so reviewers can approve it before the route-specific application layer.</p></div>
+    </section>
+
+    <footer>RPRT-94 · active stack #65 · heads f62b897 → e220170 → 5b4bf6d</footer>
+  </main>
+</body>
+</html>
