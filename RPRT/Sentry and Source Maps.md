@@ -11,14 +11,14 @@ tags:
   - reference
 type: integration-reference
 status: conceptual
-updated: 2026-09-01
+updated: 2026-09-20
 ---
 # Sentry and Source Maps
 
 > [!abstract] Observability Foundation
 > This note explains the basic Sentry exception flow, the difference between a DSN and a source-map upload token, the conceptual Next.js integration shape, and the selected staging-only rollout for [[Studio Repertório]].
 
-**Related notes:** [[Studio Repertório]] · [[Software Delevopment|Software Development]]
+**Related notes:** [[Studio Repertório]] · [[Local Staging CLI Deployment]] · [[Software Delevopment|Software Development]]
 
 > [!example] Indexed Visual Explainer
 > [Open the canonical Sentry and source maps visual explainer](https://uploads.linear.app/445023d5-264c-47cb-a70c-e4a15a58da5c/125bcf06-049a-498b-a259-10b1203dc4f4/de1c9633-b27f-4cab-be8e-d92bca992216). The HTML is attached to the Linear delivery record and has a synchronized physical copy in the vault.

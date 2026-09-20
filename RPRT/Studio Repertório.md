@@ -49,6 +49,7 @@ updated: 2026-09-01
 | [[Auth Users and Profiles]] | Authentication and profile data |
 | [[Administrator Membership Schema]] | Administrator authorization |
 | [[Sentry and Source Maps]] | Exception monitoring, source maps, credential roles, and initial setup |
+| [[Local Staging CLI Deployment]] | Trusted-workstation staging deployment and Bitwarden secret handling |
 | [[Resend]] | General transactional email operations reference |
 | [[Resend Project Initialization]] | RPRT-62 project structure; M1 baseline complete |
 
