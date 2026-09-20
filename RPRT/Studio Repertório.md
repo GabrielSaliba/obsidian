@@ -9,6 +9,10 @@ type: project-hub
 status: Active
 updated: 2026-09-01
 ---
+
+![[583287622_18335093197232830_8143533935869956263_n.jpg|158]]
+
+
 > [!abstract] Studio Repertório
 > Central workspace for project delivery, technical references, domain contracts, and product decisions.
 
@@ -16,7 +20,7 @@ updated: 2026-09-01
 > Open [[RPRT - Tracklist|Work Log]] for daily progress. Use the sections below to find the current reference or contract by domain.
 
 ---
-
+![[781206838_18374016361232830_3601971177093494471_n 2.jpg]]
 ## <span style="color:#80352F">Project Navigation</span>
 
 | Note                           | Purpose                                                         |

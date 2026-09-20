@@ -13,12 +13,12 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "RPRT/Visual Explainers.md",
+                "file": "RPRT/Studio Repertório.md",
                 "mode": "source",
                 "source": false
               },
               "icon": "lucide-file",
-              "title": "Visual Explainers"
+              "title": "Studio Repertório"
             }
           }
         ]
@@ -205,10 +205,20 @@
   },
   "active": "93b948408b1892d1",
   "lastOpenFiles": [
+    "RPRT/RPRT - Tracklist.md",
+    "RPRT/Studio Repertório.md",
+    "attachments/781206838_18374016361232830_3601971177093494471_n 5.jpg",
+    "attachments/781206838_18374016361232830_3601971177093494471_n 4.jpg",
+    "attachments/583287622_18335093197232830_8143533935869956263_n.jpg",
+    "attachments/781206838_18374016361232830_3601971177093494471_n 3.jpg",
+    "attachments/781206838_18374016361232830_3601971177093494471_n 2.jpg",
+    "attachments/781206838_18374016361232830_3601971177093494471_n 1.jpg",
+    "attachments/781206838_18374016361232830_3601971177093494471_n.jpg",
+    "2026-09-19.md",
+    "RPRT/Visual Explainers.md",
     "RPRT/Visual Explainers/RPRT-53 Route Rate-Control Application Stack Explainer.html",
     "RPRT/Visual Explainers/RPRT-94 Atomic Rate-Control Foundation PR Explainer.html",
     "RPRT/Visual Explainers/RPRT-53 Route Rate Controls PR Explainer.html",
-    "RPRT/RPRT - Tracklist.md",
     "RPRT/2026-08-30.md",
     "RPRT/2026-08-26.md",
     "RPRT/2026-08-25.md",
@@ -220,8 +230,6 @@
     "RPRT/2026-09-06.md",
     "RPRT/2026-09-05.md",
     "RPRT/2026-09-04.md",
-    "RPRT/Visual Explainers.md",
-    "RPRT/Studio Repertório.md",
     "Personal Learning.md",
     "Library of Alexandria.md",
     "RPRT/2026-09-03.md",
@@ -238,20 +246,11 @@
     "RPRT/Visual Explainers/PR-10 Preview and Staging Controls Visual Explainer.html",
     "RPRT/Visual Explainers/Account and Guest Order Journey Visual Explainer.html",
     "RPRT/Visual Explainers/RPRT-52 Reliability and Audit Visual Explainer.html",
-    "RPRT/Visual Explainers/RPRT-10 Product Media Storage Visual Explainer.html",
     "Visual Explainers/RPRT-50 Catalog Authority Visual Explainer.html.md",
     "Visual Explainers/Studio Repertorio Lifecycle Visual Explainer.html.md",
-    "RPRT/2026-08-17.md",
     "thumbnails/external/f0a66f1f345e27a26d74d0bc70984e8b.failed.png",
     "thumbnails/external/d255b3b66800e6ae8be11feff4edd16e.failed.png",
     "attachments/Pasted image 20260307005942.png",
-    "attachments/Pasted image 20260803162438.png",
-    "attachments/Pasted image 20260803162438 1.png",
-    "thumbnails/resized/6ec26ef3607966d7f51a033e3e26b47f_86cf658e.webp",
-    "thumbnails/resized/b83e67262f0cf4ba8a21384b61feb0b4_86cf658e.webp",
-    "thumbnails/resized/6f7f2480e782c6e46508a79291caedab_86cf658e.webp",
-    "thumbnails/resized/41523656da9f8c3e9aa4ec1007ffad8a_86cf658e.webp",
-    "thumbnails/resized/78f38f0714fe18fbccd246791c08a40e_86cf658e.webp",
     "Blue Prince/Blue Prince Canvas.canvas"
   ]
 }

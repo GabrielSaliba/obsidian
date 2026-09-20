@@ -1,7 +1,13 @@
+
+
+
+
 > [!abstract] Work Log
 > Daily index for RPRT delivery work, decisions, issues, and next actions.
 
 ## <span style="color:rgb(112, 48, 160)">Daily Notes</span>
+
+![[781206838_18374016361232830_3601971177093494471_n 5.jpg|355]]
 
 | Date | Milestone | Commits | Daily note |
 |---|:---:|---:|---|
