@@ -53,12 +53,12 @@ Create one Bitwarden vault item named `Studio Repertório Staging Deployment`. A
 
 Keep the existing provider restrictions:
 
-| Credential | Required Boundary |
-|---|---|
+| Credential   | Required Boundary                                                           |
+| ------------ | --------------------------------------------------------------------------- |
 | Vercel token | Approved deployment service identity with the smallest practical team scope |
-| Sentry token | `org:ci` only; never store in Vercel |
-| Resend key | Approved staging sandbox key |
-| Supabase key | Approved staging project only |
+| Sentry token | `org:ci` only; never store in Vercel                                        |
+| Resend key   | Approved staging sandbox key                                                |
+| Supabase key | Approved staging project only                                               |
 
 > [!important] Rotation
 > Update the Bitwarden item and the authoritative GitHub `Staging` secret together after a rotation. Never keep an old value as a fallback field.

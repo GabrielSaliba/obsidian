@@ -13,12 +13,12 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "RPRT/Studio Repertório.md",
+                "file": "RPRT/Local Staging CLI Deployment.md",
                 "mode": "source",
                 "source": false
               },
               "icon": "lucide-file",
-              "title": "Studio Repertório"
+              "title": "Local Staging CLI Deployment"
             }
           }
         ]
@@ -203,11 +203,11 @@
       "obsidian-git:Open Git source control": false
     }
   },
-  "active": "0f37fa753bb0571d",
+  "active": "93b948408b1892d1",
   "lastOpenFiles": [
+    "RPRT/Studio Repertório.md",
     "RPRT/Local Staging CLI Deployment.md",
     "RPRT/RPRT - Tracklist.md",
-    "RPRT/Studio Repertório.md",
     "attachments/781206838_18374016361232830_3601971177093494471_n 5.jpg",
     "attachments/781206838_18374016361232830_3601971177093494471_n 4.jpg",
     "attachments/583287622_18335093197232830_8143533935869956263_n.jpg",
